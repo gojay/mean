@@ -3,8 +3,6 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-// var Blog = require('../blog/blog.model');
-
 var tree = require('mongoose-path-tree');
 var async = require('async');
 
@@ -24,7 +22,7 @@ var CategorySchema = new Schema({
     _id: {
         type: String,
         trim: true,
-        // set: setTitle
+        lowercase: true
     },
     slug: {
         type: String,
@@ -57,8 +55,8 @@ var statics = {
       fields = [fields];
     }
 
-    fields = fields.map(function (_fields) {
-      return _.titleize(_fields);
+    fields = fields.map(function (str) {
+      return str.toLowerCase();
     });
 
     var descendants = [];
@@ -69,6 +67,7 @@ var statics = {
       }).join('|');
       // find path regex
       self.find({path: { $regex: criteria, $options: 'i' }}, function (err, categories) {
+        // get decsendants
         async.each(categories, function(category, done) {
           descendants.push(category._id);
           done(err);
@@ -81,7 +80,6 @@ var statics = {
   },
 
   setCount: function(data, done) {
-
     var self = this;
 
     var category = data.category;

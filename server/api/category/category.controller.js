@@ -8,8 +8,9 @@ var async = require('async');
 
 var Category = require('./category.model');
 
+// load parameters middleware
 exports.load = function(req, res, next, id) {
-  req.params.id = _.titleize(req.params.id);
+  req.params.id = req.params.id.toLowerCase();
   next();
 };
 
@@ -23,6 +24,7 @@ exports.index = function(req, res) {
 
 // Get a single category
 exports.show = function(req, res) {
+  console.log('category',req.params.id);
   Category.findOne({_id:req.params.id}, function(err, _category) {
     if(err) { return handleError(res, err); }
     _category.getAncestors({}, "_id", function (err, categories) {
@@ -36,39 +38,25 @@ exports.show = function(req, res) {
 };
 
 // Creates a new category in the DB.
-exports.create = function(req, res) {
-  var programming = new Category({ _id: 'programming'});
-  var languages   = new Category({ _id: 'languages'});
-  var databases   = new Category({ _id: 'databases'});
-  var php         = new Category({ _id: 'PHP'});
-  var javascript  = new Category({ _id: 'Javascript'});
-  var ruby        = new Category({ _id: 'ruby'});
-  var mongoDB     = new Category({ _id: 'Mongo DB'});
-  var mysql       = new Category({ _id: 'MySQL'});
-  var oracle      = new Category({ _id: 'Oracle'});
-
-  languages.parent = programming;
-  databases.parent = programming;
-  php.parent        = languages;
-  javascript.parent = languages;
-  ruby.parent = languages;
-  mongoDB.parent = databases;
-  mysql.parent   = databases;
-  oracle.parent   = databases;
-
-  programming.save(function(){
-    languages.save(function(){
-      php.save();
-      javascript.save();
-      ruby.save();
+exports.create = function (req, res) {
+  if(!req.body.parent) {
+    var category = new Category(req.body);
+    category.save(function(err, category) {
+      if(err) { return handleError(res, err); }
+      return res.json(201, 'Category added!');
     });
-    databases.save(function(){
-      mongoDB.save();
-      mysql.save();
-      oracle.save();
+  }
+
+  Category.findById(req.body.parent, function (err, category) {
+    if (err) { return handleError(res, err); }
+    if(!category) { return res.send(404, 'Category not found!'); }
+
+    var category = new Category(req.body);
+    category.save(function(err, category) {
+      if(err) { return handleError(res, err); }
+      return res.json(201, 'Category added!');
     });
   });
-
 };
 
 // Updates an existing category in the DB.

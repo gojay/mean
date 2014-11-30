@@ -6,10 +6,15 @@ var mongoose = require('mongoose'),
 var Category = require('../category/category.model');
 var User = require('../user/user.model');
 
-var Imager = require('imager');
-// imagerConfig = require('../../config/imager');
+var Imager = require('imager'),
+    imagerConfig = require('../../config/imager');
+
 var async = require('async');
 var _ = require('lodash');
+
+var glob = require('glob');
+var fs = require('fs');
+var config = require('../../config/environment');
 
 /**
  * Getters & Setters
@@ -20,7 +25,9 @@ var getTags = function(tags) {
 };
 
 var setTags = function(tags) {
-    return _.isString(tags) ? tags : tags.split(',');
+    return _.isString(tags) ? _.map(tags.split(','), function(tag){
+        return tag.trim();
+    }) : tags ;
 };
 
 var BlogSchema = new Schema({
@@ -57,14 +64,21 @@ var BlogSchema = new Schema({
             default: Date.now
         }
     }],
-    tags: {
-        type: [],
-        get: getTags,
-        // set: setTags
-    },
     image: {
         cdnUri: String,
         files: []
+    },
+    tags: {
+        type: [],
+        // get: getTags,
+        set: setTags
+    },
+    likes: {
+        type: []
+    },
+    votes: {
+        type: Number,
+        default: 0
     },
     createdAt: {
         type: Date,
@@ -74,57 +88,116 @@ var BlogSchema = new Schema({
 });
 
 /**
+ * Post Init
+ */
+
+BlogSchema.post( 'init', function() {
+    this._original = this.toObject();
+});
+
+/**
  * Validations
  */
 
 BlogSchema.path('title').required(true, 'Blog title cannot be blank');
 BlogSchema.path('body').required(true, 'Blog body cannot be blank');
 
-BlogSchema
-    .path('category')
-    .set(function(category) {
-        this._oriCategory = this.category;
-        return category;
-    });
-
 /**
  * Pre/Post save hook
  */
 
 BlogSchema.pre('save', function(next) {
-    var isCategoryChange = this.isModified('category');
-    var category = this.category;
+    var self = this;
+    var imageRoot = config.root + '/client/images';
 
-    if (!isCategoryChange) {
-        next();
-    } else {
-        // set increment categories count
-        Category.setCount({
-            category: category,
-            value: 1
-        }, function(err) {
-            if (err) {
-                return next(err);
+    async.series({
+        /** increase in number of categories **/
+        category: function(done){
+            // return is new / update unchanged category
+            if (!self.isModified('category')) {
+                return done(null, 'unchanged');
+            } 
+
+            // set increment categories count
+            Category.setCount({
+                category: self.category,
+                value: 1
+            }, function(err) {
+                if (err) done(err);
+                done(null, 'changed');
+            });
+        },
+        /** remove old image files **/
+        image: function(done){
+
+            // is new / update unchanged image
+            if (self.isNew || !self.isModified('image')) {
+                return done(null, 'unchanged');
             }
-            next();
-        });
 
-    }
+            var oldImage = self._original.image;
+            
+            console.log('\n---------------\n');
+            console.log('pre:old:image', oldImage);
+            console.log('pre:new:image', self.image);
+            console.log('\n---------------\n'); 
+
+            var q = async.queue(function (file, callback) {
+                var pattern = imageRoot + '/*' + file;
+                glob(pattern, {}, function(err, files) {
+                    if(err) return callback(err);
+                    async.each(files, function(file, _callback) {
+                        // unlink image
+                        fs.unlink(file, function (err) {
+                          if (err) _callback(err);
+                          _callback();
+                        });
+                    }, function(err){
+                        if( err ) return callback(err); 
+                        callback();
+                    });
+                });
+            });
+            // assign a callback
+            q.drain = function() {
+                done(null, 'images deleted');
+            }
+            q.push(oldImage.files, function (err) {
+                if(err) return done(err);
+            });
+        }
+    },
+    // optional callback
+    function(err, results){
+        if (err) return next(err);
+        console.log('\n---------------\n');
+        console.log('blog:pre:save', results);
+        console.log('\n---------------\n');
+        next();
+    });
 });
 
 BlogSchema.post('save', function(doc) {
     var self = this;
-    var oriCategory = this._oriCategory;
-    var category = this.category;
 
+    if(!this._original) return;
+
+    var oldCategory = this._original.category, 
+        category = this.category;
+            
+    console.log('\n---------------\n');
+    console.log('pre:old:category', self._original.category);
+    console.log('pre:new:category', self.category);
+    console.log('\n---------------\n');
+            
     // set decrement previous categories count
-    if (this._oriCategory && !_.isEqual(oriCategory, category)) {
+    if (oldCategory && !_.isEqual(oldCategory, category)) {
         Category.setCount({
-            category: oriCategory,
+            category: oldCategory,
             value: -1
         }, function(err) {
             if (err) {
-                return res.json(500, 'Error set decrement count on previous category : ' + self._oriCategory);
+                return res.json(500, 'Error set decrement count on previous category : ' + self._category);
             }
         });
     }
@@ -135,16 +208,65 @@ BlogSchema.post('save', function(doc) {
  */
 
 BlogSchema.pre('remove', function(next) {
-    var category = this.category;
-    if (!category) next();
+    var self = this;
+    var imageRoot = config.root + '/client/images';
 
-    Category.setCount({
-        category: category,
-        value: -1
-    }, function(err) {
-        if (err) {
-            return next(err);
+    async.series({
+        /** decrease in number of categories **/
+        category: function(done){
+            // return is new / update unchanged category
+            if (!self.category) {
+                return done(null, 'the category is empty');
+            } 
+
+            // set increment categories count
+            Category.setCount({
+                category: self.category,
+                value: -1
+            }, function(err) {
+                if (err) done(err);
+                done(null, 'decrement');
+            });
+        },
+        /** remove image files **/
+        image: function(done){
+
+            // is new / update unchanged image
+            if (!self.image && self.image.files.length > 0) {
+                return done(null, 'the images are empty');
+            }
+
+            var q = async.queue(function (file, callback) {
+                var pattern = imageRoot + '/*' + file;
+                glob(pattern, {}, function(err, files) {
+                    if(err) return callback(err);
+                    async.each(files, function(file, _callback) {
+                        // unlink image
+                        fs.unlink(file, function (err) {
+                          if (err) _callback(err);
+                          _callback();
+                        });
+                    }, function(err){
+                        if( err ) return callback(err); 
+                        callback();
+                    });
+                });
+            });
+            // assign a callback
+            q.drain = function() {
+                done(null, 'images deleted');
+            }
+            q.push(self.image.files, function (err) {
+                if(err) return done(err);
+            });
         }
+    },
+    // optional callback
+    function(err, results){
+        if (err) return next(err);
+        console.log('\n---------------\n');
+        console.log('blog:pre:remove', results);
+        console.log('\n---------------\n');
         next();
     });
 });
@@ -155,29 +277,58 @@ BlogSchema.pre('remove', function(next) {
 
 BlogSchema.methods = {
 
-    uploadAndSave: function(images, cb) {
-        if (!images || !images.length) return this.save(cb);
+    uploadAndSave: function(files, cb) {
+        if ( !files || !files.images ) return this.save(cb);
 
-        // var self = this;
+        var self = this;
 
-        // var imager = new Imager(imagerConfig, 'Local');
-        // imager.upload(images, function(err, cdnUri, files) {
-        //     if (err) {
-        //         return handleError(err, res);
-        //     }
+        var images = _.isArray(files.images) ? files.images : [files.images];
 
-        //     if (files.length) {
-        //         if (!cdnUri) {
-        //             cdnUri = '/images';
-        //         }
-        //         self.image = {
-        //             cdnUri: cdnUri,
-        //             files: files
-        //         }
-        //     }
+        var imager = new Imager(imagerConfig, 'Local');
+        imager.upload(images, function(err, cdnUri, files) {
+            if (err) {
+                return cb(err);
+            }
 
-        //     self.save(cb);
-        // }, 'blog');
+            if (files.length) {
+                if (!cdnUri) {
+                    cdnUri = '/images';
+                }
+                self.image = {
+                    cdnUri: cdnUri,
+                    files: files
+                }
+            }
+
+            self.save(cb);
+        }, 'blog');
+    },
+
+    uploadAndEdit: function(files, cb) {
+        var self = this;
+
+        if ( !files || !files.images ) return cb(null, null);
+
+        var images = _.isArray(files.images) ? files.images : [files.images];
+
+        var imager = new Imager(imagerConfig, 'Local');
+        imager.upload(images, function(err, cdnUri, files) {
+            if (err) return cb(err);
+            
+            var image = null;
+
+            if (files.length) {
+                if (!cdnUri) {
+                    cdnUri = '/images';
+                }
+                image = {
+                    cdnUri: cdnUri,
+                    files: files
+                }
+            }
+
+            cb(null, image);
+        }, 'blog');
     },
 
     addComment: function(user, comment, cb) {
@@ -213,6 +364,26 @@ var ObjectId = require('mongoose').Types.ObjectId;
 BlogSchema.statics = {
 
     /**
+     * Order by comments count
+     * 
+     db.blogs.aggregate([ 
+        { $unwind : "$comments" },
+        { $group : { _id : "$_id", title:{ $first:"$title" }, comments : { $sum : 1 } } },
+        { $sort : { comments : -1 } },
+    ]);
+     */
+
+    /**
+     * Order by likes count
+     * 
+     db.blogs.aggregate([ 
+          { $unwind : "$likes" },
+          { $group : { _id : "$_id", title:{ $first:"$title" }, likes : { $sum : 1 } } },
+          { $sort : { likes : -1 } },
+    ]);
+     */
+
+    /**
      * order comments
      *
       db.blogs.aggregate([
@@ -226,7 +397,7 @@ BlogSchema.statics = {
      */
 
     getComments: function(id, options, done) {
-        options = _.extend({
+        var options = _.extend({
             page: 1,
             perPage: 5,
             sort: {
@@ -237,10 +408,9 @@ BlogSchema.statics = {
         var limit = options.perPage,
             skip = options.perPage * options.page;
 
-        this.aggregate([{
-            $match: {
-                _id: ObjectId(id)
-            }
+        this.aggregate([
+        {
+            $match: { _id: ObjectId(id) }
         }, {
             $unwind: "$comments"
         }, {
@@ -292,7 +462,7 @@ BlogSchema.statics = {
       db.blogs.aggregate( 
       [
         { $unwind : "$tags" },
-        { $group : { _id : "$tags", number : { $sum : 1 } } } ,
+        { $group : { _id : "$tags", count : { $sum : 1 } } } ,
         { $sort : { number : -1 } },
       ]
       );
@@ -323,7 +493,7 @@ BlogSchema.statics = {
     },
 
     /**
-     * get count comments 
+     * get count all comments 
      *
     db.blogs.aggregate( 
     [
@@ -331,6 +501,17 @@ BlogSchema.statics = {
       { $group : { _id : null, number : { $sum : 1 } } }
     ]
     );
+    */
+
+    /**
+     * most likes user 
+     *
+    db.blogs.aggregate([ 
+      { $unwind : "$likes" }, 
+      { $group : { _id : "$likes", count : { $sum : 1 } } },
+      { $project: { _id: 0, user: "$_id", count: 1 } },
+      { $sort : { count : -1 } } 
+    ])
     */
 
     /**

@@ -10,7 +10,8 @@ module.exports = {
 				preview: '800x600' 
 			},
 			crop: {
-				thumb: '200x200'
+				// thumb: '200x200',
+        		thumb_center: "400x400 Center"
 			},
 			resizeAndCrop: {
 				large: {
