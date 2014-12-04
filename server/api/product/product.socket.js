@@ -4,21 +4,21 @@
 
 'use strict';
 
-var Example = require('./example.model').BlogPost;
+var Product = require('./product.model');
 
 exports.register = function(socket) {
-  Example.schema.post('save', function (doc) {
+  Product.schema.post('save', function (doc) {
     onSave(socket, doc);
   });
-  Example.schema.post('remove', function (doc) {
+  Product.schema.post('remove', function (doc) {
     onRemove(socket, doc);
   });
 }
 
 function onSave(socket, doc, cb) {
-  socket.emit('example:save', doc);
+  socket.emit('product:save', doc);
 }
 
 function onRemove(socket, doc, cb) {
-  socket.emit('example:remove', doc);
+  socket.emit('product:remove', doc);
 }

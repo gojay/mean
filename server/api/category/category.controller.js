@@ -86,5 +86,8 @@ exports.destroy = function(req, res) {
 };
 
 function handleError(res, err) {
-  return res.send(500, err);
+    if(err.name && err.name == 'ValidationError') {
+        return res.json(422, err);
+    }
+    return res.send(500, err);
 }

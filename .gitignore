@@ -3,6 +3,7 @@ public
 .tmp
 .idea
 client/bower_components
-client/images
+client/img/*
+assets
 dist
 /server/config/local.env.js

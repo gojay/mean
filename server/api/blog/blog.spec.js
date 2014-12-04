@@ -3,40 +3,49 @@
 var should = require('should');
 var app = require('../../app');
 var request = require('supertest');
+var _ = require('lodash');
+var async = require('async');
+
 var Blog = require('./blog.model');
 var Category = require('../category/category.model');
 var User = require('../user/user.model');
 
-var _ = require('lodash');
-
-var user = {
-  email: 'test@test.com',
+var account = {
+  name: 'Test user 2',
+  email: 'test2@test.com',
   password: 'test'
 };
-var token = null;
+var token, blogId, category;
 
-var categories = null;
-var blogId = null;
+describe('API blogs : ', function() {
 
-describe('API blogs', function() {
-
+  // remove all blogs, create user & seed categories
   before(function(done) {
-    Category.remove().exec(function() {
-      Blog.remove().exec(function() {
-        request(app)
-          .post('/api/seeds/category')
-          .expect(201)
-          .end(function(err, res) {
-            if(err) return done(err);
-            res.body.should.be.instanceof(Array);
-            categories = res.body;
-            done();
+    async.series([
+        function(callback){
+          var user = new User(account);
+          user.save(function(err) {
+            callback(err, 'user created');
           });
-      });
+        },
+        function(callback){
+          request(app)
+            .post('/api/seeds/category/blog')
+            .expect(201, callback);
+        },
+        function(callback){
+          Blog.remove(function(err) {
+            callback(err, 'blog removed');
+          });
+        }
+    ],
+    function(err, results){
+      if(err) return done(err);
+      done();
     });
   });
 
-  it('should GET blogs respond with JSON array', function(done) {
+  it('should blogs respond with JSON array and empty', function(done) {
     request(app)
       .get('/api/blogs')
       .expect(200)
@@ -48,71 +57,70 @@ describe('API blogs', function() {
       });
   });
 
-  it('should have test users', function(done) {
-    User.count().exec(function(err, count) {
-      count.should.have.equal(2);
-      done();
-    });
-  });
-
-  it('should user logged in successfully', function(done) {
+  it('should get token user', function(done) {
     request(app)
       .post('/auth/local')
-      .send(user)
+      .send({ email:account.email, password: account.password })
       .expect(200)
+      .expect('Content-Type', /json/)
       .end(function(err, res) {
         if(err) return done(err);
-        res.body.should.be.instanceof(Object).and.have.property('token');
+        res.body.should.have.property('token');
         token = 'Bearer ' + res.body.token;
         done();
       })
   });
 
-  it('should guest create blog is unauthorized', function(done) {
+  it('should respond 401 when created blog is not authenticated', function(done) {
     request(app)
       .post('/api/blogs')
-      .send({
-        'title': 'Test title',
-        'body': 'Edit body'
-      })
-      .expect(401, done);
+      .send({ 'title': 'Test title' })
+      .expect(401, done)
   });
 
-  it('should authenticated user created blog successfully', function(done) {
+  it('should respond 422 when authenticated user creating blog without category', function(done) {
+    request(app)
+      .post('/api/blogs')
+      .set('Authorization', token)
+      .send({ 'title': 'Test title' })
+      .expect(422, done);
+  });
+
+  it('should respond 201 and count of the relevant category increased when created blog is authenticated', function(done) {
+    category = 'php';
+
     request(app)
       .post('/api/blogs')
       .set({ 
         'Authorization': token,
         'Content-Type': 'multipart/form-data'
       })
-      .field('category', 'php')
+      .field('category', category)
       .field('title', 'Test blog')
       .field('body', 'body test')
       .field('tags', ['tag1', 'test'])
       .attach('images', "C:/Users/Asus/Pictures/dummy/Koala.jpg")
+      .attach('images', "C:/Users/Asus/Pictures/dummy/Tulips.jpg")
       .expect(201)
+      .expect('Content-Type', /json/)
       .end(function(err, res) {
         if(err) return done(err);
         res.body.should.be.instanceof(Object);
         blogId = res.body._id;
-        done();
+
+        Category.findById(category, function(err, category) {
+          category.should.containEql({ count:1 });
+          category.getAncestors({}, "_id, count", function (err, categories) {
+            categories.should.containDeep([{ _id: 'programming', count: 1 }]).and.containDeep([{ _id: 'languages', count: 1 }])
+            done();
+          });
+        });
+
       });
   });
 
-  it('should authenticated user edited blog successfully', function(done) {
-    /*request(app)
-      .put('/api/blogs/' + blogId)
-      .set('Authorization', token)
-      .send({
-        'body': 'Edit body',
-        'tags': 'tag1, tag2'
-      })
-      .expect(200)
-      .end(function(err, res) {
-        if(err) return done(err);
-        res.body.should.be.instanceof(Object);
-        done();
-      });*/
+  it('should respond 200 and count of the relevant category increased when edited blog is authenticated', function(done) {
+    category = 'mysql';
 
     request(app)
       .put('/api/blogs/' + blogId)
@@ -120,16 +128,48 @@ describe('API blogs', function() {
         'Authorization': token,
         'Content-Type': 'multipart/form-data'
       })
-      .field('category', 'mysql')
+      .field('category', category)
       .attach('images', "C:/Users/Asus/Pictures/dummy/Penguins.jpg")
-      .expect(200, done);
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if(err) return done(err);
+        res.body.should.be.instanceof(Object);
+
+        Category.findById(category, function(err, category) {
+          category.should.containEql({ count:1 });
+          category.getAncestors({}, "_id, count", function (err, categories) {
+            categories.should.containDeep([{ _id: 'programming', count: 1 }]).and.containDeep([{ _id: 'databases', count: 1 }])
+            done();
+          });
+        });
+
+      });
   });
 
-  it('should authenticated user deleted blog successfully', function(done) {
+  it('should respond 204 and count of the relevant category is null  when deleted blog is authenticated', function(done) {
     request(app)
       .del('/api/blogs/' + blogId)
       .set('Authorization', token)
-      .expect(204, done);
+      .expect(204)
+      .end(function(err, res) {
+        if(err) return done(err);
+
+        Category.findById(category, function(err, category) {
+          category.should.containEql({ count: 0 });
+          category.getAncestors({}, "_id, count", function (err, categories) {
+            categories.should.containDeep([{ _id: 'programming', count: 0 }]).and.containDeep([{ _id: 'databases', count: 0 }])
+            done();
+          });
+        });
+      });
+  });
+
+  // remove all users, categories & blogs
+  after(function(done) {
+    // User.remove(function() {
+      Category.remove(done);
+    // });
   });
 
 });

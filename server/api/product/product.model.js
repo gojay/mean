@@ -4,57 +4,51 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 var Category = require('../category/category.model');
-var User = require('../user/user.model');
-
-var async = require('async');
-var _ = require('lodash');
 
 var glob = require('glob');
 var fs = require('fs');
 var config = require('../../config/environment');
 
+var async = require('async');
+var _ = require('lodash');
+
 var Imager = require('imager'),
     imagerConfig = require('../../config/imager');
 
-var localPath = config.root + '/client/img/blogs';
+var localURI = '/img/phones', 
+    localPath = config.root + '/client/img/phones';
 
 _.str = require('underscore.string');
 _.mixin(_.str.exports());
-
-
-/**
- * Getters & Setters
- */
-
-var getTags = function(tags) {
-    return _.isArray(tags) ? tags : tags.join(',');
-};
 
 var setTags = function(tags) {
     return _.isString(tags) ? _.map(tags.split(','), function(tag){
         return tag.trim();
     }) : tags ;
 };
-var BlogSchema = new Schema({
+
+var ProductSchema = new Schema({
     category: {
         type: String,
         ref: 'Category',
         required: 'Category cannot be blank'
     },
-    title: {
+  	title: {
         type: String,
         default: '',
         trim: true,
         required: 'Title cannot be blank'
     },
-    body: {
+    slug: {
         type: String,
-        default: '',
-        trim: true
+        lowercase: true,
+        default: ''
     },
-    user: {
-        type: Schema.ObjectId,
-        ref: 'User'
+  	body: String,
+  	image: String,
+    tags: {
+        type: [],
+        set: setTags
     },
     comments: [{
         body: {
@@ -71,21 +65,11 @@ var BlogSchema = new Schema({
             default: Date.now
         }
     }],
-    image: {
-        cdnUri: String,
-        files: []
-    },
-    tags: {
-        type: [],
-        // get: getTags,
-        set: setTags
-    },
-    likes: {
-        type: []
-    },
-    votes: {
-        type: Number,
-        default: 0
+    meta: {
+        type: Schema.Types.Mixed,
+        set: function(meta) {
+            return _.isString(meta) ? JSON.parse(meta) : meta ;
+        }
     },
     createdAt: {
         type: Date,
@@ -98,7 +82,7 @@ var BlogSchema = new Schema({
  * Post Init
  */
 
-BlogSchema.post( 'init', function() {
+ProductSchema.post( 'init', function() {
     this._original = this.toObject();
 });
 
@@ -106,10 +90,15 @@ BlogSchema.post( 'init', function() {
  * Pre/Post save hook
  */
 
-BlogSchema.pre('save', function(next) {
+ProductSchema.pre('save', function(next) {
     var self = this;
 
     async.series({
+        /** create slug **/
+    	slug: function(done) {
+            self.slug = _.slugify(self.title);
+    		done(null, 'created');
+    	},
         /** increase in number of categories **/
         category: function(done){
             // return is new / update unchanged category
@@ -126,15 +115,19 @@ BlogSchema.pre('save', function(next) {
                 done(null, 'changed');
             });
         },
-        /** remove old image files **/
+        /** remove old meta images **/
         image: function(done){
+            var original = self._original;
+            var oldImages = original && original.meta && _.has(original.meta, 'images') ? original.meta.images : {} ;
+            var newImages = self.meta && _.has(self.meta, 'images') ? self.meta.images : {} ;
 
-            // is new / update unchanged image
-            if (self.isNew || !self.isModified('image')) {
+            console.log('pre:save:images', oldImages, newImages);
+
+            var imgChanged = _.isEmpty(oldImages) || _.isEmpty(newImages) ? false : _.difference(oldImages.files, newImages.files).length > 0 ; 
+            // is new / update : unchanged image
+            if (self.isNew || !imgChanged) {
                 return done(null, 'unchanged');
             }
-
-            var oldImage = self._original.image;
 
             var q = async.queue(function (file, callback) {
                 var pattern = localPath + '/*' + file;
@@ -156,7 +149,7 @@ BlogSchema.pre('save', function(next) {
             q.drain = function() {
                 done(null, 'images deleted');
             }
-            q.push(oldImage.files, function (err) {
+            q.push(oldImages.files, function (err) {
                 if(err) return done(err);
             });
         }
@@ -164,11 +157,12 @@ BlogSchema.pre('save', function(next) {
     // optional callback
     function(err, results){
         if (err) return next(err);
+        console.log('pre:save', results);
         next();
     });
 });
 
-BlogSchema.post('save', function(doc) {
+ProductSchema.post('save', function(doc) {
     var self = this;
 
     if(!this._original) return;
@@ -193,13 +187,12 @@ BlogSchema.post('save', function(doc) {
  * Pre remove hook
  */
 
-BlogSchema.pre('remove', function(next) {
+ProductSchema.pre('remove', function(next) {
     var self = this;
 
     async.series({
         /** decrease in number of categories **/
         category: function(done){
-            // return is new / update unchanged category
             if (!self.category) {
                 return done(null, 'the category is empty');
             } 
@@ -213,16 +206,20 @@ BlogSchema.pre('remove', function(next) {
                 done(null, 'decrement');
             });
         },
-        /** remove image files **/
+        /** remove images **/
         image: function(done){
+            var images = self.meta.images;
 
-            // is new / update unchanged image
-            if (!self.image && self.image.files.length > 0) {
+            // is new / update image unchanged
+            if (!images && images.length == 0) {
                 return done(null, 'the images are empty');
             }
 
+            console.log('pre:remove:delete', self.meta.images);
+
             var q = async.queue(function (file, callback) {
                 var pattern = localPath + '/*' + file;
+                console.log('remove:images', pattern);
                 glob(pattern, {}, function(err, files) {
                     if(err) return callback(err);
                     async.each(files, function(file, _callback) {
@@ -241,7 +238,7 @@ BlogSchema.pre('remove', function(next) {
             q.drain = function() {
                 done(null, 'images deleted');
             }
-            q.push(self.image.files, function (err) {
+            q.push(images.files, function (err) {
                 if(err) return done(err);
             });
         }
@@ -258,14 +255,14 @@ BlogSchema.pre('remove', function(next) {
  * Methods
  */
 
-BlogSchema.methods = {
+ProductSchema.methods = {
 
     uploadAndSave: function(images, cb) {
         var self = this;
 
         if ( !images ) return self.save(cb);
 
-        imagerConfig.storage.Local.path = 'client/img/blogs';
+        imagerConfig.storage.Local.path = 'client/img/phones';
 
         var imager = new Imager(imagerConfig, 'Local');
         imager.upload(images, function(err, cdnUri, files) {
@@ -274,17 +271,21 @@ BlogSchema.methods = {
             }
 
             if (files.length) {
-                if (!cdnUri) {
-                    cdnUri = '/images';
-                }
-                self.image = {
-                    cdnUri: cdnUri,
+                var meta = self.meta || {};
+
+                var url = cdnUri || localURI;
+                var images = {
+                    cdnUri: url,
                     files: files
-                }
-            }
+                };
+
+                self.image = url + '/' + files[0];
+                self.meta = {};
+                self.meta = _.assign(meta, { images: images });
+            } 
 
             self.save(cb);
-        }, 'blog');
+        }, 'product');
     },
 
     addComment: function(user, comment, cb) {
@@ -316,27 +317,7 @@ BlogSchema.methods = {
  */
 
 var ObjectId = require('mongoose').Types.ObjectId;
-BlogSchema.statics = {
-
-    /**
-     * Order by comments count
-     * 
-     db.blogs.aggregate([ 
-        { $unwind : "$comments" },
-        { $group : { _id : "$_id", title:{ $first:"$title" }, comments : { $sum : 1 } } },
-        { $sort : { comments : -1 } },
-    ]);
-     */
-
-    /**
-     * Order by likes count
-     * 
-     db.blogs.aggregate([ 
-          { $unwind : "$likes" },
-          { $group : { _id : "$_id", title:{ $first:"$title" }, likes : { $sum : 1 } } },
-          { $sort : { likes : -1 } },
-    ]);
-     */
+ProductSchema.statics = {
 
     /**
      * order comments
@@ -447,73 +428,6 @@ BlogSchema.statics = {
         }, ], done);
     },
 
-    /**
-     * get count all comments 
-     *
-    db.blogs.aggregate( 
-    [
-      { $unwind : "$comments" },
-      { $group : { _id : null, number : { $sum : 1 } } }
-    ]
-    );
-    */
-
-    /**
-     * most likes user 
-     *
-    db.blogs.aggregate([ 
-      { $unwind : "$likes" }, 
-      { $group : { _id : "$likes", count : { $sum : 1 } } },
-      { $project: { _id: 0, user: "$_id", count: 1 } },
-      { $sort : { count : -1 } } 
-    ])
-    */
-
-    /**
-     * most commented user 
-     *
-    db.blogs.aggregate([ 
-      { $unwind : "$comments" }, 
-      { $group : { _id : "$comments.user", count : { $sum : 1 } } },
-      { $project: { _id: 0, user: "$_id", count: 1 } },
-      { $sort : { number : -1 } } 
-    ])
-    */
-
-    getMostCommentedUser: function(done) {
-        this.aggregate([{
-            $unwind: "$comments"
-        }, {
-            $group: {
-                _id: "$comments.user",
-                count: {
-                    $sum: 1
-                }
-            }
-        }, {
-            $project: {
-                _id: 0,
-                user: "$_id",
-                count: 1
-            }
-        }, {
-            $sort: {
-                count: -1
-            }
-        }], function(err, results) {
-            async.each(results, function(item, _done) {
-                User.findOne({
-                    _id: item.user
-                }, 'name email', function(err, user) {
-                    item.user = user;
-                    _done(err);
-                });
-            }, function(err) {
-                done(err, results);
-            });
-        });
-    },
-
     load: function(id, done) {
         var skip = 0,
             limit = 5;
@@ -526,7 +440,6 @@ BlogSchema.statics = {
             }
         };
         this.findOne(query, projection)
-            .populate('user', 'name email')
             .populate('comments.user', 'name email')
             .exec(done);
     },
@@ -536,8 +449,6 @@ BlogSchema.statics = {
 
         this.find(criteria)
             .select('-comments')
-            .populate('user', 'name email')
-            // .populate('comments.user', 'name email')
             .sort('-createdAt')
             .limit(options.perPage)
             .skip(options.perPage * options.page)
@@ -545,4 +456,4 @@ BlogSchema.statics = {
     }
 };
 
-module.exports = mongoose.model('Blog', BlogSchema);
+module.exports = mongoose.model('Product', ProductSchema);

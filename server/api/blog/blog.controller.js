@@ -1,14 +1,8 @@
 'use strict';
 
 var mongoose = require('mongoose');
-// imager
-var Imager = require('imager');
-// var imagerConfig = require('../../config/imager');
-
 // models
-var Blog = require('./blog.model'),
-    Category = require('../category/category.model'),
-    User = require('../user/user.model');
+var Blog = require('./blog.model');
 // utils
 var _ = require('lodash');
 _.str = require('underscore.string');
@@ -46,9 +40,15 @@ exports.show = function(req, res) {
 
 // Creates a new blog in the DB.
 exports.create = function(req, res) {
+    var images = null;
+    var files = req.files;
+    if(!_.isEmpty(files)) {
+      images = _.isArray(files.images) ? files.images : [files.images];
+    }
+
     var blog = new Blog(req.body);
     blog.user = req.user;
-    blog.uploadAndSave(req.files, function(err, blog) {
+    blog.uploadAndSave(images, function(err, blog) {
         if (err) {
             return handleError(res, err);
         }
@@ -58,8 +58,14 @@ exports.create = function(req, res) {
 
 // Updates an existing blog in the DB.
 exports.update = function(req, res) {
+    var files = req.files;
     if (req.body._id) {
         delete req.body._id;
+    }
+
+    var images = null;
+    if(!_.isEmpty(files)) {
+      images = _.isArray(files.images) ? files.images : [files.images]
     }
 
     var blog = _.merge(req.blog, req.body);
@@ -68,17 +74,9 @@ exports.update = function(req, res) {
         return res.json(403, 'This user is forbidden to update this blog');
     }
 
-    blog.uploadAndEdit(req.files, function(err, image) {
+    blog.uploadAndSave(images, function(err, blog) {
         if (err) return handleError(res, err);
-
-        if(image) {
-            blog.image = image;
-        }
-
-        blog.save(function(err, blog) {
-            if (err) return handleError(res, err);
-            return res.json(200, blog);
-        });
+        return res.json(200, blog);
     });
 };
 
@@ -87,10 +85,9 @@ exports.destroy = function(req, res) {
     var blog = req.blog;
     
     if (!req.user.role == 'admin' || !_.isEqual(req.user._id, blog.user._id)) {
-        return res.json(403, 'This user is forbidden to update this blog');
+        return res.json(403, 'You\'re forbidden to update this blog');
     }
     blog.remove(function(err) {
-        console.log('remove', err);
         if (err) {
             return handleError(res, err);
         }
@@ -230,5 +227,8 @@ exports.deleteTag = function(req, res) {
 };
 
 function handleError(res, err) {
+    if(err.name && err.name == 'ValidationError') {
+        return res.json(422, err);
+    }
     return res.send(500, err);
 }

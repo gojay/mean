@@ -11,32 +11,22 @@ var _  = require('lodash');
 _.str = require('underscore.string');
 // Mix in non-conflict functions to Underscore namespace if you want
 _.mixin(_.str.exports());
-// All functions, include conflict, will be available through _.str object
-_.str.include('Underscore.string', 'string'); // => true
+
 
 var setTitle = function(title) {
-    return _.titleize(title);
+    return _.slugify(title);
 };
-
 var CategorySchema = new Schema({
     _id: {
         type: String,
         trim: true,
-        lowercase: true
-    },
-    slug: {
-        type: String,
-        default: ''
+        lowercase: true,
+        set: setTitle
     },
     count: {
       type: Number,
       default: 0
     }
-});
-
-CategorySchema.pre('save', function (next) {
-    this.slug = _.slugify(this._id);
-    next();
 });
 
 CategorySchema.plugin(tree, {

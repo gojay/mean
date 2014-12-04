@@ -7,17 +7,23 @@ module.exports = {
 		blog: {
 			resize: {
 				mini: '300x200',
-				preview: '800x600' 
+				preview: '800x600'
 			},
 			crop: {
-				// thumb: '200x200',
-        		thumb_center: "400x400 Center"
+        		thumb: "400x400 Center"
 			},
-			resizeAndCrop: {
+			/*resizeAndCrop: {
 				large: {
 					resize: '1000x1000',
 					crop: '900x900'
 				}
+			}*/
+		},
+		product: {
+			keepNames: true,
+			resize: {
+				// mini: '300x200',
+				original: "100%"
 			}
 		},
 
@@ -31,10 +37,10 @@ module.exports = {
 	storage: {
 		Local: {
 			provider: 'local',
-			path: 'client/images',
+			path: 'client/img',
 			mode: 0777
 		}
 	},
 
-  	debug: true
+  	debug: false
 }
