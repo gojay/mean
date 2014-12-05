@@ -16,7 +16,7 @@ var config = require('../../config/environment');
 var Imager = require('imager'),
     imagerConfig = require('../../config/imager');
 
-var localPath = config.root + '/client/img/blogs';
+var localPath = config.root + '/client/images/blogs';
 
 _.str = require('underscore.string');
 _.mixin(_.str.exports());
@@ -265,7 +265,7 @@ BlogSchema.methods = {
 
         if ( !images ) return self.save(cb);
 
-        imagerConfig.storage.Local.path = 'client/img/blogs';
+        imagerConfig.storage.Local.path = 'client/images/blogs';
 
         var imager = new Imager(imagerConfig, 'Local');
         imager.upload(images, function(err, cdnUri, files) {

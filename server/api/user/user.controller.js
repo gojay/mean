@@ -16,23 +16,23 @@ var validationError = function(res, err) {
  * restriction: 'admin'
  */
 exports.index = function(req, res) {
-  // User.find({}, '-salt -hashedPassword', function (err, users) {
-  //   if(err) return res.send(500, err);
-  //   res.json(200, users);
-  // });
-  User.find().lean().select('-salt -hashedPassword').exec(function(err, users) {
-    async.each(users, function(user, done) {
-        Blog.find({ user:user._id }).select('-user -comments').exec(function(err, posts) {
-          user.posts = posts;
-          done(err);
-        });
-      }, function(err) {
-        if(err) { 
-          return handleError(res, err); 
-        }
-        return res.json(users);
-    });
+  User.find({}, '-salt -hashedPassword', function (err, users) {
+    if(err) return res.send(500, err);
+    res.json(200, users);
   });
+  // User.find().lean().select('-salt -hashedPassword').exec(function(err, users) {
+  //   async.each(users, function(user, done) {
+  //       Blog.find({ user:user._id }).select('-user -comments').exec(function(err, posts) {
+  //         user.posts = posts;
+  //         done(err);
+  //       });
+  //     }, function(err) {
+  //       if(err) { 
+  //         return handleError(res, err); 
+  //       }
+  //       return res.json(users);
+  //   });
+  // });
 };
 
 /**

@@ -15,8 +15,8 @@ var _ = require('lodash');
 var Imager = require('imager'),
     imagerConfig = require('../../config/imager');
 
-var localURI = '/img/phones', 
-    localPath = config.root + '/client/img/phones';
+var localURI = '/images/phones', 
+    localPath = config.root + '/client/images/phones';
 
 _.str = require('underscore.string');
 _.mixin(_.str.exports());
@@ -123,9 +123,9 @@ ProductSchema.pre('save', function(next) {
 
             console.log('pre:save:images', oldImages, newImages);
 
-            var imgChanged = _.isEmpty(oldImages) || _.isEmpty(newImages) ? false : _.difference(oldImages.files, newImages.files).length > 0 ; 
+            var imagesChanged = _.isEmpty(oldImages) || _.isEmpty(newImages) ? false : _.difference(oldImages.files, newImages.files).length > 0 ; 
             // is new / update : unchanged image
-            if (self.isNew || !imgChanged) {
+            if (self.isNew || !imagesChanged) {
                 return done(null, 'unchanged');
             }
 
@@ -262,7 +262,7 @@ ProductSchema.methods = {
 
         if ( !images ) return self.save(cb);
 
-        imagerConfig.storage.Local.path = 'client/img/phones';
+        imagerConfig.storage.Local.path = 'client/images/phones';
 
         var imager = new Imager(imagerConfig, 'Local');
         imager.upload(images, function(err, cdnUri, files) {
@@ -279,7 +279,7 @@ ProductSchema.methods = {
                     files: files
                 };
 
-                self.image = url + '/' + files[0];
+                self.image = url + '/preview_' + files[0];
                 self.meta = {};
                 self.meta = _.assign(meta, { images: images });
             } 
@@ -448,7 +448,7 @@ ProductSchema.statics = {
         var criteria = options.criteria || {};
 
         this.find(criteria)
-            .select('-comments')
+            .select('-comments, -meta')
             .sort('-createdAt')
             .limit(options.perPage)
             .skip(options.perPage * options.page)

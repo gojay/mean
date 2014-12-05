@@ -22,8 +22,8 @@ module.exports = {
 		product: {
 			keepNames: true,
 			resize: {
-				// mini: '300x200',
-				original: "100%"
+				preview: '100x100',
+				original: '100%'
 			}
 		},
 
@@ -37,7 +37,7 @@ module.exports = {
 	storage: {
 		Local: {
 			provider: 'local',
-			path: 'client/img',
+			path: 'client/images',
 			mode: 0777
 		}
 	},

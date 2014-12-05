@@ -123,8 +123,10 @@ function seedCategories(q, done) {
     } else {
         func = queue;
     }
-    async.series(func, function(err, results) {
-        done(err, results);
+    Category.remove(function (err) {
+        async.series(func, function(err, results) {
+            done(err, results);
+        });
     });
 }
 
