@@ -35,6 +35,9 @@ angular.module('exampleAppApp')
          * Syncs item creation/updates on 'model:save'
          */
         socket.on(modelName + ':save', function (item) {
+
+          console.log('client:socket:on:%s:save', modelName);
+
           var oldItem = _.find(array, {_id: item._id});
           var index = array.indexOf(oldItem);
           var event = 'created';
@@ -55,6 +58,9 @@ angular.module('exampleAppApp')
          * Syncs removed items on 'model:remove'
          */
         socket.on(modelName + ':remove', function (item) {
+          
+          console.log('client:socket:on:%s:remove', modelName);
+          
           var event = 'deleted';
           _.remove(array, {_id: item._id});
           cb(event, item, array);

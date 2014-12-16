@@ -4,9 +4,13 @@ angular.module('exampleAppApp', [
   'ngCookies',
   'ngResource',
   'ngSanitize',
+  'ngAnimate-animate.css',
   'btford.socket-io',
   'ui.router',
-  'ui.bootstrap'
+  'ui.bootstrap',
+  'angular-data.DSCacheFactory',
+  'angular-spinkit',
+  'uiSlider'
 ])
   .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider) {
     $urlRouterProvider
@@ -39,12 +43,23 @@ angular.module('exampleAppApp', [
           return $q.reject(response);
         }
       }
-    };
+    };  
   })
 
-  .run(function ($rootScope, $location, Auth) {
+  .run(function ($rootScope, $state, $location, $http, $compile, Auth, DSCacheFactory) {
+    // set HTTP defaults cache
+    DSCacheFactory('appHTTPCache', {
+        maxAge: 900000, // Items added to this cache expire after 15 minutes.
+        cacheFlushInterval: 3600000, // This cache will clear itself every hour.
+        deleteOnExpire: 'aggressive', // Items will be deleted from this cache right when they expire.
+        storageMode: 'localStorage' // This cache will sync itself with `localStorage`.
+    });
+    $http.defaults.cache = DSCacheFactory.get('appHTTPCache');
+
     // Redirect to login if route requires auth and you're not logged in
     $rootScope.$on('$stateChangeStart', function (event, next) {
+      // set state
+      $rootScope.$state = $state;
       Auth.isLoggedInAsync(function(loggedIn) {
         if (next.authenticate && !loggedIn) {
           $location.path('/login');

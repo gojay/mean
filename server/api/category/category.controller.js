@@ -24,15 +24,10 @@ exports.index = function(req, res) {
 
 // Get a single category
 exports.show = function(req, res) {
-  console.log('category',req.params.id);
-  Category.findOne({_id:req.params.id}, function(err, _category) {
+  Category.findById(req.params.id, function(err, _category) {
     if(err) { return handleError(res, err); }
-    _category.getAncestors({}, "_id", function (err, categories) {
-      var paths = categories.map(function(item){ 
-        return item._id; 
-      });
-      paths.push(req.params.id);
-      return res.json(paths);
+    _category.getChildren(function (err, categories) {
+      return res.json(categories);
     });
   });
 };

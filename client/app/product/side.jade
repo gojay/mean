@@ -1,0 +1,55 @@
+.margin-top-bottom.panel.panel-primary
+	.panel-heading Category
+	accordion(close-others="true")
+		accordion-group(ng-repeat="group in search.category.data" is-open="group.open")
+			accordion-heading
+				div(ng-click="searchByCategory(group, $event)")
+					span.pull-right.badge 15
+					i.fa(ng-class="{'fa-angle-down': group.open, 'fa-angle-right': !group.open}") &nbsp;
+					{{group.title}}
+					fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!group.open && group.loading", style="left:70%")
+			.list-group
+				a.list-group-item(href="#", ng-repeat="child in group.childs")
+					span.badge 3
+					//- i.fa.fa-angle-right &nbsp;
+					{{child}}
+	.panel-heading Filter	
+	.list-group 
+		.list-group-item.well.well-sm
+			h5 Brands
+				span(ng-if="search.brand.selection.length") &nbsp;({{search.brand.selection.length}})
+		.list-group-item
+			.form-group.has-feedback
+				input.form-control(type="text", placeholder="Search brand.." ng-model="search.brand.query")
+				i.form-control-feedback.fa.fa-search(style="top:0")
+			.checkbox(ng-repeat="brand in search.brand.data | filter:search.brand.query")
+				label(for="brand-{{$index}}")
+					input(type="checkbox", id="brand-{{$index}}" name="brands[]", value="brand.name", ng-model="brand.selected")
+					{{brand.name}}
+		.list-group-item.well.well-sm 
+			h5 Price
+		.list-group-item
+			.form-group
+				.row
+					.col-md-6.pull-left
+						label Minimum
+						.input-group
+							span.input-group-btn
+								button.btn.btn-sm.btn-info(ng-click="setPriceDown('min')")
+									i.fa.fa-minus
+							input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.min", step="{{search.price.options.step}}", min="{{search.price.options.min}}", max="{{search.price.selected.max}}")
+							span.input-group-btn
+								button.btn.btn-sm.btn-info(ng-click="setPriceUp('min')")
+									i.fa.fa-plus
+					.col-md-6.pull-right
+						label Maximum
+						.input-group
+							span.input-group-btn
+								button.btn.btn-sm.btn-info(ng-click="setPriceDown('max')")
+									i.fa.fa-minus
+							input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.max", step="{{search.price.options.step}}", min="{{search.price.selected.min}}", max="{{search.price.options.max}}")
+							span.input-group-btn
+								button.btn.btn-sm.btn-info(ng-click="setPriceUp('max')")
+									i.fa.fa-plus
+			.form-group
+				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}" ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max" translate="currencyFormatting")

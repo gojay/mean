@@ -40,7 +40,7 @@ describe('API products : ', function() {
 
   it.skip('should seed phones', function(done) {
     request(app)
-      .post('/api/seeds/phone')
+      .post('/api/seeds/products')
       .expect(201, done);
   });
 

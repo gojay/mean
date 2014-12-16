@@ -5,18 +5,25 @@ describe('Routes test', function() {
 	var $location, $state, $rootScope, productServiceMock;
 
   	beforeEach(module('exampleAppApp', function($provide) {
-  		$provide.value('productService', productServiceMock = {});
-		productServiceMock.all = jasmine.createSpy('all').andReturn(['All']);
-		productServiceMock.get = jasmine.createSpy('get').andReturn(['Detail']);
+		productServiceMock = {
+			query: angular.noop,
+			get: angular.noop
+		};
+		$provide.value('productService', productServiceMock);
   	}));
 
-	beforeEach(inject(function(_$location_, _$state_, _$rootScope_, $httpBackend, $templateCache) {
+	beforeEach(inject(function(_$location_, _$state_, _$rootScope_, $templateCache) {
 		$location = _$location_;
 		$state = _$state_;
 		$rootScope = _$rootScope_;
+
 		$templateCache.put('app/main/main.html', '');
-		$templateCache.put('app/product/list/phone.html', '');
-		$templateCache.put('app/product/view/phone.html', '');
+		$templateCache.put('app/product/index.html', '');
+		$templateCache.put('app/product/list/product.html', '');
+		$templateCache.put('app/product/detail/product.html', '');
+
+		spyOn(productServiceMock, 'query').andReturn({ $promise:'ProductsList' });
+		spyOn(productServiceMock, 'get').andReturn({ $promise:'ProductDetail' });
 	}));
 
 	it('should main page location is / and controller is MainCtrl', function() {
@@ -34,27 +41,31 @@ describe('Routes test', function() {
 	});
 
 	it('should location /products resolve products', inject(function($injector) {
-		expect($state.href('products')).toEqual('/products');
+		expect($state.href('products.category', {category:'phones'})).toEqual('/products/category/phones');
 
-		$state.go('products');
+		$state.go('products.category', {category:'phones'});
 		$rootScope.$digest();
-		expect($state.current.name).toEqual('products');
 
-		expect($injector.invoke($state.current.resolve.products)).toEqual(['All']);
+		expect($state.current.name).toEqual('products.category');
+		expect($state.current.controller).toBe('ProductsListCtrl');
+		expect(productServiceMock.query).toHaveBeenCalledWith({'criteria[category]':'phones'});
+		expect($injector.invoke($state.current.resolve.products)).toEqual('ProductsList');
 	}));
 
 	it('should location /products/:productId resolve product', inject(function($injector) {
-		expect($state.href('products.detail', {productId: 1})).toEqual('/products/detail/1');
+		expect($state.href('products.detail', {productId: 1})).toEqual('/products/1');
 
 		$state.go('products.detail', { productId:1 });
 		$rootScope.$digest();
-		expect($state.current.name).toEqual('products.detail');
 
-		expect($injector.invoke($state.current.resolve.product)).toEqual(['Detail']);
+		expect($state.current.name).toEqual('products.detail');
+		expect($state.current.controller).toBe('ProductsDetailCtrl');
+		expect(productServiceMock.get).toHaveBeenCalledWith({ id:1 });
+		expect($injector.invoke($state.current.resolve.product)).toEqual('ProductDetail');
 	}));
 
 	it('should redirect to the main page when state/location not exists', function() {
-		$location.path('/non-existent/route');
+		$location.path('/random/route');
 		$rootScope.$digest();
 		expect($location.path()).toBe('/');
 	});

@@ -1,0 +1,23 @@
+.row
+	.form-inline
+		.form-group.col-md-3
+			h2 Title
+		.form-group.col-md-4
+			.input-group
+				.input-group-btn.search-panel
+					div.btn-group.dropdown
+						button.btn.btn-default.dropdown-toggle(type="button")
+							| {{ title }}&nbsp;
+							span.caret
+						ul.dropdown-menu(role="menu")
+							li(ng-repeat-start="search in filters.search.data", ng-if="search.id == '$'").divider
+							li
+								a(ng-click="setFilterBy(search)") {{search.title}}
+							span(ng-repeat-end)
+				input.input-filter.form-control(type="text", placeholder="Enter {{ title }}...", ng-model="filters.search.query[filterBy]")
+		.form-group.col-md-5.text-right
+			label(for="filter-order", style="padding-right:10px") Order By
+			select#filter-order.form-control(ng-model="filters.order.by", ng-options="order.title group by order.group for order in filters.order.data")
+			.btn-group(style="padding-left:10px")
+				button.btn(type="button", ng-repeat="view in filters.view.data", ng-click="filters.view.selected = view.name", ng-class="{true:'btn-primary', false:'btn-default'}[filters.view.selected == view.name]", title="{{view.name}}")
+					i(class="{{view.className}}")

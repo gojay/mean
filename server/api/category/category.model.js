@@ -12,16 +12,19 @@ _.str = require('underscore.string');
 // Mix in non-conflict functions to Underscore namespace if you want
 _.mixin(_.str.exports());
 
-
-var setTitle = function(title) {
-    return _.slugify(title);
-};
 var CategorySchema = new Schema({
     _id: {
         type: String,
         trim: true,
         lowercase: true,
-        set: setTitle
+        set: function(id) { return _.slugify(id);
+        }
+    },
+    name: {
+      type: String,
+      set: function(name) {
+        return _.titleize(name);
+      }
     },
     count: {
       type: Number,

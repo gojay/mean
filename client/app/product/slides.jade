@@ -1,0 +1,8 @@
+
+div.carousel.slide.margin-bottom
+	carousel(interval="slides.interval")
+		slide(ng-repeat="slide in slides.data", active="slide.active")
+			img(ng-src="{{slide.image}}", spinkit-image-preloader="three-bounce-spinner" spinkit-image-preloader-class="spinner-wrapper-white")
+			div.carousel-caption
+				h4 {{slide.title}}
+				p {{slide.description}}

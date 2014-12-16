@@ -1,48 +1,220 @@
 .clear {
     margin: 20px 0;
 }
-
 /* media */
 
 .media {
     margin-top: 15px;
 }
-
 .media:first-child {
     margin-top: 0;
 }
-
-.media-right,
-.media > .pull-right {
+.media-right, .media > .pull-right {
     padding-left: 10px;
 }
-
-.media-left,
-.media > .pull-left {
+.media-left, .media > .pull-left {
     padding-right: 10px;
 }
-
-.media-left,
-.media-right,
-.media-body {
+.media-left, .media-right, .media-body {
     display: table-cell;
     vertical-align: top;
 }
-
 .media-middle {
     vertical-align: middle;
 }
-
 .media-bottom {
     vertical-align: bottom;
 }
-
 .media-heading {
     margin-top: 0;
     margin-bottom: 5px;
 }
-
 .media-list {
     padding-left: 0;
     list-style: none;
+}
+
+/* CUSTOMIZE THE CAROUSEL
+-------------------------------------------------- */
+
+.navbar {
+    margin-bottom: 0;
+}
+/* Carousel base class */
+
+.carousel {
+    height: 200px !important;
+    /*margin-bottom: 60px;*/
+}
+/* Since positioning the image, we need to help out the caption */
+
+.carousel-caption {
+    z-index: 10;
+}
+/* Declare heights because of positioning of img element */
+
+.carousel .item {
+    height: 200px;
+    background-color: #777;
+}
+.carousel-inner > .item > img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 200px;
+}
+/*.carousel-inner [class^="spinner-wrapper"] {
+    position: relative;
+    top: 120px;
+}*/
+
+#products h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* http://bootsnipp.com/snippets/featured/responsive-list-groups-for-ratings
+-------------------------------------------------- */
+
+section a.list-group-item {
+    height: auto;
+    min-height: 180px;
+}
+section a.list-group-item:hover small, a.list-group-item:hover .list-group-item-heading {
+    color: inherit;
+}
+section a.list-group-item:hover {
+    z-index: 2;
+    color: rgb(255, 255, 255);
+    background-color: rgb(66, 139, 202);
+    border-color: rgb(66, 139, 202);
+}
+section .stars {
+    margin: 20px auto 1px;
+}
+
+/* http://ironsummitmedia.github.io/startbootstrap-shop-homepage/
+-------------------------------------------------- */
+
+section .caption {
+    height: 130px;
+    overflow: hidden;
+}
+section .caption h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+section .thumbnail img {
+    width: 100%;
+}
+section .ratings {
+    padding-right: 10px;
+    padding-left: 10px;
+    color: #d17581;
+}
+section .thumbnail {
+    padding: 0;
+}
+#products .thumbnail .caption-full {
+    padding: 9px;
+    color: #333;
+}
+
+/* http://bootsnipp.com/snippets/featured/carousel-product-cart-slider
+-------------------------------------------------- */
+
+.col-item {
+    border: 1px solid #E1E1E1;
+    border-radius: 5px;
+    background: #FFF;
+}
+.col-item .photo img {
+    margin: 0 auto;
+    width: 100%;
+}
+.col-item .info {
+    padding: 10px;
+    border-radius: 0 0 5px 5px;
+    margin-top: 1px;
+}
+.col-item:hover .info {
+    background-color: #F5F5DC;
+}
+.col-item .price {
+    /*width: 50%;*/
+    
+    float: left;
+    margin-top: 5px;
+}
+.col-item .price h5 {
+    line-height: 20px;
+    margin: 0;
+}
+.price-text-color {
+    color: #219FD1;
+}
+.col-item .info .rating {
+    color: #777;
+}
+.col-item .rating {
+    /*width: 50%;*/
+    
+    float: left;
+    font-size: 17px;
+    text-align: right;
+    line-height: 52px;
+    margin-bottom: 10px;
+    height: 52px;
+}
+.col-item .separator {
+    border-top: 1px solid #E1E1E1;
+}
+.clear-left {
+    clear: left;
+}
+.col-item .separator p {
+    line-height: 20px;
+    margin-bottom: 0;
+    margin-top: 10px;
+    text-align: center;
+}
+.col-item .separator p i {
+    margin-right: 5px;
+}
+.col-item .btn-add {
+    width: 50%;
+    float: left;
+}
+.col-item .btn-add {
+    border-right: 1px solid #E1E1E1;
+}
+.col-item .btn-details {
+    width: 50%;
+    float: left;
+    padding-left: 10px;
+}
+
+/* Side
+-------------------------------------------------- */
+
+.panel .panel-heading:not(:first-child) {
+  border-radius: 0;
+}
+
+.list-group .list-group-item.well {
+  margin-bottom: 0;
+  border: 0;
+}
+
+.list-group .list-group-item h5 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* angular-slider */
+
+slider span.bubble {
+  top: -30px;
+  font-size: 1em;
 }

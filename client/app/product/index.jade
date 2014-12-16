@@ -1,0 +1,13 @@
+style
+	include product.css
+
+#products.container
+	.row
+		aside.col-md-3
+			div(ui-view="side")
+		section.col-md-9
+			div(ui-view="breadcrumb")
+			div(ui-view="slides")
+			//- div(ui-view="categories")
+			div(ui-view="filters")
+			<div ui-view="content" class="toggle"></div>

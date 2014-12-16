@@ -1,14 +1,14 @@
 'use strict';
 
-describe('Controller: PhoneListCtrl', function () {
+describe('Controller: ProductsListCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exampleAppApp'));
 
-  var PhoneListCtrl, scope, $httpBackend;
+  var ProductsListCtrl, scope;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function (_$httpBackend_, $controller, $rootScope) {
+  beforeEach(inject(function ($controller, $rootScope) {
     var products = [{
         "_id": "548093f0088353a02b7646fb",
         "image": "/images/phones/original_motorola-charm-with-motoblur.2.jpg",
@@ -27,10 +27,8 @@ describe('Controller: PhoneListCtrl', function () {
         "slug": "t-mobile-g2",
         "title": "T-Mobile G2"
     }];
-    // $httpBackend = _$httpBackend_;
-    // $httpBackend.expectGET('/api/products').respond(products);
     scope = $rootScope.$new();
-    PhoneListCtrl = $controller('PhoneListCtrl', {
+    ProductsListCtrl = $controller('ProductsListCtrl', {
       $scope: scope,
       products: products
     });
@@ -38,8 +36,8 @@ describe('Controller: PhoneListCtrl', function () {
 
   it('should get array products fetched from xhr', function () {
     // $httpBackend.flush();
-    expect(scope.phones).toEqual(jasmine.any(Array));
-    expect(scope.phones.length).toBe(2);
+    expect(scope.products).toEqual(jasmine.any(Array));
+    expect(scope.products.length).toBe(2);
     expect(scope.orderProp).toEqual('createdAt');
   });
 });

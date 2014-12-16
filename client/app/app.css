@@ -37,3 +37,310 @@
     color: #000;
     padding: 0.2em 0;
 }
+
+/* helpers */
+
+.prefix {
+    padding-left: 0;
+}
+.afix {
+    padding-right: 0;
+}
+
+.border-radius-none {
+    border-radius: 0;
+}
+
+.border-top-left-radius-none {
+    border-top-left-radius: 0;
+}
+.border-bottom-left-radius-none {
+    border-top-left-radius: 0;
+}
+.border-top-right-radius-none {
+    border-top-right-radius: 0;
+}
+.border-bottom-right-radius-none {
+    border-top-right-radius: 0;
+}
+
+.margin-top {
+    margin-top: 15px;
+}
+.margin-bottom {
+    margin-bottom: 15px;
+}
+.margin-top-bottom {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.margin-top-md {
+    margin-top: 40px;
+}
+.margin-bottom-md {
+    margin-bottom: 40px;
+}
+.margin-top-bottom-md {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+
+.margin-top-lg {
+    margin-top: 60px;
+}
+.margin-bottom-lg {
+    margin-bottom: 60px;
+}
+.margin-top-bottom-lg {
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+/* spinnerkit */
+
+div[class^="spinner-wrapper"] {
+    width: auto !important;
+}
+.spinner-inline {
+    position: absolute;
+    left: 45%;
+}
+.spinner-inline [class$="spinner"] {
+    margin: 0 auto;
+}
+.spinner-sm [class$="spinner"] {
+    width: 16px;
+    height: 16px;
+}
+.spinner-wrapper-white .three-dots-row-spinner,
+.spinner-wrapper-white .double-bounce-spinner > div,
+.spinner-wrapper-white .wave-spinner > div,
+.spinner-wrapper-white .wandering-cubes-spinner:after, 
+.spinner-wrapper-white .wandering-cubes-spinner:before,
+.spinner-wrapper-white .pulse-spinner,
+.spinner-wrapper-white .chasing-dots-spinner > div,
+.spinner-wrapper-white .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-white .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-white .cube-grid-spinner > div,
+.spinner-wrapper-white .word-press-spinner,
+.spinner-wrapper-white .fading-circle:before {
+    background-color: #fff;
+}
+.spinner-wrapper-primary .three-dots-row-spinner,
+.spinner-wrapper-primary .double-bounce-spinner > div,
+.spinner-wrapper-primary .wave-spinner > div,
+.spinner-wrapper-primary .wandering-cubes-spinner:after, 
+.spinner-wrapper-primary .wandering-cubes-spinner:before,
+.spinner-wrapper-primary .pulse-spinner,
+.spinner-wrapper-primary .chasing-dots-spinner > div,
+.spinner-wrapper-primary .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-primary .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-primary .cube-grid-spinner > div,
+.spinner-wrapper-primary .word-press-spinner,
+.spinner-wrapper-primary .fading-circle:before {
+    background-color: #3071a9;
+}
+.spinner-wrapper-success .three-dots-row-spinner,
+.spinner-wrapper-success .double-bounce-spinner > div,
+.spinner-wrapper-success .wave-spinner > div,
+.spinner-wrapper-success .wandering-cubes-spinner:after, 
+.spinner-wrapper-success .wandering-cubes-spinner:before,
+.spinner-wrapper-success .pulse-spinner,
+.spinner-wrapper-success .chasing-dots-spinner > div,
+.spinner-wrapper-success .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-success .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-success .cube-grid-spinner > div,
+.spinner-wrapper-success .word-press-spinner,
+.spinner-wrapper-success .fading-circle:before {
+    background-color: #c1e2b3;
+}
+.spinner-wrapper-info .three-dots-row-spinner,
+.spinner-wrapper-info .double-bounce-spinner > div,
+.spinner-wrapper-info .wave-spinner > div,
+.spinner-wrapper-info .wandering-cubes-spinner:after, 
+.spinner-wrapper-info .wandering-cubes-spinner:before,
+.spinner-wrapper-info .pulse-spinner,
+.spinner-wrapper-info .chasing-dots-spinner > div,
+.spinner-wrapper-info .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-info .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-info .cube-grid-spinner > div,
+.spinner-wrapper-info .word-press-spinner,
+.spinner-wrapper-info .fading-circle:before {
+    background-color: #afd9ee;
+}
+.spinner-wrapper-warning .three-dots-row-spinner,
+.spinner-wrapper-warning .double-bounce-spinner > div,
+.spinner-wrapper-warning .wave-spinner > div,
+.spinner-wrapper-warning .wandering-cubes-spinner:after, 
+.spinner-wrapper-warning .wandering-cubes-spinner:before,
+.spinner-wrapper-warning .pulse-spinner,
+.spinner-wrapper-warning .chasing-dots-spinner > div,
+.spinner-wrapper-warning .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-warning .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-warning .cube-grid-spinner > div,
+.spinner-wrapper-warning .word-press-spinner,
+.spinner-wrapper-warning .fading-circle:before {
+    background-color: #f7ecb5;
+}
+.spinner-wrapper-danger .three-dots-row-spinner,
+.spinner-wrapper-danger .double-bounce-spinner > div,
+.spinner-wrapper-danger .wave-spinner > div,
+.spinner-wrapper-danger .wandering-cubes-spinner:after, 
+.spinner-wrapper-danger .wandering-cubes-spinner:before,
+.spinner-wrapper-danger .pulse-spinner,
+.spinner-wrapper-danger .chasing-dots-spinner > div,
+.spinner-wrapper-danger .spinning-dots-spinner [class^="circle"],
+.spinner-wrapper-danger .three-bounce-spinner [class^="bounce"],
+.spinner-wrapper-danger .cube-grid-spinner > div,
+.spinner-wrapper-danger .word-press-spinner,
+.spinner-wrapper-danger .fading-circle:before {
+    background-color: #e4b9b9;
+}
+
+/* breadcrumbs */
+
+/*.btn-breadcrumb > .btn:first-child:not(:last-child),
+.btn-breadcrumb > .btn:last-child:not(:first-child){
+    border-radius: 0;
+}*/
+
+/* Breadcrumbs from http://bootsnipp.com/snippets/featured/triangle-breadcrumbs-arrows */
+.btn-breadcrumb .btn:not(:last-child):after {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 17px solid transparent;
+  border-bottom: 17px solid transparent;
+  border-left: 10px solid white;
+  position: absolute;
+  top: 50%;
+  margin-top: -17px;
+  left: 100%;
+  z-index: 3;
+}
+.btn-breadcrumb .btn:not(:last-child):before {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 17px solid transparent;
+  border-bottom: 17px solid transparent;
+  border-left: 10px solid rgb(173, 173, 173);
+  position: absolute;
+  top: 50%;
+  margin-top: -17px;
+  margin-left: 1px;
+  left: 100%;
+  z-index: 3;
+}
+
+.btn-breadcrumb .btn {
+  padding:6px 12px 6px 24px;
+}
+.btn-breadcrumb .btn:first-child {
+  padding:6px 6px 6px 10px;
+}
+.btn-breadcrumb .btn:last-child {
+  padding:6px 18px 6px 24px;
+}
+
+/** Default button **/
+.btn-breadcrumb .btn.btn-default:not(:last-child):after {
+  border-left: 10px solid #fff;
+}
+.btn-breadcrumb .btn.btn-default:not(:last-child):before {
+  border-left: 10px solid #ccc;
+}
+.btn-breadcrumb .btn.btn-default:hover:not(:last-child):after {
+  border-left: 10px solid #ebebeb;
+}
+.btn-breadcrumb .btn.btn-default:hover:not(:last-child):before {
+  border-left: 10px solid #adadad;
+}
+
+/* The responsive part */
+
+.btn-breadcrumb > * > div {
+    /* With less: .text-overflow(); */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;    
+}
+
+.btn-breadcrumb > *:nth-child(n+2) {
+  display:none;
+}
+
+/* === For phones =================================== */
+@media (max-width: 767px) {
+    .btn-breadcrumb > *:nth-last-child(-n+2) {
+        display:block;
+    } 
+    .btn-breadcrumb > * div {
+        max-width: 60px;
+    }
+}
+
+/* === For tablets ================================== */
+@media (min-width: 768px) and (max-width:991px) {
+    .btn-breadcrumb > *:nth-last-child(-n+4) {
+        display:block;
+    } 
+    .btn-breadcrumb > * div {
+        max-width: 100px;
+    }
+}
+
+/* === For desktops ================================== */
+@media (min-width: 992px) {
+    .btn-breadcrumb > *:nth-last-child(-n+6) {
+        display:block;
+    } 
+    .btn-breadcrumb > * div {
+        max-width: 170px;
+    }
+}
+
+aside .panel-group .panel + .panel {
+    margin-top: 0;
+}
+aside .panel-group {
+    margin-bottom: 0;
+}
+aside .panel-group .panel {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+}
+aside .panel-group .panel:not(:last-child) {
+    border-radius: 0;
+}
+aside .panel-group .panel:last-child {
+    border-bottom: 0;
+}
+aside .panel-default > .panel-heading {
+    background-color: transparent;
+}
+
+aside .panel-group .panel-body {
+    padding: 0;
+}
+aside .panel-group .panel-body .list-group {
+    margin-bottom: 0;
+}
+aside .panel-group .panel-body .list-group-item {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    background-color: #f5f5f5;
+}
+aside .panel-group .panel-body .list-group-item:first-child {
+    border-top: 0;
+}
+

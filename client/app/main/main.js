@@ -6,6 +6,9 @@ angular.module('exampleAppApp')
       .state('main', {
         url: '/',
         templateUrl: 'app/main/main.html',
-        controller: 'MainCtrl'
+        controller: 'MainCtrl',
+        data: {
+        	title: 'Home'
+        }
       });
   });

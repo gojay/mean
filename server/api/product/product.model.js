@@ -44,22 +44,25 @@ var ProductSchema = new Schema({
         lowercase: true,
         default: ''
     },
-  	body: String,
+    body: String,
+  	brand: String,
   	image: String,
-    tags: {
-        type: [],
-        set: setTags
+    price: {
+        type: Number,
+        default: 0
     },
-    comments: [{
+    stock: Number,
+    reviews: [{
+        user: {
+            type: Schema.ObjectId,
+            ref: 'User'
+        },
         body: {
             type: String,
             default: '',
             required: 'Comment cannot be blank'
         },
-        user: {
-            type: Schema.ObjectId,
-            ref: 'User'
-        },
+        rate: Number,
         createdAt: {
             type: Date,
             default: Date.now
@@ -121,7 +124,7 @@ ProductSchema.pre('save', function(next) {
             var oldImages = original && original.meta && _.has(original.meta, 'images') ? original.meta.images : {} ;
             var newImages = self.meta && _.has(self.meta, 'images') ? self.meta.images : {} ;
 
-            console.log('pre:save:images', oldImages, newImages);
+            // console.log('pre:save:images', oldImages, newImages);
 
             var imagesChanged = _.isEmpty(oldImages) || _.isEmpty(newImages) ? false : _.difference(oldImages.files, newImages.files).length > 0 ; 
             // is new / update : unchanged image
@@ -157,7 +160,7 @@ ProductSchema.pre('save', function(next) {
     // optional callback
     function(err, results){
         if (err) return next(err);
-        console.log('pre:save', results);
+        // console.log('pre:save', results);
         next();
     });
 });
@@ -289,7 +292,7 @@ ProductSchema.methods = {
     },
 
     addComment: function(user, comment, cb) {
-        this.comments.push({
+        this.reviews.push({
             body: comment.body,
             user: user._id
         });
@@ -300,11 +303,11 @@ ProductSchema.methods = {
     },
 
     removeComment: function(commentId, cb) {
-        var index = _.indexOf(this.comments, {
+        var index = _.indexOf(this.reviews, {
             id: commentId
         });
         if (index) {
-            this.comments.splice(index, 1);
+            this.reviews.splice(index, 1);
         } else {
             return cb('not found');
         }
@@ -320,24 +323,24 @@ var ObjectId = require('mongoose').Types.ObjectId;
 ProductSchema.statics = {
 
     /**
-     * order comments
+     * order reviews
      *
       db.blogs.aggregate([
       {$match: {_id: new ObjectId("545353b7213c9a101a7ed4f1")}},
-      {$unwind: "$comments"},
-      {$sort: {"comments.createdAt":-1}},
+      {$unwind: "$reviews"},
+      {$sort: {"reviews.createdAt":-1}},
       {$limit: 2},
-      {$group: {_id:"$_id", comments: {$push:"$comments"}}}
+      {$group: {_id:"$_id", reviews: {$push:"$reviews"}}}
       ]);
      *
      */
 
-    getComments: function(id, options, done) {
+    getreviews: function(id, options, done) {
         var options = _.extend({
             page: 1,
             perPage: 5,
             sort: {
-                "comments.createdAt": -1
+                "reviews.createdAt": -1
             }
         }, options);
 
@@ -348,7 +351,7 @@ ProductSchema.statics = {
         {
             $match: { _id: ObjectId(id) }
         }, {
-            $unwind: "$comments"
+            $unwind: "$reviews"
         }, {
             $sort: options.sort
         }, {
@@ -358,8 +361,8 @@ ProductSchema.statics = {
         }, {
             $group: {
                 _id: "$_id",
-                comments: {
-                    $push: "$comments"
+                reviews: {
+                    $push: "$reviews"
                 }
             }
         }], done);
@@ -425,34 +428,187 @@ ProductSchema.statics = {
             $sort: {
                 count: -1
             }
-        }, ], done);
+        }], done);
     },
 
     load: function(id, done) {
-        var skip = 0,
-            limit = 5;
-        var query = {
-            _id: id
-        };
+        var skip = 0, limit = 5;
+        var query = { _id: id };
         var projection = {
-            comments: {
+            reviews: {
                 $slice: [skip, limit]
             }
         };
-        this.findOne(query, projection)
-            .populate('comments.user', 'name email')
+
+        this.findById(id, projection)
+            // .populate('reviews.user', 'name email')
             .exec(done);
     },
 
     list: function(options, done) {
-        var criteria = options.criteria || {};
+        var self = this;
 
-        this.find(criteria)
-            .select('-comments, -meta')
-            .sort('-createdAt')
-            .limit(options.perPage)
-            .skip(options.perPage * options.page)
-            .exec(done);
+        var match = options.match;
+        if( match && match.category ) {
+            return Category.getPathDescendants(match.category, function(err, data) {
+                if(err) return done(err);
+                var categories = (data.length > 0) ? data : match.category ;
+                options.match.category = { $in: categories };
+                return self.populate(options, done);
+            });
+        } 
+
+        self.populate(options, done);
+    },
+
+    /**
+     * 
+    db.products.aggregate([
+        {
+            $match:
+            {
+                'category':
+                {
+                    $in: ['motorola']
+                },
+                'title': /^moto/i
+            }
+        },
+        {
+            $unwind: "$reviews"
+        },
+        {
+            $group:
+            {
+                _id: "$_id",
+                title: { $first: '$title' },
+                body: { $first: '$title' },
+                price: { $first: '$price' },
+                stock: { $first: '$stock' },
+                rate:
+                {
+                    $sum: "$reviews.rate"
+                },
+                review:
+                {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $project:
+            {
+                _id: 1,
+                title: 1,
+                price: 1,
+                stock: 1,
+                rating: { 
+                    $divide: [
+                        {
+                            $subtract: [
+                            {
+                                $multiply: [
+                                {
+                                    $divide: ['$rate', '$review']
+                                }, 100]
+                            },
+                            {
+                                $mod: [
+                                    {
+                                        $multiply: [
+                                        {
+                                            $divide: ['$rate', '$review']
+                                        }, 100]
+                                    },
+                                    1
+                                ]
+                            }]
+                        },
+                        100
+                    ] 
+                }
+            }
+        },
+        {
+            $sort:
+            {
+                data: 1,
+                rates: -1
+            }
+        }
+        //{ $skip: 4 } // skip = page * limit
+        //{ $limit: 6 }, // skip + limit
+    ]);
+     */
+    populate: function(options, done) {
+        var aggregate = [];
+
+        // $unwind
+        aggregate.push({ $unwind: "$reviews" });
+
+        // $match
+        if( options.match ) {
+            aggregate.push({ $match: options.match });
+        }
+
+        // $group
+        var fields = {};
+        _.forEach(options.select, function(value, k) { fields[k] = { $first: value } });
+        fields = _.merge(fields, {
+            rate: {
+                $sum: "$reviews.rate"
+            },
+            review: {
+                $sum: 1
+            }
+        });
+        var group = _.merge({ _id: '$_id' }, fields);
+
+        aggregate.push({ $group: group });
+
+        // $project
+        var fields = {};
+        _.forEach(options.select, function(value, k) { fields[k] = 1 });
+        var projection = _.merge({
+            _id: 1,
+            rating: {
+                //$divide: ['$rate', '$review']
+                $divide: [{
+                        $subtract: [{
+                            $multiply: [{
+                                $divide: ['$rate', '$review']
+                            }, 100]
+                        }, {
+                            $mod: [{
+                                    $multiply: [{
+                                        $divide: ['$rate', '$review']
+                                    }, 100]
+                                },
+                                1
+                            ]
+                        }]
+                    },
+                    100
+                ]
+
+            },
+            review: 1
+        }, fields);
+        aggregate.push({ $project: projection });
+
+        // $sort
+        if( options.sort ) {
+            aggregate.push({ $sort: options.sort });
+        }
+
+        // $skip
+        aggregate.push({ $skip: options.skip });
+        // $limit
+        aggregate.push({ $limit: options.limit });
+
+        // done(null, aggregate);
+
+        this.aggregate(aggregate, done);
     }
 };
 
