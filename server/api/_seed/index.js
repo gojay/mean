@@ -19,6 +19,8 @@ _.mixin(_.str.exports());
 var config = require('../../config/environment');
 var fs = require('fs');
 
+var phonesDir = 'assets/data/phones';
+
 var api_key = 'SEM3CD98EEC1BC2D8AC45C093BD923966239';
 var api_secret = 'NzQwZGQ5NzBlOTAyNGI5MWEzMGI2MGVjZDBmZDUwMjA';
 var sem3 = require('semantics3-node')(api_key,api_secret);
@@ -29,7 +31,8 @@ var semantics = [
         fields: ["name", "description", "price", "brand", "color", "operatingsystem", "manufacturer", "images", "weight", "length", "width", "height", "size", "features", "created_at"],
         childs: [{
             id: 12181,
-            name: 'Phones'
+            name: 'Phones',
+            range: 5
         }, {
             id: 19299,
             name: 'Tablets',
@@ -67,57 +70,113 @@ function getCategoryName(phone) {
 }
 
 function populateCategory(q, done) {
-    var queues = {
-        blog: function(callback) {
-            console.info('seed category blog...');
+    var productCategory;
 
-            var programming = new Category({ _id: 'programming'});
-            programming.save(function(){
-                async.parallel([
-                    function (_callback) {
-                        var childs = ['php', 'javascript', 'ruby'];
-                        var languages = new Category({ _id: 'languages'});
-                        languages.parent = programming;
-                        languages.save(function(){
-                            async.each(childs, function(id, __callback) {
-                                var category = new Category({ _id:id });
-                                category.parent = languages;
-                                category.save();
-                                __callback();
-                            }, function(err) {
-                                _callback(err, 'The categories of child language have been saved');
-                            });
-                        });
-                    },
-                    function (_callback) {
-                        var childs = ['MongoDB', 'MySQL', 'Oracle'];
-                        var databases = new Category({ _id: 'databases'});
-                        databases.parent = programming;
-                        databases.save(function(){
-                            async.each(childs, function(id, __callback) {
-                                var category = new Category({ _id:id });
-                                category.parent = databases;
-                                category.save();
-                                __callback();
-                            }, function(err) {
-                                _callback(err, 'The categories of child database have been saved');
-                            });
-                        });
-                    }
-                ], function(err, results) {
-                    callback(err, results);
-                });
-            });
-        },
-        phone: function(callback) {
+    var queues = {
+        // blog: function(callback) {
+        //     console.info('seed category blog...');
+
+        //     var programming = new Category({ _id: 'programming'});
+        //     programming.save(function(){
+        //         async.parallel([
+        //             function (_callback) {
+        //                 var childs = ['php', 'javascript', 'ruby'];
+        //                 var languages = new Category({ _id: 'languages'});
+        //                 languages.parent = programming;
+        //                 languages.save(function(){
+        //                     async.each(childs, function(id, __callback) {
+        //                         var category = new Category({ _id:id });
+        //                         category.parent = languages;
+        //                         category.save();
+        //                         __callback();
+        //                     }, function(err) {
+        //                         _callback(err, 'The categories of child language have been saved');
+        //                     });
+        //                 });
+        //             },
+        //             function (_callback) {
+        //                 var childs = ['MongoDB', 'MySQL', 'Oracle'];
+        //                 var databases = new Category({ _id: 'databases'});
+        //                 databases.parent = programming;
+        //                 databases.save(function(){
+        //                     async.each(childs, function(id, __callback) {
+        //                         var category = new Category({ _id:id });
+        //                         category.parent = databases;
+        //                         category.save();
+        //                         __callback();
+        //                     }, function(err) {
+        //                         _callback(err, 'The categories of child database have been saved');
+        //                     });
+        //                 });
+        //             }
+        //         ], function(err, results) {
+        //             callback(err, results);
+        //         });
+        //     });
+        // },
+        product: function(done) {
             console.info('seed category product...');
+            async.waterfall([
+                function(callback) {
+                    var cats = [], childs = [];
+
+                    var q = async.queue(function (category, callback) {
+                        var parent = new Category({ _id:category.name, name:category.name, parent:'products' });
+                        parent.save(function(err) {
+                            childs.push(_.map(category.childs, function(cat) {
+                                return _.assign(cat, {
+                                    parent: parent._id,
+                                    meta: category.meta,
+                                    fields: category.fields,
+                                });
+                            }));
+                            callback();
+                        });
+                    });
+
+                    // assign a callback
+                    q.drain = function() {
+                        console.log('all items have been processed');
+                        callback(null, childs);
+                    };
+
+                    _.forEach(semantics, function(item) {
+                        q.push(item);
+                    });
+                },
+                function(childs, callback) {
+                    var categories = [];
+
+                    var q = async.queue(function (task, callback) {
+                        var category = new Category({ _id:task.name, name:task.name, parent:task.parent });
+                        category.save(function(err, cat) {
+                            task._id = cat._id;
+                            categories.push(task);
+                            callback();
+                        });
+                    });
+
+                    // assign a callback
+                    q.drain = function() {
+                        console.log('all items have been processed');
+                        callback(null, categories);
+                    };
+
+                    _.forEach(childs, function(item) {
+                        q.push(item);
+                    });
+                }
+            ], done);
+        },
+        android: function(callback) {
+            console.info('seed category android...');
 
             var _phones_ = [];
             async.waterfall([
                 function(_callback) {
                     console.info('getting phones from json...');
 
-                    fs.readFile(config.root + '/assets/data/phones.json', 'utf8', function (err, data) {
+                    fs.readFile(config.root + '/'+ phonesDir + '/phones.json', 'utf8', function (err, data) {
                         if (err) return _callback(err);
 
                         var phones = JSON.parse(data);
@@ -128,7 +187,7 @@ function populateCategory(q, done) {
                             _categories.push(category);
                             // set phone category
                             // phone.category = category;
-                            phone.category = 'phones';
+                            phone.category = 'android';
                             phone.brand = _.titleize(category);
                             _phones_.push(phone);
                             __callback();
@@ -141,15 +200,21 @@ function populateCategory(q, done) {
                 function(categories, _callback){
                     console.info('saving phone categories...');
 
-                    var products = new Category({ _id: 'products'});
-                    var mobile   = new Category({ _id: 'mobile'});
-                    var phones   = new Category({ _id: 'phones'});
-                    products.save(function() {
-                        mobile.parent = products;
+                    var android = new Category({ _id: 'android', name: 'Android'});
+                    Category.findOne({ _id: /mobile/i }, function(err, mobile) {
+                        if(mobile) {
+                            android.parent = mobile;
+                            android.save(function() {
+                                return _callback(null, 'completed');
+                            });
+                        }
+
+                        var mobile = new Category({ _id: 'Mobile phones', name: 'Mobile phones', parent: 'products'});
+                        // mobile.parent = products;
                         mobile.save(function() {
-                            phones.parent = products;
-                            phones.save();
-                            _callback(err, 'completed');
+                            android.parent = mobile;
+                            android.save(_callback);
+                            _callback(null, 'completed');
                         })
 
                         // phones.parent = products;
@@ -163,84 +228,28 @@ function populateCategory(q, done) {
                         //         _callback(err, 'completed');
                         //     });
                         // });
-                    });
+                    })
                 },
             ], function (err, result) {
                 callback(err, _phones_);
             });
-        },
-        product: function(done) {
-            var root = new Category({ _id: 'products', name: 'products' });
-            root.save(function() {
-
-                async.waterfall([
-                    function(callback) {
-                        var cats = [], childs = [];
-
-                        var q = async.queue(function (category, callback) {
-                            var parent = new Category({ _id:category.name, name:category.name, parent:root });
-                            parent.save(function(err) {
-                                childs.push(_.map(category.childs, function(cat) {
-                                    return _.assign(cat, {
-                                        parent: parent._id,
-                                        meta: category.meta,
-                                        fields: category.fields,
-                                    });
-                                }));
-                                callback();
-                            });
-                        });
-
-                        // assign a callback
-                        q.drain = function() {
-                            console.log('all items have been processed');
-                            callback(null, childs);
-                        };
-
-                        _.forEach(semantics, function(item) {
-                            q.push(item);
-                        });
-                    },
-                    function(childs, callback) {
-                        var categories = [];
-
-                        var q = async.queue(function (task, callback) {
-                            var category = new Category({ _id:task.name, name:task.name, parent:task.parent });
-                            category.save(function(err, cat) {
-                                task._id = cat._id;
-                                categories.push(task);
-                                callback();
-                            });
-                        });
-
-                        // assign a callback
-                        q.drain = function() {
-                            console.log('all items have been processed');
-                            callback(null, categories);
-                        };
-
-                        _.forEach(childs, function(item) {
-                            q.push(item);
-                        });
-                    }
-                ], done);
-            });
         }
     };
 
-    var func = {};
+    var series = {};
     if(q && _.has(queues, q)) {
-        func[q] = queues[q];
+        series[q] = queues[q];
     } else {
-        func = queues;
+        series = queues;
     }
 
     Category.remove(function (err) {
-        async.series(func, function(err, results) {
-            if(q && _.has(results, q)) {
-                return done(err, results[q]);
-            }
-            return done(err, results);
+        productCategory = new Category({ _id: 'products', name: 'products' });
+        productCategory.save(function() {
+            async.series(series, function(err, results) {
+                if(q) return done(err, results[q]);
+                return done(err, results);
+            });
         });
     });
 }
@@ -279,11 +288,11 @@ function populateUser(maximum, done) {
             });
         } else {
             console.info('populate:user:get...');
-            User.find({ role:{ $nin:['admin'] }}, '_id', function(err, users) {
-                var results = _.map(users, function(user) {
-                    return user._id;
-                });
-                done(err, results);
+            User.find({ role:{ $nin:['admin'] }}, /*'_id', */function(err, users) {
+                // var results = _.map(users, function(user) {
+                //     return user._id;
+                // });
+                done(err, users);
             });
         }
     });
@@ -301,7 +310,7 @@ router.post('/category/:name', function(req, res) {
         res.json(201, categories);
     });
 });
-
+/*
 router.post('/blogs/:count', function(req, res) {
     var until = req.params.count;
     var minimum = 1,
@@ -372,10 +381,11 @@ router.post('/blogs/:count', function(req, res) {
         });
     });
 });
-
-router.post('/phones', function(req, res) {
+*/
+router.post('/android', function(req, res) {
     var minimum = 1,
-        maximum = 10;
+        maximum = 20;
+
      async.waterfall([
         // create users
         function(callback) {
@@ -383,13 +393,13 @@ router.post('/phones', function(req, res) {
         },
         // create phone categories
         function(users, callback) {
-            populateCategory('phone', function(_err, _res) {
+            populateCategory('android', function(_err, phones) {
                 if(_err) return callback(err);
-                callback(_err, users, _res.product);
+                callback(_err, users, phones);
             });
         },
-        // create products
-        function(users, products, callback) {
+        // create phones
+        function(users, phones, callback) {
 
             console.info('saving phones...\n-----------\n');
 
@@ -397,12 +407,17 @@ router.post('/phones', function(req, res) {
                 console.info('\n-----------\n');
                 console.info('queue : %s', phone.name);
 
-                var jsonFile = _.sprintf('%s/assets/data/%s.json', config.root, phone.id);
+                var jsonFile = _.sprintf('%s/%s/%s.json', config.root, phonesDir, phone.id);
                 fs.readFile(jsonFile, 'utf8', function (err, data) {
                     if(err) return callback(err);
 
                     // meta
                     var meta = JSON.parse(data);
+
+                    meta.camera.primary = parseFloat(meta.camera.primary);
+                    meta.display.screenSize = parseFloat(meta.display.screenSize);
+                    meta.storage.flash = parseFloat(meta.storage.flash);
+                    meta.storage.ram = parseFloat(meta.storage.ram);
             
                     // create fake reviews
                     var reviews = [];
@@ -416,9 +431,9 @@ router.post('/phones', function(req, res) {
                     }
 
                     // images
-                    var images = _.map(meta.images, function(image) {
-                        return config.root + '/' + image.replace('img', 'assets');
-                    });
+                    // var images = _.map(meta.images, function(image) {
+                    //     return config.root + '/' + image.replace('img', 'assets');
+                    // });
 
                     // save product
                     var product = new Product();
@@ -426,24 +441,28 @@ router.post('/phones', function(req, res) {
                     product.title = phone.name;
                     product.slug = phone.id;
                     product.body = phone.snippet;
+                    product.brand = phone.brand;
                     product.price = faker.finance.amount();
                     product.stock = _.random(1,99);
                     product.reviews = reviews;
                     product.meta = meta;
                     product.createdAt = faker.date.between('Jan 1, 2014', 'Nov 23, 2014');
-                    product.uploadAndSave(images, function(err, product) {
-                        if(err) return callback(err);
-                        callback();
-                    });
+                    product.save(callback);
+
+                    // product.uploadAndSave(images, function(err, product) {
+                    //     if(err) return callback(err);
+                    //     callback();
+                    // });
                 });
             });
 
             q.drain = function() {
                 console.log('all items have been processed');
+                return callback();
             };
                 
             Product.remove(function() {
-                _.forEach(products, function(phone) {
+                _.forEach(phones, function(phone) {
                     // add phone to the queue
                     q.push(phone, function (err) {
                         if(err) {
@@ -461,7 +480,7 @@ router.post('/phones', function(req, res) {
     });
 });
 
-router.get('/products', function(req, res) {
+router.post('/products', function(req, res) {
     var maximum = 20;
 
     console.log('seed products by semantics..');
@@ -499,7 +518,6 @@ router.get('/products', function(req, res) {
         };
 
         Product.remove(function() {
-            // add some items to the queue
             _.forEach(categories, function(childs){
                 q.push(childs, function (err, result) {
                     if (err) {
@@ -509,9 +527,141 @@ router.get('/products', function(req, res) {
                     results.push(result);
                 });
             });
-            
         });
 
+    });
+});
+
+router.post('/all', function(req, res) {
+    var maximum = 20;
+    
+    Product.remove(function() {
+        async.auto({
+            users: function(callback) {
+                console.log('[all:users] creating...');
+                populateUser(maximum, callback);
+            },
+            categories: function(callback) {
+                console.log('[all:categories] creating...');
+                populateCategory(null, callback);
+            },
+            semantics: ['users', 'categories', function(callback, results) {
+                var users = results.users,
+                    categories = results.categories.product;
+
+                console.log('[all:semantics] populate from semantics...');
+
+                var results = [];
+            
+                // get semantics
+                var q = async.queue(function (category, _callback) {
+                    console.info('\n---------------- %s ------------\n', category.name);
+                    console.log('[queue]', category.name);
+                    populateFromSemantic(category, users, _callback);
+                });
+
+                q.drain = function() {
+                    console.log('[all:semantics] all items have been processed');
+                    callback(null, 'semantics:completed');
+                };
+
+                _.forEach(categories, function(childs){
+                    q.push(childs, function (err, result) {
+                        if (err) {
+                            return callback({ message: "Error:semantic product category " + childs.name, error: err });
+                        }   
+                        console.log('[%s] finished get semantic product (%d)', childs.name, result.count);
+                        results.push(result);
+                    });
+                });
+            }],
+            android: ['semantics', function(callback, results) {
+                var users = results.users,
+                    phones = results.categories.android;
+
+                var createReview = function(id, _callback) {
+                    _callback(null, {
+                        user: users[_.random(10)],
+                        body: faker.lorem.paragraph(),
+                        rate: _.random(1, 5),
+                        createdAt: faker.date.between('Jan 1, 2014', 'Nov 23, 2014')
+                    });
+                }
+
+                console.log('[all:android] populate phones...');
+
+                var q = async.queue(function (phone, _callback) {
+                    console.info('\n---------------- %s ------------\n', phone.name);
+                    console.log('[queue]', phone.name);
+
+                    var jsonFile = _.sprintf('%s/%s/%s.json', config.root, phonesDir, phone.id);
+                    fs.readFile(jsonFile, 'utf8', function (err, data) {
+                        if(err) return _callback(err);
+
+                        // meta
+                        var meta = JSON.parse(data);
+
+                        meta.camera.primary = parseFloat(meta.camera.primary);
+                        meta.display.screenSize = parseFloat(meta.display.screenSize);
+                        meta.storage.flash = parseFloat(meta.storage.flash);
+                        meta.storage.ram = parseFloat(meta.storage.ram);
+
+                        // generate reviews
+                        async.times(_.random(1, 10), function(n, next) {
+                            createReview(n, function(err, review) {
+                              next(err, review)
+                            });
+                        }, function(err, reviews) {  
+
+                            // images
+                            // var images = _.map(meta.images, function(image) {
+                            //     return config.root + '/' + image.replace('img', 'assets');
+                            // });
+
+                            // save product
+                            var product = new Product();
+                            product.category = phone.category;
+                            product.title = phone.name;
+                            product.slug = phone.id;
+                            product.body = phone.snippet;
+                            product.brand = phone.brand;
+                            product.price = faker.finance.amount();
+                            product.stock = _.random(1,99);
+                            product.reviews = reviews;
+                            product.meta = meta;
+                            product.createdAt = faker.date.between('Jan 1, 2014', 'Nov 23, 2014');
+                            product.save(_callback);
+
+                            // product.uploadAndSave(images, function(err, product) {
+                            //     if(err) return _callback(err);
+                            //     _callback();
+                            // });
+                            
+                        });
+
+                    });
+                });
+
+                q.drain = function() {
+                    console.log('[all:android] all items have been processed');
+                    callback(null, 'android:completed');
+                };
+                    
+                _.forEach(phones, function(phone) {
+                    // add phone to the queue
+                    q.push(phone, function (err) {
+                        if(err) {
+                            console.log('error processing %s', phone.name);
+                            return callback(err);
+                        }
+                        console.log('finished : processing %s', phone.name);
+                    });
+                });
+            }]
+        }, function(err, results) {
+            if(err) return res.json(500, err);
+            return res.json(201, results);
+        });
     });
 });
 
@@ -525,7 +675,7 @@ function populateFromSemantic( category, users, done ) {
 
         sem3.products.products_field("cat_id", category.id);
         sem3.products.products_field("fields", category.fields);
-        sem3.products.products_field("sort", "created_at", "asc");
+        // sem3.products.products_field("sort", "created_at", "asc");
         sem3.products.products_field("offset", offset);
             
         var constructedJson = sem3.products.get_query_json( "products" );
@@ -550,6 +700,11 @@ function populateFromSemantic( category, users, done ) {
             var meta = _.pick(item, function(value, key) {
                 return _.indexOf(category.meta, key) > -1;
             });
+
+            meta.height = meta.height ? parseFloat(meta.height) : 0;
+            meta.width  = meta.width  ? parseFloat(meta.width) : 0;
+            meta.length = meta.length ? parseFloat(meta.length) : 0;
+            meta.weight = meta.weight ? parseFloat(meta.weight) : 0;
 
             if(meta.features) {
                 var features = _.map(meta.features, function(v,k) {

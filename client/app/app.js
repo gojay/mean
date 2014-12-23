@@ -12,7 +12,24 @@ angular.module('exampleAppApp', [
   'angular-spinkit',
   'uiSlider'
 ])
-  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider) {
+  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, $urlMatcherFactoryProvider) {
+    /* https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-make-a-trailing-slash-optional-for-all-routes */
+    // $urlMatcherFactoryProvider.strictMode(false);
+    // $urlRouterProvider.rule(function ($injector, $location) {
+    //     var path = $location.url();
+
+    //     // check to see if the path already has a slash where it should be
+    //     if (path[path.length - 1] === '/' || path.indexOf('/?') > -1) {
+    //         return;
+    //     }
+
+    //     if (path.indexOf('?') > -1) {
+    //         return path.replace('?', '/?');
+    //     }
+
+    //     return path + '/';
+    // });
+    
     $urlRouterProvider
       .otherwise('/');
 
@@ -54,7 +71,7 @@ angular.module('exampleAppApp', [
         deleteOnExpire: 'aggressive', // Items will be deleted from this cache right when they expire.
         storageMode: 'localStorage' // This cache will sync itself with `localStorage`.
     });
-    $http.defaults.cache = DSCacheFactory.get('appHTTPCache');
+    // $http.defaults.cache = DSCacheFactory.get('appHTTPCache');
 
     // Redirect to login if route requires auth and you're not logged in
     $rootScope.$on('$stateChangeStart', function (event, next) {

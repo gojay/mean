@@ -1,55 +1,73 @@
 .margin-top-bottom.panel.panel-primary
+	// Category
 	.panel-heading Category
 	accordion(close-others="true")
-		accordion-group(ng-repeat="group in search.category.data" is-open="group.open")
+		accordion-group(ng-repeat="group in search.category.data", is-disabled="group.count == 0", is-open="group.open")
 			accordion-heading
 				div(ng-click="searchByCategory(group, $event)")
-					span.pull-right.badge 15
+					span.pull-right.badge {{group.count}}
 					i.fa(ng-class="{'fa-angle-down': group.open, 'fa-angle-right': !group.open}") &nbsp;
-					{{group.title}}
+					{{group.name}}
 					fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!group.open && group.loading", style="left:70%")
+			//- accordion(ng-if="group.children.length")
+			//- 	accordion-group(ng-repeat="parent in group.children", is-open="parent.open")
+			//- 		accordion-heading
+			//- 			div(ng-click="searchByCategory(parent, $event)")
+			//- 				span.pull-right.badge {{parent.count}}
+			//- 				i.fa(ng-class="{'fa-angle-down': parent.open, 'fa-angle-right': !parent.open}") &nbsp;
+			//- 				{{parent.name}}
+			//- 				fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!parent.open && parent.loading", style="left:70%")
+			//- 		.list-group
+			//- 			a.list-group-item(ng-class="{'list-group-item-info': category.open}", ng-click="searchByCategory(category, $event)", ng-repeat="category in parent.children")
+			//- 				span.badge {{category.count}}
+			//- 				i.fa.fa-angle-right &nbsp;
+			//- 				{{category.name}}
+			//- 				fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!category.open && category.loading", style="left:65%")
 			.list-group
-				a.list-group-item(href="#", ng-repeat="child in group.childs")
-					span.badge 3
-					//- i.fa.fa-angle-right &nbsp;
-					{{child}}
-	.panel-heading Filter	
-	.list-group 
-		.list-group-item.well.well-sm
-			h5 Brands
-				span(ng-if="search.brand.selection.length") &nbsp;({{search.brand.selection.length}})
+				a.list-group-item(ng-class="{'list-group-item-info': category.open, 'text-muted':category.count == 0}", ng-disabled="category.count == 0", ng-click="searchByCategory(category, $event)", ng-repeat="category in group.children")
+					span.badge {{category.count}}
+					i.fa.fa-angle-right &nbsp;
+					{{category.name}}
+					fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!category.open && category.loading", style="left:65%")
+	// Brands
+	.panel-heading 
+		| Brands	
+		span(ng-if="search.brand.selection.length") &nbsp;({{search.brand.selection.length}})
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.list-group(ng-class="{'loading': search.loading}") 
 		.list-group-item
 			.form-group.has-feedback
 				input.form-control(type="text", placeholder="Search brand.." ng-model="search.brand.query")
 				i.form-control-feedback.fa.fa-search(style="top:0")
 			.checkbox(ng-repeat="brand in search.brand.data | filter:search.brand.query")
 				label(for="brand-{{$index}}")
-					input(type="checkbox", id="brand-{{$index}}" name="brands[]", value="brand.name", ng-model="brand.selected")
+					input(type="checkbox", id="brand-{{$index}}" name="brands[]" ng-click="searchByBrand($event, brand.id)" ng-model="brand.selected")
+					span.badge.pull-right {{brand.total}}
 					{{brand.name}}
-		.list-group-item.well.well-sm 
-			h5 Price
+	// Price
+	.panel-heading Price
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.list-group(ng-class="{'loading': search.loading}") 
 		.list-group-item
 			.form-group
-				.row
-					.col-md-6.pull-left
-						label Minimum
-						.input-group
-							span.input-group-btn
-								button.btn.btn-sm.btn-info(ng-click="setPriceDown('min')")
-									i.fa.fa-minus
-							input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.min", step="{{search.price.options.step}}", min="{{search.price.options.min}}", max="{{search.price.selected.max}}")
-							span.input-group-btn
-								button.btn.btn-sm.btn-info(ng-click="setPriceUp('min')")
-									i.fa.fa-plus
-					.col-md-6.pull-right
-						label Maximum
-						.input-group
-							span.input-group-btn
-								button.btn.btn-sm.btn-info(ng-click="setPriceDown('max')")
-									i.fa.fa-minus
-							input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.max", step="{{search.price.options.step}}", min="{{search.price.selected.min}}", max="{{search.price.options.max}}")
-							span.input-group-btn
-								button.btn.btn-sm.btn-info(ng-click="setPriceUp('max')")
-									i.fa.fa-plus
+				label Minimum
+				.input-group
+					span.input-group-btn
+						button.btn.btn-sm.btn-info(ng-click="setPriceDown('min')")
+							i.fa.fa-minus
+					input.input-sm.form-control.text-center(type="text", ng-model="search.price.selected.min", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.options.min}}", max="{{search.price.selected.max}}")
+					span.input-group-btn
+						button.btn.btn-sm.btn-info(ng-click="setPriceUp('min')")
+							i.fa.fa-plus
+			.form-group
+				label Maximum
+				.input-group
+					span.input-group-btn
+						button.btn.btn-sm.btn-info(ng-click="setPriceDown('max')")
+							i.fa.fa-minus
+					input.input-sm.form-control.text-center(type="text", ng-model="search.price.selected.max", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.selected.min}}", max="{{search.price.options.max}}")
+					span.input-group-btn
+						button.btn.btn-sm.btn-info(ng-click="setPriceUp('max')")
+							i.fa.fa-plus
 			.form-group
 				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}" ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max" translate="currencyFormatting")

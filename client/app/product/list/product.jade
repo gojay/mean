@@ -1,4 +1,5 @@
 .margin-top-bottom(ng-switch="filters.view.selected")
+	pre {{ products | json }}
 	.list-group.bouncy-slide-right(ng-switch-when="list")
 		a.list-group-item(ng-repeat="product in products | filter:productFilters | orderBy:filters.order.by.id")
 			.media.col-md-3

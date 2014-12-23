@@ -2,36 +2,11 @@
 
 angular.module('exampleAppApp')
     .service('productService', function($q, $http, $resource) {
-        // return {
-        // 	get: function(query) {
-        // 		var start = new Date().getTime();
-        // 		var defer = $q.defer();
-
-        // 		$http.get('/api/products' + query, {
-        // 			cache: true
-        // 		}).success(function(data) {
-        // 			console.log('time taken for request: ' + (new Date().getTime() - start) + 'ms');
-        // 			defer.resolve(data);
-        // 		});
-
-        // 		return defer.promise;
-        // 	},
-        // 	getProducts: function(params) {
-        // 		var query = params ? '?' + $.param(params) : '';
-        // 		return this.get(query);
-        // 	},
-        // 	getProductDetail: function(id) {
-        // 		return this.get('/' + id);
-        // 	}
-        // };
-
-        return $resource('/api/products/:id', {
-            id: '@_id'
-        }, {
+        return $resource('/api/products/:id',  { id: '@_id' }, {
             query: {
                 method: 'GET',
                 isArray: true,
-                cache: true
+                // cache: true
             },
             get: {
                 method: 'GET',
@@ -41,6 +16,35 @@ angular.module('exampleAppApp')
                 method: 'PUT'
             }
         });
+    })
+    .factory('productFilters', function($q, $http) {
+        return function(filters) {
+            var params = _.pick(filters, function(value, key) {
+              return value;
+            });
+
+            delete params.price;
+            var urlParameter = jQuery.param({q:params});
+
+            var deferred = $q.defer();
+
+            var urlCalls = {
+                filters : $http.get('/api/products/filters?'+ urlParameter),
+                products: $http.get('/api/products?'+ urlParameter),
+            };
+
+            $q.all(urlCalls)
+                .then(function resolve(results) {
+                    deferred.resolve(results)
+                },
+                function reject(errors) {
+                    deferred.reject(errors);
+                },
+                function update(updates) {
+                    deferred.update(updates);
+                });
+            return deferred.promise;
+        };
     })
     .factory('productDummy', function() {
         return {

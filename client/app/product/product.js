@@ -2,6 +2,53 @@
 
 angular.module('exampleAppApp')
   .config(function ($stateProvider) {
+
+    var findDeep = function(items, attrs) {
+      function match(value) {
+        for (var key in attrs) {
+          if(!_.isUndefined(value)) {
+            if (attrs[key] !== value[key]) {
+              return false;
+            }
+          }
+        }
+
+        return true;
+      }
+      function traverse(value) {
+        var result;
+
+        _.forEach(value, function (val) {
+          if (match(val)) {
+            result = val;
+            return false;
+          }
+
+          if (_.isObject(val) || _.isArray(val)) {
+            result = traverse(val);
+          }
+
+          if (result) {
+            return false;
+          }
+        });
+
+        return result;
+      }
+      return traverse(items);
+    }
+    _.mixin({ 'findDeep': findDeep });
+
+    function setCollapsibleGroup(data, old) { 
+      _.forEach(data, function(item) {
+        item.loading = false;
+        item.open = false;
+        if(item.children && item.children.length) {
+          setCollapsibleGroup(item.children);
+        }
+      })
+    }
+
     $stateProvider
       .state('products', {
         url: '/products',
@@ -11,9 +58,17 @@ angular.module('exampleAppApp')
         resolve: {
           categories: function($q, $http) {
             var deferred = $q.defer();
-            $http.get('/api/categories/phones')
+            $http.get('/api/categories/products')
               .success(function(categories) {
                 deferred.resolve(categories);
+              });
+            return deferred.promise;
+          },
+          filters: function($q, $http) {
+            var deferred = $q.defer();
+            $http.get('/api/products/filters')
+              .success(function(filters) {
+                deferred.resolve(filters);
               });
             return deferred.promise;
           },
@@ -24,7 +79,8 @@ angular.module('exampleAppApp')
         views: {
           '': { 
             templateUrl: 'app/product/index.html',
-            controller: function($scope) {
+            controller: function($scope, categories, filters) {
+
               $scope.filters = {
                 search: {
                   data: [{
@@ -94,6 +150,36 @@ angular.module('exampleAppApp')
                   selected: 'list'
                 }
               };
+
+              $scope.search = {
+                loading: false,
+                category: {
+                  data: categories
+                },
+                brand: {
+                  query: '',
+                  selection: [],
+                  data: filters.brands
+                },
+                price: {
+                  options: filters.price,
+                  selected: {
+                    min: 0,
+                    max: 0
+                  }
+                } 
+              };
+
+              $scope.$watch('search.price.options', function(newValue, oldValue, scope) {
+                if(newValue[0]) {
+                  var price = _.mapValues(newValue[0], function(val) {
+                    return parseInt(val);
+                  });
+                  $scope.search.price.options = price;
+                  $scope.search.price.selected.min = 0;
+                  $scope.search.price.selected.max = price.max;
+                }
+              }, true);
             }
           },
           'breadcrumb@products': {
@@ -138,9 +224,8 @@ angular.module('exampleAppApp')
           },
           'categories@products': {
             templateUrl: 'app/product/categories.html',
-            controller: function($scope, categories) {
+            controller: function($scope) {
               console.log('categories@products:$scope', $scope)
-              $scope.categories = categories;
             }
           },
           'filters@products': {
@@ -184,8 +269,9 @@ angular.module('exampleAppApp')
           },
           'content@products': {
             templateUrl: 'app/product/list/product.html',
-            controller: function($scope, products) {
-              $scope.products = products;
+            controller: function($scope, $rootScope, categories, filters) {
+
+              $rootScope.$broadcast('products:loaded', { filters: filters, categories: categories });
 
               $scope.priceFilters = function(product){
                 var searchFilters = $scope.filters.search;
@@ -215,167 +301,322 @@ angular.module('exampleAppApp')
 
           'side@products': {
             templateUrl: 'app/product/side.html',
-            controller: function($scope, $timeout) {
-              
-              $scope.search = {
-                category: {
-                  data: [
-                    {
-                      "title":"First",
-                      "content":"Content A",
-                      "loading": false,
-                      "open":false,
-                      "childs": ['Child 1','Child 2','Child 3']
-                    },
-                    {
-                      "title":"Second",
-                      "content":"Content B",
-                      "loading": false,
-                      "open":false,
-                      "childs": ['Child 1','Child 2','Child 3','Child 4','Child 5']
-                    },
-                    {
-                      "title":"Third",
-                      "content":"Content C",
-                      "loading": false,
-                      "open":false,
-                      "childs": ['Child 1','Child 2']
-                    },
-                  ]
-                },
-                brand: {
-                  query: '',
-                  selection: [],
-                  data: [
-                    {
-                      name: 'Samsung',
-                      selected: false
-                    },{
-                      name: 'Motorola',
-                      selected: false
-                    },{
-                      name: 'T-Mobile',
-                      selected: false
-                    }
-                  ]
-                },
-                price: {
-                  options: {
-                    min: 10,
-                    max: 100,
-                    step: 1
-                  },
-                  selected: {
-                    min: 20,
-                    max: 50
+            controller: function($scope, $rootScope, $location, $http, $state, $timeout) {
+
+              var query = {};
+
+              var categories = $scope.search.category.data;
+
+              // indentifier $watch price
+              var oldMaxPrice;
+
+              /* state go */
+
+              function go(key, value) {
+                if(!_.isEmpty(value)) {
+                  value = _.isArray(value) ? value.join('_') : value ;
+                  query[key] = value;
+                } else {
+                  query[key] = null;
+                }
+
+                if(key == 'category') {
+                  // if categories count is null, remove parameter brand
+                  var count = _.findDeep(categories, { _id: query.category }).count;
+                  if( count == 0 ) {
+                    query.brand = null;
                   }
-                } 
-              };
+                }
+
+                console.log('query', query)
+                $state.go('products.category', query);
+              }
+
+              /* products on loaded */
+              
+              function onLoaded(evt, data) {
+                console.log('products:loaded', data);
+                
+                oldMaxPrice = $scope.search.price.options.max;
+
+                var filters = data.filters;
+                $scope.search.brand.data = filters.brands;
+                $scope.search.price.options = filters.price;
+
+                /* 
+                atur filter berdasarkan parameter (url)
+                memungkinkan auto set filter, jika direct url 
+                */
+                var params = data.params;
+                var paramsFn = {
+                  /* category */
+                  category: function() {
+
+                    /* 
+                    set category filters
+
+                    mengatur jumlah produk tiap kategori,
+                    berdasarkan filter(brand, price, dll)
+                    */
+                    if(!_.isEmpty(filters.category)) {
+
+                      // tambahkan default filter dgn nilai total 0,
+                      // jika filter kategori tidak terdaftar
+                      var filterCategories = _.chain(categories)
+                                              .flatten('children')
+                                              .pluck('_id')
+                                              .transform(function(result, val){ 
+                                                var total = 0; 
+                                                var f = _.find(filters.category, { '_id': val }); 
+                                                if(f){ total = f.total; } 
+                                                result.push({ _id: val, total: total }) ;
+                                              })
+                                              .value();
+                      // set count kategori                      
+                      var parents = {};
+                      _.forEach(filterCategories, function(item){
+                        var c = _(categories).findDeep({ _id: item._id}).tap(function(cat){ cat.count = item.total }).value();
+                        if(parents[c.parent]) {
+                          parents[c.parent] += c.count;
+                        } else {
+                          parents[c.parent] = c.count;
+                        }
+                      });
+                      // atur jumlah total kategori 'parent' berdasarkan jumlah 'children'
+                      if(parents){
+                        _.forEach(parents, function(count, id){
+                          _(categories).findDeep({ _id: id }).tap(function(cat){ cat.count = count });
+                        })
+                      } 
+                    }
+
+                    /* 
+                    open(parents & self) selected category
+
+                    atur 'open' dan 'loading' untuk kategori yg dipilih
+                    dan juga untuk 'parent' nya
+                    */
+
+                    var id = params.category;
+                    if(!id || id == 'all') return;
+
+                    var paths = [];
+
+                    var category = _.findDeep(categories, { _id: id });
+                    var parents = _.xor(category.path.split('/'), id);
+                    if(parents.length) {
+                      _.forEach(parents, function(path) {
+                        var parent = _(categories).findDeep({ _id: path }).tap(function(cat) {
+                          if(cat && cat.children.length) {
+                            _.forEach(cat.children, function(item){
+                              item.loading = false;
+                              item.open = false;
+                            });
+                          }
+                        }).value();
+                        if(parent) paths.push(parent);
+                      });
+                    }
+                    paths.push(category);
+
+                    _.map(paths, function(item) {
+                      item.loading = false;
+                      item.open = true;
+                      return item;
+                    });
+                  },
+                  /* brand */
+                  brand: function() {
+                    var brand = $scope.search.brand,
+                        selection = params.brand;
+                    // set brands selection
+                    if( selection ) {
+                      // nilai selection adalah array
+                      // atur menjadi array jika string
+                      if(_.isString(selection)) selection = [selection]; 
+
+                      // set selection 
+                      // atur 'selection' berdasarkan 'filter brands' (perubahan nilai 'brands' dari kategori yg dpilih)
+                      // krn memungkinkan tiap kategori berbeda nilai 'brands' nya 
+                      selection = _.intersection(_.pluck(filters.brands, 'id'), selection);
+
+                      _(brand.data)
+                        .filter(function(item) {
+                          return _.indexOf(selection, item.id) > -1;
+                        })
+                        .map(function(item) {
+                          item.selected = true;
+                          return item;
+                        });
+
+                        brand.selection = selection;
+
+                        // change brand parameters
+                        // var brandParameter = selection.length ? selection.join('_') : null;
+                        // $location.search('brand', brandParameter)
+                    }
+                  },
+                  /* price */
+                  price: function() {
+                    var price = params.price;
+                    if(!price) return;
+
+                    var prices = price.split('-');
+                    $timeout(function(){
+                      $scope.search.price.selected = {
+                        min: prices[0],
+                        max: prices[1]
+                      };
+                    });
+
+                    console.log($scope.search.price.selected)
+                  },
+                  default: function() {
+                    setCollapsibleGroup(data.categories);
+                    $scope.search.category.data = data.categories;
+                  }
+                };
+
+                if(params) {
+                  _.forEach(_.keys(params), function(filter){
+                      paramsFn[filter]();
+                  });
+                } else {
+                  // products home
+                  // set default collapsible group categories
+                  paramsFn['default']();
+                }
+
+                $scope.search.loading = false;
+              }
+
+              $scope.$on('products:loaded', onLoaded);
 
               /* category */
 
-              $scope.searchByCategory = function (group, $event) {
-                // $http.get(group.url).success(function (data) {
-                //   group.loaded = data
-                // });
+              $scope.searchByCategory = function (category, $event) {
+                if(category.open && _.isEmpty(category.children)) return;
+                
                 $event.stopPropagation();
-                group.loading = true;
-                $timeout(function() {
-                  group.loading = false;
-                  group.open = true;
-                }, 1000);
+
+                $scope.search.loading = true;
+                category.loading = true;
+
+                go('category', category._id);
               }
 
               /* brand */
 
-              // $scope.searchBrand = '';
-              // $scope.selectionBrands = [];
-              // $scope.brands = [{
-              //   name: 'Samsung',
-              //   selected: false
-              // },{
-              //   name: 'Motorola',
-              //   selected: false
-              // },{
-              //   name: 'T-Mobile',
-              //   selected: false
-              // }];
-              $scope.$watch('search.brand.data|filter:search.brand.query', function (nv) {
-                var diff = _.xor($scope.search.brand.data, nv);
-                if(diff.length) {
-                  _.map(diff, function(brand) {
-                    brand.selected = false;
-                  })
-                }
-                console.log('brand:', $scope.search.brand.data);
-              }, true);
-              $scope.$watch('search.brand.data|filter:{selected:true}', function (nv) {
-                $scope.search.brand.selection = nv.map(function (item) {
-                  return item.name;
-                });
-                console.log('brand:selection', $scope.search.brand.selection);
-              }, true);
+              $scope.searchByBrand = function($event, id){
+                var checkbox = $event.target;
+                var action = (checkbox.checked ? 'add' : 'remove');
+                selectBrand(action, id);
+              }
 
-              // $scope.$watch('brands|filter:searchBrand', function (nv) {
-              //   var diff = _.xor($scope.brands, nv);
+              var selectBrand = function(action, id) {
+                if (action === 'add' && $scope.search.brand.selection.indexOf(id) === -1) {
+                  $scope.search.brand.selection.push(id);
+                }
+                if (action === 'remove' && $scope.search.brand.selection.indexOf(id) !== -1) {
+                  $scope.search.brand.selection.splice($scope.search.brand.selection.indexOf(id), 1);
+                }
+
+                go('brand', $scope.search.brand.selection);
+              };
+
+              // $scope.$watch('search.brand.data|filter:search.brand.query', function (nv) {
+              //   var diff = _.xor($scope.search.brand.data, nv);
               //   if(diff.length) {
               //     _.map(diff, function(brand) {
               //       brand.selected = false;
               //     })
+              //     console.log('brand:', $scope.search.brand.data);
               //   }
               // }, true);
-              // $scope.$watch('brands|filter:{selected:true}', function (nv) {
-              //   $scope.selectionBrands = nv.map(function (fruit) {
-              //     return fruit.name;
-              //   });
-              //   console.log('brands:selected', $scope.selectionBrands);
+              // $scope.$watch('search.brand.data|filter:{selected:true}', function (nv, ov) {
+              //   console.log('brand:filter:selected', nv, ov)
+              //   if(_.isEmpty(nv)) return;
+              //   $scope.search.brand.selection = nv.map(function (item) { return item.id; });
+              //   if(_.difference().length)
+              //   go({brand: $scope.search.brand.selection.join('_')});
               // }, true);
 
               /* price */
-              
-              // $scope.price = {
-              //   min: 10,
-              //   max: 100,
-              //   step: 1,
-              //   selected: {
-              //     min: 20,
-              //     max: 50
-              //   }
-              // };
+
               $scope.currencyFormatting = function(value) { 
                 return "$ " + value; 
               };
 
               $scope.setPriceDown = function(type) {
-                $scope.search.price.selected[type] = parseInt($scope.search.price.selected[type]) - 1;
+                var value = parseInt($scope.search.price.selected[type]);
+                if(value > $scope.search.price.options.min)
+                  $scope.search.price.selected[type] = value - 1;
               };
 
               $scope.setPriceUp = function(type) {
-                $scope.search.price.selected[type] = parseInt($scope.search.price.selected[type]) + 1;
+                var value = parseInt($scope.search.price.selected[type]);
+                if(value < $scope.search.price.options.max)
+                  $scope.search.price.selected[type] = value + 1;
               };
+
+              var counter = 0;
+
+              /* angular-slider custom events */
+
+              $scope.$on('slider:end', function() {
+                var price = $scope.search.price.selected;
+
+                var pQuery = price.min + '-'  + price.max;
+                console.log('price.params', pQuery);
+
+                go('price', pQuery);
+              });
+
+              $scope.$watchCollection('search.price.selected', function(newValue, oldValue, scope) {
+                newValue = _.mapValues(newValue, parseInt);
+                if(newValue.min < $scope.search.price.options.min) {
+                  $scope.search.price.selected.min = $scope.search.price.options.min;
+                }
+                if(newValue.max > $scope.search.price.options.max) {
+                  $scope.search.price.selected.max = $scope.search.price.options.max;
+                }
+
+                oldValue = _.mapValues(oldValue, parseInt);
+                if(_.isEqual(newValue, oldValue) || oldValue.max == oldMaxPrice || newValue.max > $scope.search.price.options.max || newValue.min < $scope.search.price.options.min) return;
+
+                // console.log('price.selected', newValue, oldValue, oldMaxPrice);
+              });
+
             }
           }
         }
       })
       .state('products.category', {
-        url: '/category/{category:[a-zA-Z0-9_-]{1,}}',
-        resolve: {
-          data: function($stateParams, products) {
-            var category = $stateParams.category;
-            return _.find(products, {category:category})
-          }
+        url: '/{category:[a-zA-Z0-9_-]{1,}}/{brand}?price',
+        params: {
+          category: 'all',
+          brand: null,
+          price: null
         },
         views: {
           'content@products': {
-            template: '<div class="col-md-12"><h2>Category : {{category}}</h2><pre>{{ data | json }}</pre>',
-            controller: function($scope, data, $stateParams) {
-              var category = $stateParams.category;
-              $scope.category = category;
-              $scope.data = data;
+            template: '<div class="margin-top-bottom"><h2>Category : {{category}}</h2><pre>{{ products | json }}</pre>',
+            controller: function($scope, $rootScope, $stateParams, productFilters) {
+              console.log('$stateParams', $stateParams);
+              
+              var params = _.mapValues($stateParams, function(value) {
+                return value && /\_/.test(value) ? value.split('_') : value ;
+              });
 
+              productFilters(params).then(function(results) {
+                $scope.products = results.products.data;
+                $rootScope.$broadcast('products:loaded', { params: params, filters: results.filters.data });
+              });
+
+              $scope.category = params.category;
               $scope.$on('$stateChangeSuccess', function(event, toState) {
-                  toState.data.title = category;
-               });
+                  toState.data.title = $scope.category;
+              });
             }
           }
         }
