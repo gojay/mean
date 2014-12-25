@@ -79,7 +79,9 @@ angular.module('exampleAppApp')
         views: {
           '': { 
             templateUrl: 'app/product/index.html',
-            controller: function($scope, categories, filters) {
+            controller: function($scope, categories, filters, products) {
+
+              $scope.products = products;
 
               $scope.filters = {
                 search: {
@@ -269,9 +271,9 @@ angular.module('exampleAppApp')
           },
           'content@products': {
             templateUrl: 'app/product/list/product.html',
-            controller: function($scope, $rootScope, categories, filters) {
+            controller: function($scope, $rootScope, products, categories, filters) {
 
-              $rootScope.$broadcast('products:loaded', { filters: filters, categories: categories });
+              // $rootScope.$broadcast('products:loaded', { filters: filters, categories: categories });
 
               $scope.priceFilters = function(product){
                 var searchFilters = $scope.filters.search;
@@ -307,7 +309,7 @@ angular.module('exampleAppApp')
 
               var categories = $scope.search.category.data;
 
-              // indentifier $watch price
+              // indentifier for $watch price
               var oldMaxPrice;
 
               /* state go */
@@ -328,7 +330,6 @@ angular.module('exampleAppApp')
                   }
                 }
 
-                console.log('query', query)
                 $state.go('products.category', query);
               }
 
@@ -398,7 +399,10 @@ angular.module('exampleAppApp')
                     */
 
                     var id = params.category;
-                    if(!id || id == 'all') return;
+                    if(!id || id == 'all') {
+                      setCollapsibleGroup($scope.search.category.data);
+                      return;
+                    }
 
                     var paths = [];
 
@@ -454,6 +458,9 @@ angular.module('exampleAppApp')
                         // change brand parameters
                         // var brandParameter = selection.length ? selection.join('_') : null;
                         // $location.search('brand', brandParameter)
+                    } else {
+                      _.map($scope.search.brand.data, function(item){ item.selected = false; return item; });
+                      $scope.search.brand.selection = [];
                     }
                   },
                   /* price */
@@ -461,19 +468,17 @@ angular.module('exampleAppApp')
                     var price = params.price;
                     if(!price) return;
 
-                    var prices = price.split('-');
+                    var prices = _.isObject(price) ? _.values(price) : price.split('-') ;
+                    prices = _.map(prices, function(num) { return parseInt(num); });
                     $timeout(function(){
                       $scope.search.price.selected = {
                         min: prices[0],
                         max: prices[1]
                       };
                     });
-
-                    console.log($scope.search.price.selected)
                   },
                   default: function() {
-                    setCollapsibleGroup(data.categories);
-                    $scope.search.category.data = data.categories;
+                    setCollapsibleGroup($scope.search.category.data);
                   }
                 };
 
@@ -495,7 +500,7 @@ angular.module('exampleAppApp')
               /* category */
 
               $scope.searchByCategory = function (category, $event) {
-                if(category.open && _.isEmpty(category.children)) return;
+                if((category.open && _.isEmpty(category.children)) || category.count == 0) return;
                 
                 $event.stopPropagation();
 
@@ -521,27 +526,22 @@ angular.module('exampleAppApp')
                   $scope.search.brand.selection.splice($scope.search.brand.selection.indexOf(id), 1);
                 }
 
+                $scope.search.loading = true;
                 go('brand', $scope.search.brand.selection);
               };
 
-              // $scope.$watch('search.brand.data|filter:search.brand.query', function (nv) {
-              //   var diff = _.xor($scope.search.brand.data, nv);
-              //   if(diff.length) {
-              //     _.map(diff, function(brand) {
-              //       brand.selected = false;
-              //     })
-              //     console.log('brand:', $scope.search.brand.data);
-              //   }
-              // }, true);
-              // $scope.$watch('search.brand.data|filter:{selected:true}', function (nv, ov) {
-              //   console.log('brand:filter:selected', nv, ov)
-              //   if(_.isEmpty(nv)) return;
-              //   $scope.search.brand.selection = nv.map(function (item) { return item.id; });
-              //   if(_.difference().length)
-              //   go({brand: $scope.search.brand.selection.join('_')});
-              // }, true);
-
               /* price */
+
+              var getPrice = function(){
+                if($scope.search.price.options.max == 0) return;
+
+                $scope.search.loading = true;
+
+                var price = $scope.search.price.selected;
+                var pQuery = price.min + '-'  + price.max;
+
+                go('price', pQuery);
+              }
 
               $scope.currencyFormatting = function(value) { 
                 return "$ " + value; 
@@ -549,31 +549,25 @@ angular.module('exampleAppApp')
 
               $scope.setPriceDown = function(type) {
                 var value = parseInt($scope.search.price.selected[type]);
-                if(value > $scope.search.price.options.min)
-                  $scope.search.price.selected[type] = value - 1;
+                $scope.search.price.selected[type] = value - 1;
+                $scope.search.price.options.onChange = true;
               };
 
               $scope.setPriceUp = function(type) {
                 var value = parseInt($scope.search.price.selected[type]);
-                if(value < $scope.search.price.options.max)
-                  $scope.search.price.selected[type] = value + 1;
+                $scope.search.price.selected[type] = value + 1;
+                $scope.search.price.options.onChange = true;
               };
-
-              var counter = 0;
 
               /* angular-slider custom events */
 
-              $scope.$on('slider:end', function() {
-                var price = $scope.search.price.selected;
-
-                var pQuery = price.min + '-'  + price.max;
-                console.log('price.params', pQuery);
-
-                go('price', pQuery);
-              });
+              $scope.$on('slider:end', getPrice);
 
               $scope.$watchCollection('search.price.selected', function(newValue, oldValue, scope) {
                 newValue = _.mapValues(newValue, parseInt);
+                if(newValue.min > $scope.search.price.selected.max) {
+                  $scope.search.price.selected.min = $scope.search.price.selected.max;
+                }
                 if(newValue.min < $scope.search.price.options.min) {
                   $scope.search.price.selected.min = $scope.search.price.options.min;
                 }
@@ -583,8 +577,11 @@ angular.module('exampleAppApp')
 
                 oldValue = _.mapValues(oldValue, parseInt);
                 if(_.isEqual(newValue, oldValue) || oldValue.max == oldMaxPrice || newValue.max > $scope.search.price.options.max || newValue.min < $scope.search.price.options.min) return;
-
-                // console.log('price.selected', newValue, oldValue, oldMaxPrice);
+                
+                if(scope.search.price.options.onChange) {
+                  scope.search.price.options.onChange = false;
+                  getPrice();
+                }
               });
 
             }
@@ -600,10 +597,12 @@ angular.module('exampleAppApp')
         },
         views: {
           'content@products': {
-            template: '<div class="margin-top-bottom"><h2>Category : {{category}}</h2><pre>{{ products | json }}</pre>',
+            // template: '<div class="margin-top-bottom"><h2>Category : {{category}}</h2><pre>{{ products | json }}</pre>',
+            templateUrl: 'app/product/list/product.html',
             controller: function($scope, $rootScope, $stateParams, productFilters) {
-              console.log('$stateParams', $stateParams);
-              
+              console.log('content@category:$stateParams', $stateParams);
+                            
+              $scope.loading = true;
               var params = _.mapValues($stateParams, function(value) {
                 return value && /\_/.test(value) ? value.split('_') : value ;
               });
@@ -611,6 +610,7 @@ angular.module('exampleAppApp')
               productFilters(params).then(function(results) {
                 $scope.products = results.products.data;
                 $rootScope.$broadcast('products:loaded', { params: params, filters: results.filters.data });
+                $scope.loading = false;
               });
 
               $scope.category = params.category;

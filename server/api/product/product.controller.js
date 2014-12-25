@@ -76,7 +76,7 @@ var buildMatchFilters = function(query) {
 
                             var newValue;
                             if(_.isString(value)) {
-                                newValue = isCategory ? value : isNumeric(value) ? parseInt(value) : { $regex: value, $options:'i' };
+                                newValue = isCategory ? value : isNumeric(value) ? parseInt(value) : { $regex: _.humanize(value), $options:'i' };
                             }
                             else if(_.isPlainObject(value)) {
                                 newValue = _.transform(value, function(result, value, key) {

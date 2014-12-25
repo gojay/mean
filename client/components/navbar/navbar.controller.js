@@ -7,7 +7,7 @@ angular.module('exampleAppApp')
       'link': '/'
     }, {
       'title': 'Products',
-      'link': '/products'
+      'link': '/products/'
     }];
 
     $scope.isCollapsed = true;

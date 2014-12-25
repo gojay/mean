@@ -19,12 +19,20 @@ angular.module('exampleAppApp')
     })
     .factory('productFilters', function($q, $http) {
         return function(filters) {
-            var params = _.pick(filters, function(value, key) {
-              return value;
-            });
 
-            delete params.price;
+            var params = _.omit(filters, function( value ){ 
+                return _.isUndefined(value) || _.isEmpty(value) 
+            });
+            
+            // set price filter
+            if(params.price) {
+                var prices = params.price.split('-');
+                params.price = { gte: prices[0], lte: prices[1] };
+            } 
+
             var urlParameter = jQuery.param({q:params});
+
+            console.log('urlParameter', urlParameter)
 
             var deferred = $q.defer();
 

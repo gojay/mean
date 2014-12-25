@@ -49,25 +49,25 @@
 		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
 	.list-group(ng-class="{'loading': search.loading}") 
 		.list-group-item
-			.form-group
-				label Minimum
+			.form-group.col-md-6.prefix.afix
+				label.col-md-12.text-center Minimum
 				.input-group
 					span.input-group-btn
 						button.btn.btn-sm.btn-info(ng-click="setPriceDown('min')")
 							i.fa.fa-minus
-					input.input-sm.form-control.text-center(type="text", ng-model="search.price.selected.min", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.options.min}}", max="{{search.price.selected.max}}")
+					input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.min", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.options.min}}", max="{{search.price.selected.max}}")
 					span.input-group-btn
 						button.btn.btn-sm.btn-info(ng-click="setPriceUp('min')")
 							i.fa.fa-plus
-			.form-group
-				label Maximum
+			.form-group.col-md-6.prefix.afix
+				label.col-md-12.text-center Maximum
 				.input-group
 					span.input-group-btn
 						button.btn.btn-sm.btn-info(ng-click="setPriceDown('max')")
 							i.fa.fa-minus
-					input.input-sm.form-control.text-center(type="text", ng-model="search.price.selected.max", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.selected.min}}", max="{{search.price.options.max}}")
+					input.input-sm.form-control.text-center(type="text", readonly, ng-model="search.price.selected.max", ng-model-options="{ debounce: 1000 }", step="{{search.price.options.step}}", min="{{search.price.selected.min}}", max="{{search.price.options.max}}")
 					span.input-group-btn
 						button.btn.btn-sm.btn-info(ng-click="setPriceUp('max')")
 							i.fa.fa-plus
 			.form-group
-				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}" ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max" translate="currencyFormatting")
+				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}", ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max", translate="currencyFormatting")

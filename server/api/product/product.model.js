@@ -648,7 +648,8 @@ ProductSchema.statics = {
                 });
             }],
             price: ['filters', function(callback, results) {
-                var match = _.assign({ $and : [{price: {$exists:true} }, {price: {$ne:0}}] }, query);
+                var filters = _.pick(results.filters, function(v, k){ return k != 'price'; });
+                var match = _.assign({ $and : [{price: {$exists:true} }] }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { 
@@ -794,116 +795,112 @@ ProductSchema.statics = {
     /**
      * 
     db.products.aggregate([
+        { $group: { _id:1, data: { $push: '$$ROOT' }, total: { $sum: 1 } } },
         {
-            $match:
-            {
-                'category':
-                {
-                    $in: ['motorola']
-                },
-                'title': /^moto/i
-            }
+            $unwind: "$data"
         },
         {
-            $unwind: "$reviews"
+            $unwind: "$data.reviews"
         },
         {
             $group:
             {
-                _id: "$_id",
-                title: { $first: '$title' },
-                body: { $first: '$title' },
-                price: { $first: '$price' },
-                stock: { $first: '$stock' },
+                _id: "$data._id", 
+                title: { $first: '$data.title' },
+                image: { $first: '$data.image' },
                 rate:
                 {
-                    $sum: "$reviews.rate"
+                    $sum: "$data.reviews.rate"
                 },
                 review:
                 {
                     $sum: 1
-                }
+                },
+                total: { $first: '$total' } 
             }
         },
+        { $skip: 4 }, // skip = page * limit
+        { $limit: 6 },
+        { $sort: { 'title': 1 } },
+        { $group: { _id:0, data: { $push: { _id: '$_id', title: '$title', image: {
+            $cond:{ 
+                        if : { $eq: ['$image', null] },  
+                        then: 'http://lorempixel.com',
+                        else: '$image',
+                    }
+             }, rate: '$rate', review:'$review', rating: { $divide: ['$rate', '$review'] } } }, total: { $first: '$total' }  } },
         {
             $project:
             {
-                _id: 1,
-                title: 1,
-                price: 1,
-                stock: 1,
-                rating: { 
-                    $divide: [
-                        {
-                            $subtract: [
-                            {
-                                $multiply: [
-                                {
-                                    $divide: ['$rate', '$review']
-                                }, 100]
-                            },
-                            {
-                                $mod: [
-                                    {
-                                        $multiply: [
-                                        {
-                                            $divide: ['$rate', '$review']
-                                        }, 100]
-                                    },
-                                    1
-                                ]
-                            }]
-                        },
-                        100
-                    ] 
-                }
-            }
-        },
-        {
-            $sort:
-            {
-                data: 1,
-                rates: -1
+                _id: 0,
+                total: 1,
+                limit: { $literal: 6 },
+                skip: { $literal: 4 },
+                data: 1
             }
         }
-        //{ $skip: 4 } // skip = page * limit
-        //{ $limit: 6 }, // skip + limit
     ]);
      */
     query: function(options, done) {
+        var imageCallback = 'http://placehold.it/100x100';
         var aggregate = [];
 
-        // $unwind
-        aggregate.push({ $unwind: "$reviews" });
-
-        // $match
+        /* filters : $match
+        -----------------------------------------------------------*/
         if( options.filters ) {
             aggregate.push({ $match: options.filters });
         }
 
-        // $group
-        var fields = {};
-        _.forEach(options.select, function(value, k) { fields[k] = { $first: value } });
-        fields = _.merge(fields, {
+        /* group 0 & unwind
+        -----------------------------------------------------------*/
+        aggregate.push({ $group: { _id: 1, data: { $push: '$$ROOT' }, total: { $sum: 1 } } });
+        aggregate.push({ $unwind: "$data" });
+        aggregate.push({ $unwind: "$data.reviews" });
+
+        /* group 1
+        -----------------------------------------------------------*/
+        var fields = _.mapValues(options.select, function(value){
+            return { $first: value.replace('$', '$data.') };
+        });
+
+        var group = _.merge({ 
+            _id: '$data._id',
             rate: {
-                $sum: "$reviews.rate"
+                $sum: "$data.reviews.rate"
             },
             review: {
                 $sum: 1
-            }
-        });
-        var group = _.merge({ _id: '$_id' }, fields);
+            },
+            total: { $first: '$total' }
+        }, fields);
 
         aggregate.push({ $group: group });
 
-        // $project
-        var fields = {};
-        _.forEach(options.select, function(value, k) { fields[k] = 1 });
-        var projection = _.merge({
-            _id: 1,
+
+        /* sort
+        -----------------------------------------------------------*/
+        if( options.sort ) {
+            aggregate.push({ $sort: options.sort });
+        }
+
+        /* skip & limit
+        -----------------------------------------------------------*/
+        aggregate.push({ $skip: options.skip });
+        aggregate.push({ $limit: options.limit });
+
+        /* group 2
+        -----------------------------------------------------------*/
+        options.select.image = {
+            $cond: { 
+                if : { $eq: ['$image', null] },  
+                then: imageCallback,
+                else: '$image',
+            }
+        };
+        var data = _.merge({
             rating: {
-                //$divide: ['$rate', '$review']
-                $divide: [{
+                $divide: [
+                    {
                         $subtract: [{
                             $multiply: [{
                                 $divide: ['$rate', '$review']
@@ -920,25 +917,33 @@ ProductSchema.statics = {
                     },
                     100
                 ]
+            }   
+        }, options.select);
+        var group2 = { _id: 0, data: { $push: data }, total: { $first: '$total'} };
+        aggregate.push({ $group: group2 });
 
-            },
-            review: 1
-        }, fields);
+        /* projection
+        -----------------------------------------------------------*/
+        var fields = {};
+        _.forEach(options.select, function(value, k) { fields[k] = 1 });
+        var projection = {
+            _id: 0,
+            total: 1,
+            limit: { $literal: options.limit },
+            skip: { $literal: options.skip },
+            data: 1
+        };
         aggregate.push({ $project: projection });
 
-        // $sort
-        if( options.sort ) {
-            aggregate.push({ $sort: options.sort });
-        }
-
-        // $skip
-        aggregate.push({ $skip: options.skip });
-        // $limit
-        aggregate.push({ $limit: options.limit });
+        /* execute
+        -----------------------------------------------------------*/
 
         // done(null, aggregate);
 
-        this.aggregate(aggregate, done);
+        this.aggregate(aggregate, function(err, results){
+            if(err) return done(err);
+            done(null, results[0]);
+        });
     }
 };
 
