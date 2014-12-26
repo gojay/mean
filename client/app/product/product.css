@@ -212,6 +212,15 @@ section .thumbnail {
   margin-bottom: 0;
 }
 
+.list-group .list-wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.list-group .list-wrapper .badge {
+  margin-right: 10px;
+}
+
 /* angular-slider */
 
 slider span.bubble {

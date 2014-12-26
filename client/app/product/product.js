@@ -164,6 +164,28 @@ angular.module('exampleAppApp')
                     min: 0,
                     max: 0
                   }
+                },
+                os:{
+                  selected: null,
+                  data: filters.os
+                },
+                storage: {
+                  flash: {
+                    selected: null,
+                    data: filters.flash
+                  },
+                  ram: {
+                    selected: null,
+                    data: filters.ram
+                  }
+                },
+                camera: {
+                  selected: null,
+                  data: filters.camera
+                },
+                display: {
+                  selected: null,
+                  data: filters.display
                 } 
               };
 
@@ -201,19 +223,19 @@ angular.module('exampleAppApp')
                     image: '//lorempixel.com/'+ width +'/'+ height +'/fashion/1',
                     title: 'Example headline.',
                     description: 'Note: If you\'re viewing this page via a <code>file://</code> URL, the "next" and "previous" Glyphicon buttons on the left and right might not load/display properly due to web browser security rules.',
-                    link: $state.href('products.category({ productId:\'motorola\'})')
+                    link: $state.href('products.query({ productId:\'motorola\'})')
                   },
                   {
                     image: '//lorempixel.com/'+ width +'/'+ height +'/fashion/2',
                     title: 'Another example headline.',
                     description: 'Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.',
-                    link: $state.href('products.category({ productId:\'samsung\'})')
+                    link: $state.href('products.query({ productId:\'samsung\'})')
                   },
                   {
                     image: '//lorempixel.com/'+ width +'/'+ height +'/fashion/3',
                     title: 'Another example headline.',
                     description: 'Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.',
-                    link: $state.href('products.category({ productId:\'t-mobile\'})')
+                    link: $state.href('products.query({ productId:\'t-mobile\'})')
                   }
                 ]
               };
@@ -268,8 +290,6 @@ angular.module('exampleAppApp')
             templateUrl: 'app/product/list/product.html',
             controller: function($scope, $rootScope, products, categories, filters) {
 
-              // $rootScope.$broadcast('products:loaded', { filters: filters, categories: categories });
-
               $scope.priceFilters = function(product){
                 var searchFilters = $scope.filters.search;
                 var search = searchFilters.selected;
@@ -285,8 +305,6 @@ angular.module('exampleAppApp')
                   return;
                 }
 
-                // var searchFilters = $scope.filters.search;
-                // var filter = searchFilters.data[newCollection];
                 if(searchSelected.type == 'number') {
                   $scope.productFilters = $scope.priceFilters;
                 } else {
@@ -310,6 +328,7 @@ angular.module('exampleAppApp')
               /* state go */
 
               function go(key, value) {
+                console.log('go', key, value);
                 if(!_.isEmpty(value)) {
                   value = _.isArray(value) ? value.join('_') : value ;
                   query[key] = value;
@@ -325,7 +344,7 @@ angular.module('exampleAppApp')
                   }
                 }
 
-                $state.go('products.category', query);
+                $state.go('products.query', query);
               }
 
               /* products on loaded */
@@ -335,9 +354,15 @@ angular.module('exampleAppApp')
                 
                 oldMaxPrice = $scope.search.price.options.max;
 
+                /* set filters data */
                 var filters = data.filters;
                 $scope.search.brand.data = filters.brands;
                 $scope.search.price.options = filters.price;
+                $scope.search.storage.flash.data = filters.flash;
+                $scope.search.storage.ram.data = filters.ram;
+                $scope.search.os.data = filters.os;
+                $scope.search.camera.data = filters.camera;
+                $scope.search.display.data = filters.display;
 
                 /* 
                 atur filter berdasarkan parameter (url)
@@ -472,6 +497,21 @@ angular.module('exampleAppApp')
                       };
                     });
                   },
+                  os: function() {
+                    $scope.search.os.selected = params.os;
+                  },
+                  flash: function() {
+                    $scope.search.storage.flash.selected = params.flash;
+                  },
+                  ram: function() {
+                    $scope.search.storage.ram.selected = params.ram;
+                  },
+                  camera: function() {
+                    $scope.search.camera.selected = params.camera;
+                  },
+                  display: function() {
+                    $scope.search.display.selected = params.display;
+                  },
                   default: function() {
                     setCollapsibleGroup($scope.search.category.data);
                   }
@@ -579,20 +619,31 @@ angular.module('exampleAppApp')
                 }
               });
 
+              /* other selected filters */
+
+              $scope.selectFilter = function(type, filter) {
+                console.log('filter:select:%s', type, filter);
+                go(type, filter.query || filter.value);
+              };
+
             }
           }
         }
       })
-      .state('products.category', {
-        url: '/{category:[a-zA-Z0-9_-]{1,}}/{brand}?price',
+      .state('products.query', {
+        url: '/{category:[a-zA-Z0-9_-]{1,}}/{brand}?price&os&display&flash&ram&camera',
         params: {
           category: 'all',
           brand: null,
-          price: null
+          price: null,
+          os: null,
+          display: null,
+          flash: null,
+          ram: null,
+          camera: null
         },
         views: {
           'content@products': {
-            // template: '<div class="margin-top-bottom"><h2>Category : {{category}}</h2><pre>{{ products | json }}</pre>',
             templateUrl: 'app/product/list/product.html',
             controller: function($scope, $rootScope, $stateParams, productFilters) {
               console.log('content@category:$stateParams', $stateParams);
@@ -644,7 +695,7 @@ angular.module('exampleAppApp')
       //     }
       //   }
       // })
-      // .state('products.category', {
+      // .state('products.query', {
       //   url: '/category/{category:[a-zA-Z0-9_-]{1,}}',
       //   templateUrl: 'app/product/list/product.html',
       //   controller: 'ProductsListCtrl',

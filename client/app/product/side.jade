@@ -39,11 +39,12 @@
 			.form-group.has-feedback
 				input.form-control(type="text", placeholder="Search brand.." ng-model="search.brand.query")
 				i.form-control-feedback.fa.fa-search(style="top:0")
-			.checkbox(ng-repeat="brand in search.brand.data | filter:search.brand.query")
-				label(for="brand-{{$index}}")
-					input(type="checkbox", id="brand-{{$index}}" name="brands[]" ng-click="searchByBrand($event, brand.id)" ng-model="brand.selected")
-					span.badge.pull-right {{brand.total}}
-					{{brand.name}}
+			div.list-wrapper
+				.checkbox(ng-repeat="brand in search.brand.data | filter:search.brand.query")
+					label(for="brand-{{$index}}")
+						input(type="checkbox", id="brand-{{$index}}" name="brands[]" ng-click="searchByBrand($event, brand.id)" ng-model="brand.selected")
+						span.badge.pull-right {{brand.total}}
+						{{brand.name}}
 	// Price
 	.panel-heading Price
 		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
@@ -71,3 +72,52 @@
 							i.fa.fa-plus
 			.form-group
 				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}", ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max", translate="currencyFormatting")
+	// OS
+	.panel-heading(ng-if="search.os.data.length") OS
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.list-group(ng-if="search.os.data.length", ng-class="{'loading': search.loading}") 
+		.list-group-item
+			.radio(ng-repeat="os in search.os.data")
+				label(for="os-{{$index}}")
+					input(type="radio", id="os-{{$index}}", name="os[]", ng-model="search.os.selected", ng-value="os.value", ng-change="selectFilter('os', os)")
+					span.badge.pull-right {{os.total}}
+					{{os.name}}
+	// Storage
+	.panel-heading(ng-if="search.storage.flash.data.length || search.storage.ram.data.length", ng-class="{'loading': search.loading}") Storage
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.panel-body(ng-if="search.storage.flash.data.length") Flash
+	.list-group(ng-if="search.storage.flash.data.length")
+		.list-group-item
+			.radio(ng-repeat="flash in search.storage.flash.data")
+				label(for="flash-{{$index}}")
+					input(type="radio", id="flash-{{$index}}", name="flash[]", ng-model="search.storage.flash.selected", ng-value="flash.query", ng-change="selectFilter('flash', flash)")
+					span.badge.pull-right {{flash.total}}
+					{{flash.name}}
+	.panel-body(ng-if="search.storage.ram.data.length") RAM
+	.list-group(ng-if="search.storage.ram.data.length")
+		.list-group-item
+			.radio(ng-repeat="ram in search.storage.ram.data")
+				label(for="ram-{{$index}}")
+					input(type="radio", id="ram-{{$index}}", name="ram[]", ng-model="search.storage.ram.selected", ng-value="ram.query", ng-change="selectFilter('ram', ram)")
+					span.badge.pull-right {{ram.total}}
+					{{ram.name}}
+	// Camera
+	.panel-heading(ng-if="search.camera.data.length") Camera
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.list-group(ng-if="search.camera.data.length", ng-class="{'loading': search.loading}") 
+		.list-group-item
+			.radio(ng-repeat="camera in search.camera.data")
+				label(for="camera-{{$index}}")
+					input(type="radio", id="camera-{{$index}}", name="camera[]", ng-model="search.camera.selected", ng-value="camera.query", ng-change="selectFilter('camera', camera)")
+					span.badge.pull-right {{camera.total}}
+					{{camera.name}}
+	// Display
+	.panel-heading(ng-if="search.display.data.length") Screen Size
+		fading-circle-spinner.spinner-wrapper-white.spinner-inline.spinner-sm(ng-show="search.loading")
+	.list-group(ng-if="search.display.data.length", ng-class="{'loading': search.loading}") 
+		.list-group-item
+			.radio(ng-repeat="display in search.display.data")
+				label(for="display-{{$index}}")
+					input(type="radio", id="display-{{$index}}", name="display[]", ng-model="search.display.selected", ng-value="display.query", ng-change="selectFilter('display', display)")
+					span.badge.pull-right {{display.total}}
+					{{display.name}}

@@ -19,20 +19,30 @@ angular.module('exampleAppApp')
     })
     .factory('productFilters', function($q, $http) {
         return function(filters) {
+            // define string field parameters 
+            var fieldStr = ['category', 'brand', 'os'];
+            // filtering 
+            // - value not null
+            // - transform not string values to range
+            var params = _(filters).omit(function(value) {
+                return _.isUndefined(value) || _.isEmpty(value);
+            }).transform(function(res, v, k) {
+                if(_.indexOf(fieldStr, k) == -1) {
+                    var inSep = v.indexOf('-');
+                    if(inSep > -1) {
+                        var vArr = v.split('-');
+                        v = (inSep == 0) ? { lt: vArr[1] } : { gte: vArr[0], lte: vArr[1] };
+                    } else {
+                        v = { gt: v };
+                    }
+                }
+                res[k] = v;
+            }).value();
 
-            var params = _.omit(filters, function( value ){ 
-                return _.isUndefined(value) || _.isEmpty(value) 
-            });
-            
-            // set price filter
-            if(params.price) {
-                var prices = params.price.split('-');
-                params.price = { gte: prices[0], lte: prices[1] };
-            } 
 
             var urlParameter = jQuery.param({q:params});
 
-            console.log('urlParameter', urlParameter)
+            console.log('urlParameter', urlParameter);
 
             var deferred = $q.defer();
 

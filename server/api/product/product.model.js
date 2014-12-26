@@ -435,7 +435,7 @@ ProductSchema.statics = {
         var self = this;
 
         self.custom = {
-            range: function(data) {
+            range: function(data, title) {
                 var min = Math.round(_.min(data, 'name').name);
                 var max = Math.round(_.max(data, 'name').name);
 
@@ -448,8 +448,8 @@ ProductSchema.statics = {
                         return [
                             {
                                 total: total,
-                                name : gte + '" to ' + lte + '"',
-                                query: {
+                                name : gte + ' ' + title + ' - ' + lte + ' ' + title,
+                                value: {
                                     gte: gte,
                                     lte: lte
                                 }
@@ -467,8 +467,9 @@ ProductSchema.statics = {
                     _.forEach(before, function(item) { total += item.total; })
                     results.push({
                         total: total,
-                        name : "Less than " + min + '"',
-                        query: {
+                        name : "Less than " + min + title,
+                        query: '-' + min,
+                        value: {
                             lt: min
                         }
                     });
@@ -479,11 +480,14 @@ ProductSchema.statics = {
                     var range = _.filter(data, function(item) { return item.name >= gte && item.name <= lte; });
                     if(range.length) {
                         var total = 0;
-                        _.forEach(range, function(item) { total += item.total; })
+                        _.forEach(range, function(item) { total += item.total; });
+
+                        var name = title.length > 3 ? gte + ' to ' + lte + ' (' + title +')' : gte + title + ' to ' + lte + title
                         results.push({
                             total: total,
-                            name : gte + '" to ' + lte + '"',
-                            query: {
+                            name : name,
+                            query: gte + '-' + lte,
+                            value: {
                                 gte: gte,
                                 lte: lte
                             }
@@ -497,8 +501,9 @@ ProductSchema.statics = {
                     _.forEach(after, function(item) { total += item.total; })
                     results.push({
                         total: total,
-                        name: "Greater than " + max + '"',
-                        query: {
+                        name: "Greater than " + max + title,
+                        query: max.toString(),
+                        value: {
                             gt: max
                         }
                     });
@@ -526,7 +531,8 @@ ProductSchema.statics = {
                     results.push({
                         total: total,
                         name : "Less than " + self.gb(min),
-                        query: {
+                        query: '-' + min,
+                        value: {
                             lt: min
                         }
                     });
@@ -545,7 +551,8 @@ ProductSchema.statics = {
                         results.push({
                             total: total,
                             name : self.gb(gte) + ' to ' + self.gb(lte),
-                            query: {
+                            query: gte + '-' + lte,
+                            value: {
                                 gte: gte,
                                 lte: lte
                             }
@@ -560,7 +567,8 @@ ProductSchema.statics = {
                     results.push({
                         total: total,
                         name: "Greater than " + self.gb(last),
-                        query: {
+                        query: last.toString(),
+                        value: {
                             gte: last
                         }
 
@@ -664,17 +672,19 @@ ProductSchema.statics = {
                 self.aggregate(aggregate, callback);
             }],
             os: ['filters', function(callback, results) {
-                var match = _.assign({ "meta.android.os": { $exists:true } }, results.filters);
+                var filters = _.pick(results.filters, function(v, k){ return !/os/.test(k); });
+                var match = _.assign({ "meta.android.os": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { _id: "$meta.android.os", total : { $sum : 1 } }},
-                    { $project: { _id: 0, name: '$_id', total: 1, query:{ $toLower:'$_id' } } },
+                    { $project: { _id: 0, name: '$_id', total: 1, value:{ $toLower:'$_id' } } },
                     { $sort: { name: 1 } }
                 ];
                 self.aggregate(aggregate, callback);
             }],
             camera: ['filters', function(callback, results) {
-                var match = _.assign({ "meta.camera.primary": { $exists:true } }, results.filters);
+                var filters = _.pick(results.filters, function(v, k){ return !/camera/.test(k); });
+                var match = _.assign({ "meta.camera.primary": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { _id: "$meta.camera.primary", total : { $sum : 1 } }},
@@ -683,12 +693,13 @@ ProductSchema.statics = {
                 ];
                 self.aggregate(aggregate, function(err, results) {
                     if(err) return callback(err);
-                    var camera = self.custom.range(results);
+                    var camera = self.custom.range(results, 'megapixels');
                     callback(null, camera);
                 });
             }],
             display: ['filters', function(callback, results) {
-                var match = _.assign({ "meta.display.screenSize": { $exists:true } }, results.filters);
+                var filters = _.pick(results.filters, function(v, k){ return !/display/.test(k); });
+                var match = _.assign({ "meta.display.screenSize": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { _id: "$meta.display.screenSize", total : { $sum : 1 } }},
@@ -697,12 +708,13 @@ ProductSchema.statics = {
                 ];
                 self.aggregate(aggregate, function(err, results) {
                     if(err) return callback(err);
-                    var display = self.custom.range(results);
+                    var display = self.custom.range(results, '"');
                     callback(null, display);
                 });
             }],
             flash: ['filters', function(callback, results) {
-                var match = _.assign({ "meta.storage.flash": { $exists:true } }, results.filters);
+                var filters = _.pick(results.filters, function(v, k){ return !/flash/.test(k); });
+                var match = _.assign({ "meta.storage.flash": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { _id: "$meta.storage.flash", total : { $sum : 1 } }},
@@ -716,7 +728,8 @@ ProductSchema.statics = {
                 });
             }],
             ram: ['filters', function(callback, results) {
-                var match = _.assign({ "meta.storage.ram": { $exists:true } }, results.filters);
+                var filters = _.pick(results.filters, function(v, k){ return !/ram/.test(k); });
+                var match = _.assign({ "meta.storage.ram": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { _id: "$meta.storage.ram", total : { $sum : 1 } }},

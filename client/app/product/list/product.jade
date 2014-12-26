@@ -1,7 +1,7 @@
 .margin-top-bottom(ng-switch="filters.view.selected")
 	three-bounce-spinner.spinner-wrapper-primary(ng-show="loading")
 	div(ng-hide="loading")
-		small {{products.total}} results
+		small viewing {{products.limit}} of {{products.total}} results
 		.list-group.bouncy-slide-right(ng-switch-when="list")
 			a.list-group-item(ng-repeat="product in products.data | filter:productFilters | orderBy:filters.order.by.id")
 				.media.col-md-3
