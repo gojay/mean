@@ -71,17 +71,12 @@ angular.module('exampleAppApp')
                 deferred.resolve(filters);
               });
             return deferred.promise;
-          },
-          products: function(productDummy) {
-            return productDummy.list;
           }
         },
         views: {
           '': { 
             templateUrl: 'app/product/index.html',
-            controller: function($scope, categories, filters, products) {
-
-              $scope.products = products;
+            controller: function($scope, categories, filters) {
 
               $scope.filters = {
                 search: {

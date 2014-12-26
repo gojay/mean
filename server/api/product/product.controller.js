@@ -127,7 +127,7 @@ exports.load = function(req, res, next, id) {
 
         var filters = buildMatchFilters(req.query.q);
 
-        Product.getPhoneFilters(filters, function(err, filters) {
+        Product.getFilters(filters, function(err, filters) {
             if (err) return next(err);
             if (!filters) return res.send(404, 'filters not exists');
             req.product = filters;

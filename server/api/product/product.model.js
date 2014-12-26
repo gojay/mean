@@ -431,7 +431,7 @@ ProductSchema.statics = {
      *
      */
     
-    getPhoneFilters: function(query, done) {
+    getFilters: function(query, done) {
         var self = this;
 
         self.custom = {
