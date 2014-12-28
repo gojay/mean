@@ -208,7 +208,7 @@ exports.index = function(req, res) {
     // page
     var page = query.page;
     var ppage = (page && page > 0 ? page : 1 ) - 1;
-    var perPage = 10;
+    var perPage = 12;
     queries.skip = 0;
     if(ppage > 0) {
         queries.skip = ppage * perPage;
@@ -219,7 +219,9 @@ exports.index = function(req, res) {
         sort: {
             'createdAt': -1,
             'rates': -1
-        }
+        },
+        page: ppage + 1,
+        perPage: perPage
     }, queries);
 
     Product.list(options, function(err, products) {

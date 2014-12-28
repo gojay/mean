@@ -1,12 +1,12 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .service('productService', function($q, $http, $resource) {
+    .service('productResource', function($q, $http, $resource) {
         return $resource('/api/products/:id',  { id: '@_id' }, {
             query: {
                 method: 'GET',
-                isArray: true,
-                // cache: true
+                isArray: false,
+                cache: true
             },
             get: {
                 method: 'GET',
@@ -17,14 +17,24 @@ angular.module('exampleAppApp')
             }
         });
     })
-    .factory('productFilters', function($q, $http) {
+    .factory('productService', function($q, $http) {
         return function(filters) {
+            var deferred = $q.defer();
+
+            console.log('productService', filters)
+
+            if(filters.brand && filters.brand == 'all') {
+                filters.brand = null;
+            }
+
             // define string field parameters 
             var fieldStr = ['category', 'brand', 'os'];
             // filtering 
             // - value not null
             // - transform not string values to range
-            var params = _(filters).omit(function(value) {
+            var params = _(filters).pick(function(v, k){
+                return k != 'page';
+            }).omit(function(value) {
                 return _.isUndefined(value) || _.isEmpty(value);
             }).transform(function(res, v, k) {
                 if(_.indexOf(fieldStr, k) == -1) {
@@ -39,12 +49,12 @@ angular.module('exampleAppApp')
                 res[k] = v;
             }).value();
 
-
             var urlParameter = jQuery.param({q:params});
-
+            if(_.has(filters, 'page')) {
+                var page = parseInt(filters.page);
+                urlParameter += '&page=' + (_.isNaN(page) ? 1 : page) ;
+            }
             console.log('urlParameter', urlParameter);
-
-            var deferred = $q.defer();
 
             var urlCalls = {
                 filters : $http.get('/api/products/filters?'+ urlParameter),

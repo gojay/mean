@@ -2,4 +2,4 @@
 	.col-md-4(ng-repeat="category in categories") 
 		.well.well-sm.text-center 
 			h3 
-				a(ui-sref="products.category({ category: category._id })") {{category._id | uppercase}}
+				a(ui-sref="products.query({ category: category._id })") {{category._id | uppercase}}

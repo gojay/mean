@@ -657,7 +657,7 @@ ProductSchema.statics = {
             }],
             price: ['filters', function(callback, results) {
                 var filters = _.pick(results.filters, function(v, k){ return k != 'price'; });
-                var match = _.assign({ $and : [{price: {$exists:true} }] }, filters);
+                var match = _.assign({ $and : [{price: {$exists:true} }, {price: {$ne:0}}] }, filters);
                 var aggregate = [
                     { $match: match },
                     { $group: { 
@@ -667,7 +667,7 @@ ProductSchema.statics = {
                         avg: { $avg:"$price" },
                         sum: { $sum:"$price" }
                     }},
-                    { $project: { _id: 0, min: { $literal: 0 }, max: 1, avg: 1, sum: 1, step: { $literal: 1 } } },
+                    { $project: { _id: 0, min: 1, max: 1, avg: 1, sum: 1, step: { $literal: 1 } } },
                 ];
                 self.aggregate(aggregate, callback);
             }],
@@ -930,7 +930,8 @@ ProductSchema.statics = {
                     },
                     100
                 ]
-            }   
+            },
+            review: "$review"
         }, options.select);
         var group2 = { _id: 0, data: { $push: data }, total: { $first: '$total'} };
         aggregate.push({ $group: group2 });
@@ -944,6 +945,9 @@ ProductSchema.statics = {
             total: 1,
             limit: { $literal: options.limit },
             skip: { $literal: options.skip },
+            pages: { $divide: ['$total', options.perPage] },
+            page: { $literal: options.page },
+            perPage: { $literal: options.perPage },
             data: 1
         };
         aggregate.push({ $project: projection });
@@ -955,7 +959,8 @@ ProductSchema.statics = {
 
         this.aggregate(aggregate, function(err, results){
             if(err) return done(err);
-            done(null, results[0]);
+            var response = !_.isEmpty(results) ? results[0] : { data: [], total: 0 } ;
+            done(null, response);
         });
     }
 };

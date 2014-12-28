@@ -2,6 +2,5 @@
 	.btn-group.btn-breadcrumb
 		a.btn.btn-default(ui-sref="main")
 			i.fa.fa-home
-		each val in ['label 1', 'label 2. A very very long one to truncate', 'label 3', 'label 4', 'label 5', 'label 6. A very very long one to truncate']
-			a.btn.btn-default(href="#")
-				div= val
+		a.btn.btn-default(ng-repeat="breadcrumb in breadcrumb.data", ng-href="{{breadcrumb.href}}") 
+			div {{breadcrumb.title}}

@@ -49,6 +49,8 @@ angular.module('exampleAppApp')
       })
     }
 
+    var query = {};
+
     $stateProvider
       .state('products', {
         url: '/products',
@@ -76,38 +78,142 @@ angular.module('exampleAppApp')
         views: {
           '': { 
             templateUrl: 'app/product/index.html',
-            controller: function($scope, categories, filters) {
+            controller: function($scope, $state, $q, categories, filters) {
+
+              /* breadcrumb */
+
+              $scope.breadcrumb = {
+                init: function(params) {
+                  var breadcrumbs = this.data;
+                  breadcrumbs.splice(1, breadcrumbs.length);
+
+                  var breadcrumbs = [];
+                  if( params.category != 'all' ) {
+                    var category = $scope.search.category.get(params.category);
+                    if(category.children.length == 0) {
+                      var pCategory = $scope.search.category.get(category.parent);
+                      breadcrumbs = [
+                        { title: 'Category', href: $state.href('products.query', { category: 'all', brand: null }) },
+                        { title: pCategory.name, href: $state.href('products.query', { category: pCategory._id, brand: null }) },
+                        { title: category.name, href: $state.href('products.query', { category: params.category, brand: null }) }
+                      ];
+                    } else {
+                      breadcrumbs = [
+                        { title: 'Category', href: $state.href('products.query', { category: 'all', brand: null }) },
+                        { title: category.name, href: $state.href('products.query', { category: params.category, brand: null }) }
+                      ];
+                    }
+                  }
+                  if( params.brand && params.brand != '' && params.brand != 'all' ) {
+                    var brands = params.brand.split('_');
+                    var brandName = _.map(brands, function(id) {
+                      var brand = $scope.search.brand.get(id);
+                      return brand ? brand.name : null;
+                    });
+                    breadcrumbs = _.union(breadcrumbs, [
+                      { title: 'Brand', href: $state.href('products.query', { brand: 'all' }) },
+                      { title: brandName.join(' & ')}
+                    ]);
+                  }
+                  this.add(breadcrumbs);
+                },
+                add : function(data) {
+                  if(_.isEmpty(data)) return;
+
+                  var breadcrumbs = this.data;
+                  _.forEach(data, function(value, key){
+                    breadcrumbs.push({
+                      title: value.title,
+                      href: value.href
+                    });
+                  });
+
+                },
+                getTitle: function(){
+                  var breadcrumbs = this.data;
+                  return breadcrumbs.length > 1 ? _.last(breadcrumbs).title :  'All Products' ;
+                },
+                data: [{ title: 'Products', href: '/products' }]
+              }
+
+              /* filters */
 
               $scope.filters = {
                 search: {
-                  data: [{
-                    id: 'title',
-                    type: 'text',
-                    title: 'Title'
-                  }, {
-                    id: 'body',
-                    type: 'text',
-                    title: 'Description'
-                  }, {
-                    id: 'price',
-                    type: 'number',
-                    title: 'Greather than >'
-                  }, {
-                    id: 'price',
-                    type: 'number',
-                    title: 'Less than <'
-                  }, {
-                    id: '$',
-                    type: 'text',
-                    title: 'Anything'
-                  }],
+                  filterBy: '$',
+                  data: [
+                    {
+                      id: 'title',
+                      type: 'text',
+                      title: 'Filter by Title',
+                      placeholder: 'Enter the title..'
+                    }, {
+                      id: 'body',
+                      type: 'text',
+                      title: 'Filter by Description',
+                      placeholder: 'Enter the description..'
+                    }, {
+                      id: 'price',
+                      type: 'number',
+                      title: 'Filter by Price: Greather than >',
+                      placeholder: 'Enter the price'
+                    }, {
+                      id: 'price',
+                      type: 'number',
+                      title: 'Filter by Price: Less than <',
+                      placeholder: 'Enter the price'
+                    }, {
+                      id: '$',
+                      type: 'text',
+                      title: 'Filter by Anything',
+                      placeholder: 'Enter the text..'
+                    }
+                  ],
+                  title: null,
+                  placeholder: null,
+                  inputEl: angular.element('input.input-filter'),
+                  selected: null,
+                  setFilterBy: function(search) {
+                    var self = this;
+
+                    self.filterBy = search.id;
+                    self.title = search.title;
+                    self.placeholder = search.placeholder;
+
+                    var recentQuery = self.inputEl.val();
+                    
+                    // set selected index query
+                    self.selected = search;
+                    // reset filter query
+                    _.forEach(self.query, function(item, key){ self.query[key] = '' });
+                    // change input type & set query
+                    if(search.type == 'number') {
+                      self.inputEl.prop('type', 'number');
+                      if(/^[0-9]+$/.test(recentQuery)) {
+                        self.query[search.id] = recentQuery;
+                      }
+                    } else {
+                      self.inputEl.prop('type', 'text');
+                      if(!/^[0-9]+$/.test(recentQuery)) {
+                        self.query[search.id] = recentQuery;
+                      }
+                    }
+                  },
+                  product: null,
                   query: {
                     $: '',
                     title: '',
                     body: '',
                     price: '',
-                  }, 
-                  selected: null
+                  },
+                  priceFilter: function(product) {
+                    var searchFilters = $scope.filters.search;
+                    var search = searchFilters.selected;
+                    if(/\>/.test(search.title))
+                      return product.price > searchFilters.query.price;
+                    else
+                      return searchFilters.query.price ? product.price < searchFilters.query.price : true ;
+                  }
                 },
                 order: {
                   data: [{
@@ -134,7 +240,8 @@ angular.module('exampleAppApp')
                     id: '-rating',
                     title: 'Rating - desc',
                     group: 'Rating'
-                  }]
+                  }],
+                  by: null
                 },
                 view: {
                   data: [{
@@ -145,18 +252,40 @@ angular.module('exampleAppApp')
                     className: 'fa fa-th-list'
                   }],
                   selected: 'list'
+                },
+                init: function() {
+                  // search
+                  var search = this.search;
+                  search.setFilterBy(search.data[search.data.length - 1]);
+                  // order by
+                  this.order.by = this.order.data[0];
+                  // filter selected
+                  // query (string) or price (number)
+                  $scope.$watchCollection('filters.search.selected', function(searchSelected) {
+                    $scope.filters.search.product = (searchSelected.type == 'number') ?  $scope.filters.search.priceFilter : search.query ;
+                  });
                 }
               };
+
+              $scope.filters.init();
+
+              /* search */
 
               $scope.search = {
                 loading: false,
                 category: {
+                  get: function(id) {
+                    return _.findDeep(this.data, { _id: id });
+                  },
                   data: categories
                 },
                 brand: {
                   query: '',
                   selection: [],
-                  data: filters.brands
+                  data: filters.brands,
+                  get: function(id) {
+                    return _.find(this.data, { id: id });
+                  }
                 },
                 price: {
                   options: filters.price,
@@ -202,16 +331,12 @@ angular.module('exampleAppApp')
             }
           },
           'breadcrumb@products': {
-            templateUrl: 'app/product/breadcrumb.html',
-            contoller: function($scope) {
-              console.log('breadcrumb@products:$scope', $scope)
-            }
+            templateUrl: 'app/product/breadcrumb.html'
           },
           'slides@products': {
             templateUrl: 'app/product/slides.html',
             controller: function($scope, $window, $state, $stateParams) {
               console.log('slides:$scope', $scope);
-              console.log('slides:$stateParams', $stateParams);
 
               var width = parseInt(angular.element('.carousel').width(), 10), 
                   height = 200;
@@ -243,82 +368,46 @@ angular.module('exampleAppApp')
           },
           'categories@products': {
             templateUrl: 'app/product/categories.html',
-            controller: function($scope) {
-              console.log('categories@products:$scope', $scope)
+            controller: function($scope, categories) {
+              console.log('categories@products:$scope', $scope);
+              $scope.categories = categories;
             }
           },
-          'filters@products': {
+          /*'filters@products': {
             templateUrl: 'app/product/filter.html',
             controller: function($scope, $compile) {
-              var $input = angular.element('input.input-filter');
-              var searchFilters = $scope.filters.search;
-
-              /* search */
-
-              $scope.title = 'Filter by';
-              $scope.filterBy = '$';
-              $scope.setFilterBy = function(search) {
-                $scope.filterBy = search.id;
-                $scope.title = search.title;
-
-                var recentQuery = $input.val();
-                
-                // set selected index query
-                searchFilters.selected = search;
-                // reset filter query
-                _.forEach(searchFilters.query, function(item, key){ searchFilters.query[key] = '' });
-                // change input type & set query
-                if(search.type == 'number') {
-                  $input.prop('type', 'number');
-                  if(/^[0-9]+$/.test(recentQuery)) {
-                    searchFilters.query[search.id] = recentQuery;
-                  }
-                } else {
-                  $input.prop('type', 'text');
-                  if(!/^[0-9]+$/.test(recentQuery)) {
-                    searchFilters.query[search.id] = recentQuery;
-                  }
-                }
-              }
-
-              /* order */
-
-              $scope.filters.order.by = $scope.filters.order.data[0];
             }
-          },
+          },*/
           'content@products': {
             templateUrl: 'app/product/list/product.html',
-            controller: function($scope, $rootScope, products, categories, filters) {
+            controller: function($scope, $rootScope, $location, productResource, filters) {
+              console.log('content@products', filters);
+              var params = $location.search();
 
-              $scope.priceFilters = function(product){
-                var searchFilters = $scope.filters.search;
-                var search = searchFilters.selected;
-                if(/\>/.test(search.title))
-                  return product.price > searchFilters.query.price;
-                else
-                  return searchFilters.query.price ? product.price < searchFilters.query.price : true ;
-              }
-
-              $scope.$watchCollection('filters.search.selected', function(searchSelected) {
-                if (!searchSelected) {
-                  $scope.productFilters = $scope.filters.search.query;
-                  return;
-                }
-
-                if(searchSelected.type == 'number') {
-                  $scope.productFilters = $scope.priceFilters;
-                } else {
-                  $scope.productFilters = $scope.filters.search.query;
-                }
+              $scope.loading = true;
+              productResource.query(params, function(products){
+                $scope.products = products;
+                $scope.products.title = 'All Products';
+                $scope.products.currentPage = 1;
+                $rootScope.$broadcast('products:loaded', { filters: filters });
+                $scope.loading = false;
               });
+
+              $scope.doPaging = function(page) {
+                $scope.loading = true;
+                params['page'] = page;
+                productResource.query(params, function(products){
+                  $scope.products = products;
+                  $scope.products.title = 'All Products';
+                  $scope.loading = false;
+                });
+              }
             }
           },
 
           'side@products': {
             templateUrl: 'app/product/side.html',
-            controller: function($scope, $rootScope, $location, $http, $state, $timeout) {
-
-              var query = {};
+            controller: function($scope, $rootScope, $stateParams, $http, $state, $timeout) {
 
               var categories = $scope.search.category.data;
 
@@ -328,7 +417,6 @@ angular.module('exampleAppApp')
               /* state go */
 
               function go(key, value) {
-                console.log('go', key, value);
                 if(!_.isEmpty(value)) {
                   value = _.isArray(value) ? value.join('_') : value ;
                   query[key] = value;
@@ -336,14 +424,19 @@ angular.module('exampleAppApp')
                   query[key] = null;
                 }
 
-                if(key == 'category') {
+                /*if(key == 'category') {
                   // if categories count is null, remove parameter brand
                   var count = _.findDeep(categories, { _id: query.category }).count;
                   if( count == 0 ) {
                     query.brand = null;
                   }
+                }*/
+
+                if(!_.has(query, 'category')) {
+                  query.category = 'all';
                 }
 
+                console.log('go', query);
                 $state.go('products.query', query);
               }
 
@@ -393,10 +486,10 @@ angular.module('exampleAppApp')
                                                 result.push({ _id: val, total: total }) ;
                                               })
                                               .value();
-                      // set count kategori                      
+                      // set jumlah kategori                      
                       var parents = {};
                       _.forEach(filterCategories, function(item){
-                        var c = _(categories).findDeep({ _id: item._id}).tap(function(cat){ cat.count = item.total }).value();
+                        var c = _(categories).findDeep({ _id: item._id }).tap(function(cat){ cat.count = item.total }).value();
                         if(parents[c.parent]) {
                           parents[c.parent] += c.count;
                         } else {
@@ -513,17 +606,27 @@ angular.module('exampleAppApp')
                     $scope.search.display.selected = params.display;
                   },
                   default: function() {
+                    // category
                     setCollapsibleGroup($scope.search.category.data);
+                    // brand
+                    _.map($scope.search.brand.data, function(item){ item.selected = false; return item; });
+                    $scope.search.brand.selection = [];
+                    $scope.search.os.selected = null;
+                    $scope.search.storage.flash.selected = null;
+                    $scope.search.storage.ram.selected = null;
+                    $scope.search.camera.selected = null;
+                    $scope.search.display.selected = null;
+                    // query
+                    query = {};
                   }
                 };
 
                 if(params) {
                   _.forEach(_.keys(params), function(filter){
-                      paramsFn[filter]();
+                      if(paramsFn[filter]) paramsFn[filter]();
                   });
                 } else {
-                  // products home
-                  // set default collapsible group categories
+                  // all products
                   paramsFn['default']();
                 }
 
@@ -625,13 +728,12 @@ angular.module('exampleAppApp')
                 console.log('filter:select:%s', type, filter);
                 go(type, filter.query || filter.value);
               };
-
             }
           }
         }
       })
       .state('products.query', {
-        url: '/{category:[a-zA-Z0-9_-]{1,}}/{brand}?price&os&display&flash&ram&camera',
+        url: '/category/{category:[a-zA-Z0-9_-]{1,}}/{brand}?price&os&display&flash&ram&camera&page',
         params: {
           category: 'all',
           brand: null,
@@ -640,38 +742,69 @@ angular.module('exampleAppApp')
           display: null,
           flash: null,
           ram: null,
-          camera: null
+          camera: null,
+          page: 1
         },
         views: {
+          'breadcrumb@products': {
+            templateUrl: 'app/product/breadcrumb.html',
+            controller: function($scope, $stateParams) {
+              $scope.breadcrumb.init($stateParams);
+            }
+          },
+          'slides@products': {},
+          'categories@products': {},
           'content@products': {
             templateUrl: 'app/product/list/product.html',
-            controller: function($scope, $rootScope, $stateParams, productFilters) {
-              console.log('content@category:$stateParams', $stateParams);
-                            
+            controller: function($scope, $rootScope, $state, $stateParams, productService) {
               $scope.loading = true;
+
+              var title = null;
+              var query = $stateParams;
+
               var params = _.mapValues($stateParams, function(value) {
                 return value && /\_/.test(value) ? value.split('_') : value ;
               });
 
-              productFilters(params).then(function(results) {
+              productService(params).then(function(results) {
                 $scope.products = results.products.data;
+                $scope.products.title = title = $scope.breadcrumb.getTitle();
+
                 $rootScope.$broadcast('products:loaded', { params: params, filters: results.filters.data });
                 $scope.loading = false;
+
+                $state.current.data.title = title;
               });
 
-              $scope.category = params.category;
-              $scope.$on('$stateChangeSuccess', function(event, toState) {
-                  toState.data.title = $scope.category;
-              });
+              $scope.doPaging = function(page) {
+                // query['page'] = page;
+                // $state.go('products.query', query, {reload: true});
+
+                params['page'] = page;
+                $scope.loading = true;
+                productService(params).then(function(results) {
+                  $scope.products = results.products.data;
+                  $scope.products.title = title;
+                  $scope.loading = false;
+                });
+              }
             }
           }
         }
       })
       .state('products.detail', {
-        url: '/:productId',
-        template: '<p>{{productsByCategory}}</p>',
-        controller: function($scope, $stateParams) {
-          $scope.product = 'Product ' + $stateParams.productId
+        url: '/view/:productId',
+        views: {
+          'content@products': {
+            template: '<p>{{product}}</p>',
+            controller: function($scope, $stateParams, $state) {
+              $scope.product = 'Product ' + $stateParams.productId
+            }
+          },
+          'slides@products': {},
+          'categories@products': {},
+          'filters@products': {},
+          'side@products': {}
         }
       })
       // .state('products', {

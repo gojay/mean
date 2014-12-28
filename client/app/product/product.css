@@ -198,6 +198,11 @@ section .thumbnail {
 /* Side
 -------------------------------------------------- */
 
+.panel .panel-heading h3 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: #777;
+}
 .panel .panel-heading:not(:first-child) {
   border-radius: 0;
 }
@@ -226,4 +231,11 @@ section .thumbnail {
 slider span.bubble {
   top: -30px;
   font-size: 1em;
+}
+
+/* pagination */
+
+section .pagination {
+  margin-top: 0;
+  margin-bottom: 0;
 }

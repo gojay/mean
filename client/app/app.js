@@ -10,6 +10,7 @@ angular.module('exampleAppApp', [
   'ui.bootstrap',
   'angular-data.DSCacheFactory',
   'angular-spinkit',
+  'angular-paging',
   'uiSlider'
 ])
   .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, $urlMatcherFactoryProvider) {

@@ -3,11 +3,11 @@ style
 
 #products.container
 	.row
-		aside.col-md-3
+		aside.col-md-3(ng-hide="$state.current.name == 'products.detail'")
 			div(ui-view="side")
-		section.col-md-9
+		section(ng-class="{true:'col-md-12', false:'col-md-9'}[$state.current.name == 'products.detail']")
 			div(ui-view="breadcrumb")
 			//- div(ui-view="slides")
-			//- div(ui-view="categories")
-			div(ui-view="filters")
+			div(ui-view="categories")
+			//- div(ui-view="filters")
 			<div ui-view="content" class="toggle"></div>

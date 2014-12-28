@@ -20,7 +20,8 @@
     "ngAnimate-animate.css": "~0.1.1",
     "angular-cache": "~3.2.2",
     "angular-spinkit": "~0.3.3",
-    "angular-slider": "https://github.com/prajwalkman/angular-slider.git#~0.1.6"
+    "angular-slider": "https://github.com/prajwalkman/angular-slider.git#~0.1.6",
+    "angular-paging": "*"
   },
   "devDependencies": {
     "angular-mocks": ">=1.2.*",
