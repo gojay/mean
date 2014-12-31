@@ -3,9 +3,9 @@
 	div.margin-top-bottom(ng-switch="products.data.length")
 		// pagination top
 		.row
-			paging.col-md-8(ng-show="products.pages > 1", page="products.page", page-size="products.perPage", total="products.total", show-prev-next="true", scroll-top="true", paging-action="doPaging(page)")
+			paging.col-md-8(ng-show="products.pages > 1", page="products.currentPage", page-size="products.perPage", total="products.total", show-prev-next="true", scroll-top="true", paging-action="doPaging(page)")
 			.text-right(ng-hide="!products.total", ng-class="{true:'col-md-4', false:'col-md-12'}[products.pages > 1]")
-				small View {{products.skip + ' - ' + products.limit}} of {{products.total}} results
+				small View {{ products.skip }} - {{products.limit + products.skip}} of {{products.total}} results
 		// alert notfound
 		.alert.alert-warning(ng-switch-when="0")
 			| Products Not Found!
@@ -20,27 +20,36 @@
 				a.list-group-item(ng-repeat="product in products.data | filter:filters.search.product | orderBy:filters.order.by.id", ui-sref="products.detail({productId:product.slug})")
 					.media.col-md-3
 						figure.pull-left
-							img.media-object.img-rounded.img-responsive(ng-src="{{product.image}}")
+							img.media-object.img-rounded.img-responsive(img-lazy-load="{{product.image}}", width="100", height="100")
 					.col-md-6
 						h4.list-group-item-heading {{product.title}}
 						p.list-group-item-text {{product.body}}
+						p.margin-top 
+							button.btn.btn-success 
+								i.fa.fa-shopping-cart.fa-fw &nbsp;
+								| Add to Cart
 					.col-md-3.text-center
 						h4 $ {{product.price}}
 						.stars
 							rating(ng-model="product.rating", max="5", readonly="true")
 						p {{product.review}} reviews
-			.panel-body.bouncy-fade-in(ng-hide="loading", ng-switch-when="grid")
+			.panel-body.bouncy-fade-in(ng-hide="loading", ng-switch-when="grid", ng-init="views = []")
 				.col-md-4(ng-repeat="product in products.data | filter:filters.search.product | orderBy:filter.order.by.id", ui-sref="products.detail({productId:product.slug})")
-					.thumbnail
-						img(ng-src="{{product.image}}")
+					.thumbnail(ng-mouseover="views[$index]=true", ng-mouseleave="views[$index]=false", ng-init="views[$index]=false", style="position:relative;")
+						img(ng-src="{{product.image}}", spinkit-image-preloader="three-bounce-spinner", spinkit-image-preloader-class="spinner-wrapper-primary")
 						.caption
 							h4.pull-right $74.99
-							h4 {{product.title}}
+							h4 
+								a(ui-sref="products.detail({productId:product.slug})") {{product.title}}
 							p {{product.body}}
 						.ratings
 							p.pull-right {{product.review}} reviews
 							p.stars
 								rating(ng-model="product.rating", max="5", readonly="true")
+						.cart.slide-down(style="position:absolute; width:100%; height:100%; top:0; background-color:rgba(66, 139, 202, 0.5)", ng-show="views[$index]")
+							button.btn.btn-success(style="position:absolute; top:40%; left:25%") 
+								i.fa.fa-shopping-cart.fa-fw &nbsp;
+								| Add to Cart
 	// pagination bottom
 	paging(ng-show="products.pages > 1", page="products.page", page-size="products.perPage", total="products.total", show-prev-next="true", scroll-top="true", paging-action="doPaging(page)")
 			

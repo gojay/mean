@@ -1,122 +1,112 @@
-.container
-	.row
+.row
+	.col-md-4(style="position:relative; height:400px")
+		div(ng-repeat="img in product.meta.images", style="position:absolute; top:0; left:0")
+			img.slide-right(ng-if="$index == activeThumb", ng-src="{{img}}")
+	.col-md-8(style="background:white, height:400px")
+		.row
+			hgroup.col-md-12
+				h2.col-md-10 {{product.title}}
+				.col-md-2
+					button.btn.btn-sm.btn-primary Edit
+		hr 
 		.col-md-12
-			ol.breadcrumb
-				li
-					a(href="/") Home
-				li
-					a(ui-sref="products") Products
-				li
-					a(ui-sref="products.category({ category:product.category })") {{product.category}}
-				li.active {{product.title}}
-		.col-md-4(style="position:relative; height:400px")
-			//- img(ng-src="{{thumbnail}}")
-			div(ng-repeat="img in product.meta.images.files", style="position:absolute; top:0; left:0")
-				img.slide-right(ng-if="$index == activeThumb", ng-src="{{product.meta.images.cdnUri + '/original_' + img}}")
-		.col-md-8(style="background:white, height:400px")
+			p {{product.meta.description}}
 			.row
-				hgroup.col-md-12
-					h2.col-md-10 {{product.title}}
-					.col-md-2
-						button.btn.btn-sm.btn-primary Edit
-			hr 
-			.col-md-12
-				p {{product.meta.description}}
-				.row
-					.col-md-3(ng-repeat="img in product.meta.images.files")
-						a.thumbnail(href="#", ng-click="setThumb($index)", ng-class="{'active': activeThumb == $index}")
-							img(ng-src="{{product.meta.images.cdnUri + '/original_' + img}}", width="100px")
-	.clear
-	.row
-		.col-md-12
-			.panel.panel-primary
-				.panel-heading Specifications
-				table.table.table-striped
-					tr
-						th.col-md-3 Availability and Networks
-						th.col-md-3 Battery
-						th.col-md-3 Storage and Memory
-						th.col-md-3 Connectivity
-					tr
-						td 
-							dl
-								dt Availability
-								dd(ng-repeat="availability in product.meta.availability") {{availability}}
-						td
-							dl
-								dt Type
-								dd {{product.meta.battery.type}}
-								dt Talk Time
-								dd {{product.meta.battery.talkTime}}
-								dt Standby time (max)
-								dd {{product.meta.battery.standbyTime}}
-						td
-							dl
-								dt RAM
-								dd {{product.meta.storage.ram}}
-								dt Internal Storage
-								dd {{product.meta.storage.flash}}
-						td
-							dl
-								dt Network Support
-								dd {{product.meta.connectivity.cell}}
-								dt WiFi
-								dd {{product.meta.connectivity.wifi}}
-								dt Bluetooth
-								dd {{product.meta.connectivity.bluetooth}}
-								dt Infrared
-								dd {{product.meta.connectivity.infrared | checkmark}}
-								dt GPS
-								dd {{product.meta.connectivity.gps | checkmark}}
-				table.table.table-striped
-					tr
-						th.col-md-3 Android
-						th.col-md-3 Size and Weigth
-						th.col-md-3 Display
-						th.col-md-3 Hardware
-					tr
-						td
-							dl
-								dt OS Version
-								dd {{product.meta.android.os}}
-								dt UI
-								dd {{product.meta.android.ui}}
-						td
-							dl
-								dt Dimensions
-								dd(ng-repeat="dimensions in product.meta.sizeAndWeight.dimensions") {{dimensions}}
-								dt Weigth
-								dd {{product.meta.sizeAndWeight.weight}}
-						td
-							dl
-								dt Screen size
-								dd {{product.meta.display.screenSize}}
-								dt Screen resolution
-								dd {{product.meta.display.screenResolution}}
-								dt Touch screen
-								dd {{product.meta.display.touchScreen | checkmark}}
-						td
-							dl
-								dt CPU
-								dd {{product.meta.hardware.cpu}}
-								dt USB
-								dd {{product.meta.hardware.usb}}
-								dt Audio / headproduct jack
-								dd {{product.meta.hardware.audioJack}}
-								dt FM Radio
-								dd {{product.meta.hardware.fmRadio | checkmark}}
-								dt Accelerometer
-								dd {{product.meta.hardware.accelerometer | checkmark}}
-				table.table.table-striped
-					tr
-						th.col-md-3 Camera
-						th.col-md-3 Additional Features
-					tr
-						td
-							dl
-								dt Primary
-								dd {{product.meta.camera.primary}}
-								dt Features
-								dd {{product.meta.camera.features.join(', ')}}
-						td
-							dd {{product.meta.additionalFeatures}}
+				.col-md-3(ng-repeat="img in product.meta.images.files")
+					a.thumbnail(href="#", ng-click="setThumb($index)", ng-class="{'active': activeThumb == $index}")
+						img(ng-src="{{product.meta.images.cdnUri + '/original_' + img}}", width="100px")
+.clear
+.row
+	// Specifications
+	.col-md-12(ng-if="product.category == 'android'")
+		.panel.panel-primary
+			.panel-heading Specifications
+			table.table.table-striped
+				tr
+					th.col-md-3 Availability and Networks
+					th.col-md-3 Battery
+					th.col-md-3 Storage and Memory
+					th.col-md-3 Connectivity
+				tr
+					td 
+						dl
+							dt Availability
+							dd(ng-repeat="availability in product.meta.availability") {{availability}}
+					td
+						dl
+							dt Type
+							dd {{product.meta.battery.type}}
+							dt Talk Time
+							dd {{product.meta.battery.talkTime}}
+							dt Standby time (max)
+							dd {{product.meta.battery.standbyTime}}
+					td
+						dl
+							dt RAM
+							dd {{product.meta.storage.ram}}
+							dt Internal Storage
+							dd {{product.meta.storage.flash}}
+					td
+						dl
+							dt Network Support
+							dd {{product.meta.connectivity.cell}}
+							dt WiFi
+							dd {{product.meta.connectivity.wifi}}
+							dt Bluetooth
+							dd {{product.meta.connectivity.bluetooth}}
+							dt Infrared
+							dd {{product.meta.connectivity.infrared | checkmark}}
+							dt GPS
+							dd {{product.meta.connectivity.gps | checkmark}}
+			table.table.table-striped
+				tr
+					th.col-md-3 Android
+					th.col-md-3 Size and Weigth
+					th.col-md-3 Display
+					th.col-md-3 Hardware
+				tr
+					td
+						dl
+							dt OS Version
+							dd {{product.meta.android.os}}
+							dt UI
+							dd {{product.meta.android.ui}}
+					td
+						dl
+							dt Dimensions
+							dd(ng-repeat="dimensions in product.meta.sizeAndWeight.dimensions") {{dimensions}}
+							dt Weigth
+							dd {{product.meta.sizeAndWeight.weight}}
+					td
+						dl
+							dt Screen size
+							dd {{product.meta.display.screenSize}}
+							dt Screen resolution
+							dd {{product.meta.display.screenResolution}}
+							dt Touch screen
+							dd {{product.meta.display.touchScreen | checkmark}}
+					td
+						dl
+							dt CPU
+							dd {{product.meta.hardware.cpu}}
+							dt USB
+							dd {{product.meta.hardware.usb}}
+							dt Audio / headproduct jack
+							dd {{product.meta.hardware.audioJack}}
+							dt FM Radio
+							dd {{product.meta.hardware.fmRadio | checkmark}}
+							dt Accelerometer
+							dd {{product.meta.hardware.accelerometer | checkmark}}
+			table.table.table-striped
+				tr
+					th.col-md-3 Camera
+					th.col-md-3 Additional Features
+				tr
+					td
+						dl
+							dt Primary
+							dd {{product.meta.camera.primary}}
+							dt Features
+							dd {{product.meta.camera.features.join(', ')}}
+					td
+						dd {{product.meta.additionalFeatures}}

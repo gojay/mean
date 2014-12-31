@@ -1,78 +1,101 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .service('productResource', function($q, $http, $resource) {
-        return $resource('/api/products/:id',  { id: '@_id' }, {
-            query: {
-                method: 'GET',
-                isArray: false,
-                cache: true
-            },
-            get: {
-                method: 'GET',
-                cache: true
-            },
-            update: {
-                method: 'PUT'
-            }
-        });
-    })
-    .factory('productService', function($q, $http) {
-        return function(filters) {
-            var deferred = $q.defer();
-
-            console.log('productService', filters)
-
-            if(filters.brand && filters.brand == 'all') {
-                filters.brand = null;
-            }
-
-            // define string field parameters 
-            var fieldStr = ['category', 'brand', 'os'];
-            // filtering 
-            // - value not null
-            // - transform not string values to range
-            var params = _(filters).pick(function(v, k){
-                return k != 'page';
-            }).omit(function(value) {
-                return _.isUndefined(value) || _.isEmpty(value);
-            }).transform(function(res, v, k) {
-                if(_.indexOf(fieldStr, k) == -1) {
-                    var inSep = v.indexOf('-');
-                    if(inSep > -1) {
-                        var vArr = v.split('-');
-                        v = (inSep == 0) ? { lt: vArr[1] } : { gte: vArr[0], lte: vArr[1] };
-                    } else {
-                        v = { gt: v };
-                    }
+    .factory('productService', function($q, $http, $resource) {
+        return {
+            resource: $resource('/api/products/:id',  { id: '@_id' }, {
+                query: {
+                    method: 'GET',
+                    isArray: false,
+                    cache: true
+                },
+                get: {
+                    method: 'GET',
+                    cache: true
+                },
+                update: {
+                    method: 'PUT'
                 }
-                res[k] = v;
-            }).value();
+            }),
+            get: function(param, callback) {
+                return this.resource.get({ id: param }, callback);
+            },
+            query: function(params, callback) {
+                return this.resource.query(params, callback);
+            },
+            all: function(filters, options) {
+                var deferred = $q.defer();
 
-            var urlParameter = jQuery.param({q:params});
-            if(_.has(filters, 'page')) {
-                var page = parseInt(filters.page);
-                urlParameter += '&page=' + (_.isNaN(page) ? 1 : page) ;
-            }
-            console.log('urlParameter', urlParameter);
+                var urlParameter = this.urlParameter(filters);
 
-            var urlCalls = {
-                filters : $http.get('/api/products/filters?'+ urlParameter),
-                products: $http.get('/api/products?'+ urlParameter),
-            };
+                var urls = {
+                    categories : $http.get('/api/categories/products'+ urlParameter),
+                    filters    : $http.get('/api/products/filters'+ urlParameter),
+                    products   : $http.get('/api/products'+ urlParameter),
+                };
 
-            $q.all(urlCalls)
-                .then(function resolve(results) {
+                if( options ) {
+                    
+                    if( options.exclude && _.has(urls, options.exclude) ) {
+                        urls = _.pick(urls, function(v,k){ 
+                            return k != options.exclude; 
+                        });
+                    }
+
+                    if( options.select ) {
+                        var select = _.isString(options.select) ? [options.select] : options.select ;
+                        urls = _.pick(urls, function(v,k){ 
+                            return _.indexOf(select, k) > -1; 
+                        });
+                    }
+
+                }
+
+                $q.all(urls).then(function resolve(results) {
                     deferred.resolve(results)
-                },
-                function reject(errors) {
+                }, function reject(errors) {
                     deferred.reject(errors);
-                },
-                function update(updates) {
+                }, function update(updates) {
                     deferred.update(updates);
                 });
-            return deferred.promise;
-        };
+                return deferred.promise;
+            },
+            urlParameter: function(filters) {
+                var urlParameter = '';
+                if(filters) {
+                    // define string field parameters 
+                    var fieldStr = ['category', 'brand', 'os'];
+                    // filtering 
+                    // - value not null
+                    // - transform not string values to range
+                    var params = _(filters).pick(function(v, k){
+                        return k != 'page';
+                    }).omit(function(value) {
+                        return _.isUndefined(value) || _.isEmpty(value) || value == 'all';
+                    }).transform(function(res, v, k) {
+                        if(_.indexOf(fieldStr, k) == -1) {
+                            var inSep = v.indexOf('-');
+                            if(inSep > -1) {
+                                var vArr = v.split('-');
+                                v = (inSep == 0) ? { lt: vArr[1] } : { gte: vArr[0], lte: vArr[1] };
+                            } else {
+                                v = { gt: v };
+                            }
+                        }
+                        res[k] = v;
+                    }).value();
+
+                    urlParameter = '?' + jQuery.param({q:params});
+                    if(_.has(filters, 'page')) {
+                        var page = parseInt(filters.page);
+                        urlParameter += '&page=' + (_.isNaN(page) ? 1 : page) ;
+                    }
+
+                    console.log('urlParameter', urlParameter);
+                }
+                return urlParameter;
+            }
+        }
     })
     .factory('productDummy', function() {
         return {

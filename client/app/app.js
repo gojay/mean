@@ -8,6 +8,7 @@ angular.module('exampleAppApp', [
   'btford.socket-io',
   'ui.router',
   'ui.bootstrap',
+  'ui.utils',
   'angular-data.DSCacheFactory',
   'angular-spinkit',
   'angular-paging',

@@ -1,5 +1,7 @@
 .row.margin-top-bottom
-	.col-md-4(ng-repeat="category in categories") 
-		.well.well-sm.text-center 
-			h3 
+	.col-md-4(ng-repeat="category in search.category.data") 
+		.alert-message.alert-message-success 
+			h4 
 				a(ui-sref="products.query({ category: category._id })") {{category._id | uppercase}}
+			p 
+				| Lorem Ipsum is simply dummy text of the printing and typesetting industry.

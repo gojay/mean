@@ -213,7 +213,7 @@ exports.index = function(req, res) {
     if(ppage > 0) {
         queries.skip = ppage * perPage;
     }
-    queries.limit = queries.skip + perPage;
+    queries.limit = perPage;
 
     var options = _.assign({
         sort: {

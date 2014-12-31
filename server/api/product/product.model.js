@@ -682,6 +682,69 @@ ProductSchema.statics = {
                 ];
                 self.aggregate(aggregate, callback);
             }],
+            /*os: ['filters', function(callback, results) {
+                var filters = _.pick(results.filters, function(v, k){ return !/os/.test(k); });
+
+                var defaultFilter = { 
+                    $or: [
+                        // os_provided
+                        { 
+                            $and: [
+                                {"meta.features.os_provided": { $exists: true, $not: { $size: 0 } }},
+                                {"meta.features.os_provided.value": { $not: /\:|yes/i }}
+                            ]
+                        },
+                        // operating_system
+                        {
+                            $and: [
+                                {"meta.features.operating_system": { $exists: true }},
+                                {"meta.features.operating_system.value": { $not: /\:|yes/i }}
+                            ]                        
+                        },
+                        // operatingsystem
+                        {
+                            "meta.operatingsystem": { $exists:true, $ne: null }                            
+                        }
+                    ]
+                };
+                var match = _.assign(defaultFilter, filters);
+                var aggregate = [
+                    { $match: match },
+                    { $project: { 
+                            _id: 1, 
+                            category:1,
+                            title:1, 
+                            os: { 
+                                $cond: { 
+                                    if: { $eq: ["$meta.features.os_provided", []] }, 
+                                    then: {
+                                        $cond: { 
+                                            if: { $eq: ["$meta.features.operating_system", []] }, 
+                                            then: "$meta.operatingsystem",
+                                            else: "$meta.features.operating_system.value"
+                                        }
+                                    },
+                                    else: "$meta.features.os_provided.value"
+                                }
+                            }
+                        } 
+                    },
+                    { $group : { _id: "$os", total: { $sum: 1 } } },
+                    { $project: { _id: 0, name: "$_id", total: 1 } },
+                    { $sort: { name: 1, total: 1 }}
+                ];
+                self.aggregate(aggregate, function(err, results){
+                    if(err) return callback(err);
+                    var os = _.map(results, function(item){ 
+                        if(_.isArray(item.name)) {
+                            item.name = item.name[0]; 
+                        }
+                        item.value = item.name.toLowerCase();
+                        return item; 
+                    });
+                    callback(null, os);
+                });
+            }],*/
             camera: ['filters', function(callback, results) {
                 var filters = _.pick(results.filters, function(v, k){ return !/camera/.test(k); });
                 var match = _.assign({ "meta.camera.primary": { $exists:true } }, filters);
@@ -832,8 +895,8 @@ ProductSchema.statics = {
                 total: { $first: '$total' } 
             }
         },
-        { $skip: 4 }, // skip = page * limit
-        { $limit: 6 },
+        { $skip: 4 }, // skip = (page -1) * limit
+        { $limit: 6 }, // skip = limit
         { $sort: { 'title': 1 } },
         { $group: { _id:0, data: { $push: { _id: '$_id', title: '$title', image: {
             $cond:{ 
@@ -946,7 +1009,7 @@ ProductSchema.statics = {
             limit: { $literal: options.limit },
             skip: { $literal: options.skip },
             pages: { $divide: ['$total', options.perPage] },
-            page: { $literal: options.page },
+            currentPage: { $literal: options.page },
             perPage: { $literal: options.perPage },
             data: 1
         };
@@ -955,7 +1018,7 @@ ProductSchema.statics = {
         /* execute
         -----------------------------------------------------------*/
 
-        // done(null, aggregate);
+        // done(null, aggregate); return;
 
         this.aggregate(aggregate, function(err, results){
             if(err) return done(err);
