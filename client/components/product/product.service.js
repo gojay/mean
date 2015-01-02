@@ -23,6 +23,7 @@ angular.module('exampleAppApp')
             query: function(params, callback) {
                 return this.resource.query(params, callback);
             },
+            params: '',
             all: function(filters, options) {
                 var deferred = $q.defer();
 
@@ -85,15 +86,27 @@ angular.module('exampleAppApp')
                         res[k] = v;
                     }).value();
 
-                    urlParameter = '?' + jQuery.param({q:params});
+                    this.params = { q: params };
                     if(_.has(filters, 'page')) {
                         var page = parseInt(filters.page);
-                        urlParameter += '&page=' + (_.isNaN(page) ? 1 : page) ;
+                        this.params['page'] = _.isNaN(page) ? 1 : page ;
                     }
 
-                    console.log('urlParameter', urlParameter);
+                    urlParameter = '?' + jQuery.param(this.params);
                 }
+                else if(this.params) {
+                    urlParameter = '?' + jQuery.param(this.params);
+                }
+
+                console.log('urlParameter', urlParameter);
+
                 return urlParameter;
+            },
+            getParams: function() {
+                return this.params;
+            },
+            setParams: function(params) {
+                this.params = _.assign(this.params, params);
             }
         }
     })

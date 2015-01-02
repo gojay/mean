@@ -1,15 +1,14 @@
 'use strict';
 
-xdescribe('Controller: ProductsListCtrl', function () {
+xdescribe('Controller: ProductsCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exampleAppApp'));
 
-  var ProductsListCtrl, scope;
+  var $scope, ProductsCtrl;
 
-  // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
-    var products = [{
+    var productData = [{
         "_id": "548093f0088353a02b7646fb",
         "image": "/images/phones/original_motorola-charm-with-motoblur.2.jpg",
         "body": "Motorola CHARM fits easily in your pocket or palm.  Includes MOTOBLUR service.",
@@ -27,17 +26,14 @@ xdescribe('Controller: ProductsListCtrl', function () {
         "slug": "t-mobile-g2",
         "title": "T-Mobile G2"
     }];
-    scope = $rootScope.$new();
-    ProductsListCtrl = $controller('ProductsListCtrl', {
-      $scope: scope,
-      products: products
+    $scope = $rootScope.$new();
+    ProductsCtrl = $controller('ProductsCtrl', {
+      $scope: $scope,
+      productData: productData
     });
   }));
 
-  it('should get array products fetched from xhr', function () {
-    // $httpBackend.flush();
-    expect(scope.products).toEqual(jasmine.any(Array));
-    expect(scope.products.length).toBe(2);
-    expect(scope.orderProp).toEqual('createdAt');
+  it('should products filters init', function () {
+    
   });
 });

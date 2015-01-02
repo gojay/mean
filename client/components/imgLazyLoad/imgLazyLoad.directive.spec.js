@@ -15,6 +15,6 @@ describe('Directive: imgLazyLoad', function () {
   it('should make hidden element visible', inject(function ($compile) {
     element = angular.element('<img-lazy-load></img-lazy-load>');
     element = $compile(element)(scope);
-    expect(element.text()).toBe('this is the imgLazyLoad directive');
+    expect(element.text()).toBe('');
   }));
 });

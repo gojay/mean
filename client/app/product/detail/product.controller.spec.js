@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Controller: ProductsDetailCtrl', function () {
+xdescribe('Controller: ProductsDetailCtrl', function () {
 
   // load the controller's module
   beforeEach(angular.mock.module('exampleAppApp'));
