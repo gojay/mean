@@ -1,43 +1,148 @@
 'use strict';
 
-xdescribe('Controller: ProductsListCtrl', function () {
+ddescribe('Controller: ProductsList', function () {
 
   // load the controller's module
   beforeEach(module('exampleAppApp'));
+  beforeEach(module('socketMock'));
 
-  var ProductsListCtrl, scope;
-
-  // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope) {
-    var products = [{
-        "_id": "548093f0088353a02b7646fb",
-        "image": "/images/phones/original_motorola-charm-with-motoblur.2.jpg",
-        "body": "Motorola CHARM fits easily in your pocket or palm.  Includes MOTOBLUR service.",
-        "category": "motorola",
-        "createdAt": "2014-12-04T17:03:44.248Z",
-        "slug": "motorola-charm-with-motoblur",
-        "title": "Motorola CHARM™ with MOTOBLUR™"
+  var productData = {
+    categories: {
+      data: []
     },
-    {
-        "_id": "548093ef088353a02b7646fa",
-        "image": "/images/phones/original_t-mobile-g2.2.jpg",
-        "body": "The T-Mobile G2 with Google is the first smartphone built for 4G speeds on T-Mobile's new network. Get the information you need, faster than you ever thought possible.",
-        "category": "t-mobile",
-        "createdAt": "2014-12-04T17:03:43.878Z",
-        "slug": "t-mobile-g2",
-        "title": "T-Mobile G2"
-    }];
-    scope = $rootScope.$new();
-    ProductsListCtrl = $controller('ProductsListCtrl', {
-      $scope: scope,
-      products: products
-    });
-  }));
+    filters: {
+      data: {
+        brands: [
+          { id: 'apple', name: 'Apple' },
+          { id: 'htc', name: 'HTC' },
+          { id: 'samsung', name: 'Samsung' }
+        ],
+        price : [{
+          min: 0,
+          max: 1000
+        }],
+        os: [],
+        flash: [],
+        ram: [],
+        camera: [],
+        display: []
+      }
+    }
+  };
 
-  it('should get array products fetched from xhr', function () {
-    // $httpBackend.flush();
-    expect(scope.products).toEqual(jasmine.any(Array));
-    expect(scope.products.length).toBe(2);
-    expect(scope.orderProp).toEqual('createdAt');
+  describe('Controller: ProductsContentCtrl request by $httpBackend', function () {
+    var $scope, $rootScope, $httpBackend, ProductsContentCtrl, productService;
+
+    // Initialize the controller and a mock scope
+    beforeEach(inject(function ($controller, _$rootScope_, $location, $templateCache, _$httpBackend_, _productService_) {
+      
+      $httpBackend = _$httpBackend_;
+      $httpBackend.expectGET('/api/products').respond({data:['products']});
+
+      $templateCache.put('app/main/main.html', '');
+
+      $rootScope = _$rootScope_;
+
+      $rootScope = _$rootScope_;
+      spyOn($rootScope, '$broadcast').andCallThrough();
+      $rootScope.$on('products:loaded', function(event, data) {
+        expect(data.filters).toBeDefined();
+      });
+      $scope = $rootScope.$new();
+
+      $location = _$location_;
+      spyOn($location, 'search').andReturn({});
+
+      spyOn($rootScope, '$broadcast').andCallThrough();
+      $rootScope.$on('products:loaded', function(event, data) {
+        expect(data.filters).toBeDefined();
+      });
+
+      productService = _productService_;
+      ProductsContentCtrl = $controller('ProductsContentCtrl', {
+        $scope: $scope,
+        $location: $location,
+        productData: productData,
+        productService: productService
+      });
+    }));
+
+    it('should get products', function () {
+      $httpBackend.flush();
+      expect($rootScope.$broadcast).toHaveBeenCalled();
+      expect($scope.products).toBeDefined();
+      expect($scope.products.data).toEqual(['products']);
+    });
+
+    it('should do paging and location search changed', function() {
+      deferred.resolve({data:['products']});
+
+      $scope.doPaging(2);
+      $scope.$digest();
+
+      $httpBackend.flush();
+      expect($location.search).toHaveBeenCalled();
+      expect($location.search()).toEqual(jasmine.objectContaining({ page: 2 }));
+      
+    });
   });
+
+  describe('Controller: ProductsContentCtrl request by productServiceMock', function () {
+    var $scope, $rootScope, $location, deferred, productServiceMock;
+
+    // Initialize the controller and a mock scope
+    beforeEach(inject(function ($controller, _$rootScope_, _$location_, $q, $templateCache) {
+      
+      $templateCache.put('app/main/main.html', '');
+
+      $rootScope = _$rootScope_;
+      spyOn($rootScope, '$broadcast').andCallThrough();
+      $rootScope.$on('products:loaded', function(event, data) {
+        expect(data.filters).toBeDefined();
+      });
+      $scope = $rootScope.$new();
+
+      $location = _$location_;
+      spyOn($location, 'search').andReturn({});
+
+      productServiceMock = {
+        query: function(){
+          deferred = $q.defer();
+          return { $promise: deferred.promise };
+        }
+      }
+
+      spyOn(productServiceMock, 'query').andCallThrough();
+
+      $controller('ProductsContentCtrl', {
+        $scope: $scope,
+        $location: $location,
+        productData: productData,
+        productService: productServiceMock
+      });
+    }));
+
+    it('should get products', function() {
+      deferred.resolve({data:['products']});
+      $scope.$digest();
+      expect(productServiceMock.query).toHaveBeenCalled();
+      expect($rootScope.$broadcast).toHaveBeenCalled();
+      expect($scope.products).toBeDefined();
+      expect($scope.products).toEqual({ data:['products'], title: 'All Products' });
+    });
+
+    it('should do paging and location search changed', function() {
+      deferred.resolve({data:['products']});
+
+      $scope.doPaging(2);
+      $scope.$digest();
+
+      expect(productServiceMock.query).toHaveBeenCalled();
+      expect($location.search).toHaveBeenCalled();
+      expect($location.search()).toEqual(jasmine.objectContaining({ page: 2 }));
+      
+    });
+
+  });
+
 });

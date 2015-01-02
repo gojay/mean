@@ -1,6 +1,6 @@
 'use strict';
 
-xdescribe('Controller: ProductsCtrl', function () {
+describe('Controller: ProductsCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exampleAppApp'));
@@ -8,24 +8,29 @@ xdescribe('Controller: ProductsCtrl', function () {
   var $scope, ProductsCtrl;
 
   beforeEach(inject(function ($controller, $rootScope) {
-    var productData = [{
-        "_id": "548093f0088353a02b7646fb",
-        "image": "/images/phones/original_motorola-charm-with-motoblur.2.jpg",
-        "body": "Motorola CHARM fits easily in your pocket or palm.  Includes MOTOBLUR service.",
-        "category": "motorola",
-        "createdAt": "2014-12-04T17:03:44.248Z",
-        "slug": "motorola-charm-with-motoblur",
-        "title": "Motorola CHARM™ with MOTOBLUR™"
-    },
-    {
-        "_id": "548093ef088353a02b7646fa",
-        "image": "/images/phones/original_t-mobile-g2.2.jpg",
-        "body": "The T-Mobile G2 with Google is the first smartphone built for 4G speeds on T-Mobile's new network. Get the information you need, faster than you ever thought possible.",
-        "category": "t-mobile",
-        "createdAt": "2014-12-04T17:03:43.878Z",
-        "slug": "t-mobile-g2",
-        "title": "T-Mobile G2"
-    }];
+    var productData = {
+      categories: {
+        data: []
+      },
+      filters: {
+        data: {
+          brands: [
+            { id: 'apple', name: 'Apple' },
+            { id: 'htc', name: 'HTC' },
+            { id: 'samsung', name: 'Samsung' }
+          ],
+          price : [{
+            min: 0,
+            max: 1000
+          }],
+          os: [],
+          flash: [],
+          ram: [],
+          camera: [],
+          display: []
+        }
+      }
+    };
     $scope = $rootScope.$new();
     ProductsCtrl = $controller('ProductsCtrl', {
       $scope: $scope,
@@ -34,6 +39,27 @@ xdescribe('Controller: ProductsCtrl', function () {
   }));
 
   it('should products filters init', function () {
-    
+    $scope.$digest();
+    expect($scope.filters.search.filterBy).toBe('$');
+    expect($scope.filters.search.selected).toBeDefined();
+    expect($scope.filters.search.title).toBe('Filter by Anything');
+    expect($scope.filters.search.product).toEqual($scope.filters.search.query);
+    expect($scope.filters.order.by).toEqual(jasmine.objectContaining({ id: 'title' }));
+    expect($scope.filters.view.selected).toEqual('list');
+  });
+
+  it('should products search init', function () {
+    $scope.$digest();
+    expect($scope.search.price.selected.min).toBe(0);
+    expect($scope.search.price.selected.max).toBe(1000);
+
+    expect($scope.search.brand.get('htc')).toEqual({ id: 'htc', name: 'HTC' });
+  });
+
+  it('should products breadcrumb init', function () {
+    expect($scope.breadcrumb.getTitle()).toBe('All Products');
+
+    $scope.breadcrumb.set({ category: 'all', brand: 'htc_apple' });
+    expect($scope.breadcrumb.getTitle()).toBe('HTC & Apple');
   });
 });

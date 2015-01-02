@@ -86,7 +86,6 @@ angular.module('exampleAppApp')
                         href: value.href
                     });
                 });
-
             },
             getTitle: function() {
                 var breadcrumbs = this.data;
@@ -102,7 +101,6 @@ angular.module('exampleAppApp')
 
         $scope.filters = {
             search: {
-                filterBy: '$',
                 data: [{
                     id: 'title',
                     type: 'text',
@@ -133,6 +131,7 @@ angular.module('exampleAppApp')
                 placeholder: null,
                 inputEl: angular.element('input.input-filter'),
                 selected: null,
+                filterBy: null,
                 setFilterBy: function(search) {
                     var self = this;
 

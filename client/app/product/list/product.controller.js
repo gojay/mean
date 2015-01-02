@@ -9,8 +9,7 @@ angular.module('exampleAppApp')
 
             /* get all products */
 
-            productService.query(params, function(products) {
-            	console.log('products', products)
+            productService.query(params).$promise.then(function(products) {
                 $scope.products = products;
                 $scope.products.title = 'All Products';
                 $rootScope.$broadcast('products:loaded', { filters: productData.filters.data });
