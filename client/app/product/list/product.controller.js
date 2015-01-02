@@ -21,13 +21,13 @@ angular.module('exampleAppApp')
             /* products pagination */
 
             $scope.doPaging = function(page) {
+                // $location.search('page', page);
                 $scope.loading = true;
                 params['page'] = page;
-                productService.query(params, function(products) {
+    			productService.query(params).$promise.then(function(products) {
                     $scope.products = products;
                     $scope.products.title = 'All Products';
                     $scope.loading = false;
-                    $location.search('page', page);
                 });
             }
 
@@ -37,7 +37,7 @@ angular.module('exampleAppApp')
         }
     )
 	.controller('ProductsQueryContentCtrl', 
-    	function($scope, $rootScope, $location, $state, $stateParams, productService, socket) {
+    	function($scope, $rootScope, $state, $stateParams, productService, socket) {
           	$scope.loading = true;
 
 			/* set breadcrumbs */
@@ -45,18 +45,16 @@ angular.module('exampleAppApp')
 			$scope.breadcrumb.set($stateParams);
 
 			var title = null;
-			var query = $stateParams;
-
 			var params = _.mapValues($stateParams, function(value) {
 			    return value && /\_/.test(value) ? value.split('_') : value;
 			});
 
 			/* get products query */
 
-			productService.all(params)
+			productService.all($stateParams)
 				.then(function(results) {
 				    $scope.products = results.products.data;
-				    $scope.products.title = title = $scope.breadcrumb.getTitle();
+				    $scope.products['title'] = title = $scope.breadcrumb.getTitle();
 
 				    $rootScope.$broadcast('products:loaded', {
 				        params: params,
@@ -73,12 +71,12 @@ angular.module('exampleAppApp')
 			$scope.doPaging = function(page) {
 			    // $location.search('page', page);
 			    $scope.loading = true;
-
-			    params['page'] = page;
-				productService.all(params)
+				productService
+    				.setParam('page', page)
+					.all()
 					.then(function(results) {
 				        $scope.products = results.products.data;
-				        $scope.products.title = title;
+				        $scope.products['title'] = title;
 				        $scope.loading = false;
 				    });
 			}

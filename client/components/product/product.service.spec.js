@@ -23,7 +23,7 @@ describe('Service: productService', function () {
 
   it('should productService "get" resolved', function() {
     $httpBackend.expectGET('/api/products/1').respond({ title: 'product 1' });
-    var result = productService.get(1, function(product){
+    var result = productService.get(1).$promise.then(function(product){
       expect(product).toEqual(jasmine.objectContaining({ title: 'product 1' }));
     });
     $httpBackend.flush();
@@ -33,7 +33,7 @@ describe('Service: productService', function () {
 
   it('should productService "query" resolved', function () {
     $httpBackend.expectGET('/api/products').respond({ data: ['products'] });
-    var result = productService.query({}, function(results){
+    var result = productService.query().$promise.then(function(results){
       expect(results.data).toBeDefined();
       expect(results.data).toContain('products');
     });
@@ -86,8 +86,7 @@ describe('Service: productService', function () {
     expect(urlParameter2).toEqual(encodeURI('?q[brand][]=htc&q[brand][]=samsung&q[price][gte]=100&q[price][lte]=1000&q[os]=android+1.5&q[ram][gte]=512&q[ram][lte]=1024&q[flash][gt]=1024&page=1'));
 
     // add/update parameters
-    productService.setParams({ page: 2 });
-    var urlParameter = productService.urlParameter();
+    var urlParameter = productService.setParam('page', 2).urlParameter();
     expect(urlParameter).toEqual(encodeURI('?q[brand][]=htc&q[brand][]=samsung&q[price][gte]=100&q[price][lte]=1000&q[os]=android+1.5&q[ram][gte]=512&q[ram][lte]=1024&q[flash][gt]=1024&page=2'));
 
     // all

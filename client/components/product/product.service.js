@@ -3,6 +3,7 @@
 angular.module('exampleAppApp')
     .factory('productService', function($q, $http, $resource) {
         return {
+            params: '',
             resource: $resource('/api/products/:id',  { id: '@_id' }, {
                 query: {
                     method: 'GET',
@@ -23,7 +24,6 @@ angular.module('exampleAppApp')
             query: function(params, callback) {
                 return this.resource.query(params, callback);
             },
-            params: '',
             all: function(filters, options) {
                 var deferred = $q.defer();
 
@@ -98,15 +98,20 @@ angular.module('exampleAppApp')
                     urlParameter = '?' + jQuery.param(this.params);
                 }
 
-                console.log('urlParameter', urlParameter);
+                // console.log('urlParameter', urlParameter);
 
                 return urlParameter;
             },
             getParams: function() {
                 return this.params;
             },
+            setParam: function(key, value) {
+                this.params[key] = value;
+                return this;
+            },
             setParams: function(params) {
                 this.params = _.assign(this.params, params);
+                return this;
             }
         }
     })
