@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Product Routes test', function() {
+describe('route: Products', function() {
 
 	var $location, $state, $rootScope, productServiceMock;
 

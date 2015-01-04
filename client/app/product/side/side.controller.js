@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsSideCtrl', function($scope, $rootScope, $stateParams, $http, $state, $timeout) {
+    .controller('ProductsSideCtrl', function($scope, $rootScope, $state, $timeout) {
 
         function setCollapsibleGroup(data, old) { 
           _.forEach(data, function(item) {
@@ -16,13 +16,22 @@ angular.module('exampleAppApp')
         var categories = $scope.search.category.data;
 
         // indentifier for $watch price
-        var oldMaxPrice;
+        // var oldMaxPrice;
 
         /* state go */
         var query = {};
         function go(key, value) {
+            $scope.search.loading = true;
+
             if (!_.isEmpty(value)) {
-                value = _.isArray(value) ? value.join('_') : value;
+                // brand
+                if(_.isArray(value)) {
+                    value = value.join('_');
+                }
+                // price
+                else if(_.isObject(value)) {
+                    value = _.values(value).join('-');
+                }
                 query[key] = value;
             } else {
                 query[key] = null;
@@ -40,7 +49,8 @@ angular.module('exampleAppApp')
                 query.category = 'all';
             }
 
-            console.log('go', query);
+            console.log('$state.go', query);
+
             $state.go('products.query', query);
         }
 
@@ -49,7 +59,7 @@ angular.module('exampleAppApp')
         function onLoaded(evt, data) {
             console.log('products:loaded', data);
 
-            oldMaxPrice = $scope.search.price.options.max;
+            // oldMaxPrice = $scope.search.price.options.max;
 
             /* set filters data */
             var filters = data.filters;
@@ -85,9 +95,7 @@ angular.module('exampleAppApp')
                             .pluck('_id')
                             .transform(function(result, val) {
                                 var total = 0;
-                                var f = _.find(filters.category, {
-                                    '_id': val
-                                });
+                                var f = _.find(filters.category, {'_id': val});
                                 if (f) {
                                     total = f.total;
                                 }
@@ -123,6 +131,16 @@ angular.module('exampleAppApp')
                         }
                     }
 
+                    var id = params.category;
+                    if (!id || id == 'all') {
+                        /*
+                        hanya atur semua attribut open & loading false,
+                        jika category id 'all'
+                         */
+                        setCollapsibleGroup(categories);
+                        return;
+                    }
+
                     /* 
                     open(parents & self) selected category
 
@@ -130,17 +148,12 @@ angular.module('exampleAppApp')
                     dan juga untuk 'parent' nya
                     */
 
-                    var id = params.category;
-                    if (!id || id == 'all') {
-                        setCollapsibleGroup($scope.search.category.data);
-                        return;
-                    }
-
                     var paths = [];
 
                     var category = _.findDeep(categories, {
                         _id: id
                     });
+
                     var parents = _.xor(category.path.split('/'), id);
                     if (parents.length) {
                         _.forEach(parents, function(path) {
@@ -168,38 +181,38 @@ angular.module('exampleAppApp')
                 /* brand */
                 brand: function() {
                     var brand = $scope.search.brand,
-                        selection = params.brand;
-                    // set brands selection
-                    if (selection) {
-                        // nilai selection adalah array
+                        selected = params.brand;
+                    // set brands selected
+                    if (selected) {
+                        // nilai selected adalah array
                         // atur menjadi array jika string
-                        if (_.isString(selection)) selection = [selection];
+                        if (_.isString(selected)) selected = [selected];
 
-                        // set selection 
-                        // atur 'selection' berdasarkan 'filter brands' (perubahan nilai 'brands' dari kategori yg dpilih)
+                        // set selected 
+                        // atur 'selected' berdasarkan 'filter brands' (perubahan nilai 'brands' dari kategori yg dpilih)
                         // krn memungkinkan tiap kategori berbeda nilai 'brands' nya 
-                        selection = _.intersection(_.pluck(filters.brands, 'id'), selection);
+                        selected = _.intersection(_.pluck(filters.brands, 'id'), selected);
 
                         _(brand.data)
                             .filter(function(item) {
-                                return _.indexOf(selection, item.id) > -1;
+                                return _.indexOf(selected, item.id) > -1;
                             })
                             .map(function(item) {
                                 item.selected = true;
                                 return item;
                             });
 
-                        brand.selection = selection;
+                        brand.selected = selected;
 
                         // change brand parameters
-                        // var brandParameter = selection.length ? selection.join('_') : null;
+                        // var brandParameter = selected.length ? selected.join('_') : null;
                         // $location.search('brand', brandParameter)
                     } else {
                         _.map($scope.search.brand.data, function(item) {
                             item.selected = false;
                             return item;
                         });
-                        $scope.search.brand.selection = [];
+                        $scope.search.brand.selected = [];
                     }
                 },
                 /* price */
@@ -207,16 +220,16 @@ angular.module('exampleAppApp')
                     var price = params.price;
                     if (!price) return;
 
-                    var prices = _.isObject(price) ? _.values(price) : price.split('-');
+                    var prices = _.isObject(price) ? _.values(price) : price.split('-') ;
                     prices = _.map(prices, function(num) {
                         return parseInt(num);
                     });
-                    $timeout(function() {
+                    // $timeout(function() {
                         $scope.search.price.selected = {
                             min: prices[0],
                             max: prices[1]
                         };
-                    });
+                    // });
                 },
                 os: function() {
                     $scope.search.os.selected = params.os;
@@ -241,7 +254,7 @@ angular.module('exampleAppApp')
                         item.selected = false;
                         return item;
                     });
-                    $scope.search.brand.selection = [];
+                    $scope.search.brand.selected = [];
                     $scope.search.os.selected = null;
                     $scope.search.storage.flash.selected = null;
                     $scope.search.storage.ram.selected = null;
@@ -252,7 +265,7 @@ angular.module('exampleAppApp')
                 }
             };
 
-            if (params) {
+            if (!_.isEmpty(params)) {
                 _.forEach(_.keys(params), function(filter) {
                     if (paramsFn[filter]) paramsFn[filter]();
                 });
@@ -271,9 +284,8 @@ angular.module('exampleAppApp')
         $scope.searchByCategory = function(category, $event) {
             if ((category.open && _.isEmpty(category.children)) || category.count == 0) return;
 
-            $event.stopPropagation();
+            $event.preventDefault();
 
-            $scope.search.loading = true;
             category.loading = true;
 
             go('category', category._id);
@@ -284,32 +296,22 @@ angular.module('exampleAppApp')
         $scope.searchByBrand = function($event, id) {
             var checkbox = $event.target;
             var action = (checkbox.checked ? 'add' : 'remove');
-            selectBrand(action, id);
-        }
 
-        var selectBrand = function(action, id) {
-            if (action === 'add' && $scope.search.brand.selection.indexOf(id) === -1) {
-                $scope.search.brand.selection.push(id);
+            if (action === 'add' && $scope.search.brand.selected.indexOf(id) === -1) {
+                $scope.search.brand.selected.push(id);
             }
-            if (action === 'remove' && $scope.search.brand.selection.indexOf(id) !== -1) {
-                $scope.search.brand.selection.splice($scope.search.brand.selection.indexOf(id), 1);
+            if (action === 'remove' && $scope.search.brand.selected.indexOf(id) !== -1) {
+                $scope.search.brand.selected.splice($scope.search.brand.selected.indexOf(id), 1);
             }
 
-            $scope.search.loading = true;
-            go('brand', $scope.search.brand.selection);
+            go('brand', $scope.search.brand.selected);
         };
 
         /* price */
 
-        var getPrice = function() {
+        var searchByPrice = function() {
             if ($scope.search.price.options.max == 0) return;
-
-            $scope.search.loading = true;
-
-            var price = $scope.search.price.selected;
-            var pQuery = price.min + '-' + price.max;
-
-            go('price', pQuery);
+            go('price', $scope.search.price.selected);
         }
 
         $scope.currencyFormatting = function(value) {
@@ -317,22 +319,37 @@ angular.module('exampleAppApp')
         };
 
         $scope.setPriceDown = function(type) {
-            var value = parseInt($scope.search.price.selected[type]);
-            $scope.search.price.selected[type] = value - 1;
-            $scope.search.price.options.onChange = true;
+            var price = $scope.search.price;
+            var value = parseInt(price.selected[type]);
+            var newValue = value - 1;
+
+            if(newValue < 0 || (type == 'max' && newValue < price.options.min)) return;
+
+            $scope.search.price.selected[type] = newValue;
+            // $scope.search.price.options.onChange = true;
+
+            searchByPrice();
         };
 
         $scope.setPriceUp = function(type) {
+            var price = $scope.search.price;
             var value = parseInt($scope.search.price.selected[type]);
-            $scope.search.price.selected[type] = value + 1;
-            $scope.search.price.options.onChange = true;
+            var newValue = value + 1;
+
+            if(newValue > price.options.max || (type == 'min' && newValue > price.selected.max)) return;
+
+            $scope.search.price.selected[type] = newValue;
+            // $scope.search.price.options.onChange = true;
+            
+            searchByPrice();
         };
 
         /* angular-slider custom events */
 
-        $scope.$on('slider:end', getPrice);
+        $scope.$on('slider:end', searchByPrice);
 
-        $scope.$watchCollection('search.price.selected', function(newValue, oldValue, scope) {
+        /*$scope.$watchCollection('search.price.selected', function(newValue, oldValue) {
+            console.log('watch', newValue, oldValue);
             newValue = _.mapValues(newValue, parseInt);
             if (newValue.min > $scope.search.price.selected.max) {
                 $scope.search.price.selected.min = $scope.search.price.selected.max;
@@ -347,26 +364,27 @@ angular.module('exampleAppApp')
             oldValue = _.mapValues(oldValue, parseInt);
             if (_.isEqual(newValue, oldValue) || oldValue.max == oldMaxPrice || newValue.max > $scope.search.price.options.max || newValue.min < $scope.search.price.options.min) return;
 
-            if (scope.search.price.options.onChange) {
-                scope.search.price.options.onChange = false;
-                getPrice();
+            if ($scope.search.price.options.onChange) {
+                $scope.search.price.options.onChange = false;
+                console.log('[price]', $scope.search.price.selected);
+                searchByPrice();
             }
-        });
+        });*/
 
         /* other selected filters */
 
-        $scope.selectFilter = function(type, filter) {
-            console.log('filter:select:%s', type, filter);
-            go(type, filter.query || filter.value);
+        $scope.searchByFilter = function(type, filter) {
+            // console.log('filter:select:%s', type, filter);
+            go(type, filter.query);
         };
-        $scope.clearFilter = function(filter) {
-            var value = (filter == 'brand') ? [] : null;
-            if( filter == 'flash' || filter == 'ram' ) {
-                $scope.search.storage[filter].clear();
-            } else {
-                $scope.search[filter].clear();
-            }
+        $scope.clearFilter = function(name) {
+            var filter = $scope.search[name];
+            if( name == 'flash' || name == 'ram' ) {
+                filter = $scope.search.storage[name];
+            } 
 
-            go(filter, value);
+            filter.clear();
+
+            go(name, filter.selected);
         };
     });

@@ -244,7 +244,7 @@ angular.module('exampleAppApp')
             },
             brand: {
                 query: '',
-                selection: [],
+                selected: [],
                 data: filters.brands,
                 get: function(id) {
                     return _.find(this.data, {
@@ -252,7 +252,7 @@ angular.module('exampleAppApp')
                     });
                 },
                 clear: function() {
-                	this.selection = [];
+                	this.selected = [];
                 }
             },
             price: {

@@ -32,9 +32,9 @@
 	// Brands
 	.panel-heading 
 		| Brands	
-		span(ng-if="search.brand.selection.length") &nbsp;({{search.brand.selection.length}})
+		span(ng-if="search.brand.selected.length") &nbsp;({{search.brand.selected.length}})
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
-		button.btn.btn-link(ng-show="search.brand.selection.length > 0", ng-click="clearFilter('brand')") 
+		button.btn.btn-link(ng-show="search.brand.selected.length > 0", ng-click="clearFilter('brand')") 
 			i.fa.fa-close
 	.list-group(ng-class="{'loading': search.loading}") 
 		.list-group-item
@@ -83,7 +83,7 @@
 		.list-group-item
 			.radio(ng-repeat="os in search.os.data")
 				label(for="os-{{$index}}")
-					input(type="radio", id="os-{{$index}}", name="os[]", ng-model="search.os.selected", ng-value="os.value", ng-change="selectFilter('os', os)")
+					input(type="radio", id="os-{{$index}}", name="os[]", ng-model="search.os.selected", ng-value="os.value", ng-change="searchByFilter('os', os)")
 					span.badge.pull-right {{os.total}}
 					| {{os.name}}
 	// Storage
@@ -97,7 +97,7 @@
 		.list-group-item
 			.radio(ng-repeat="flash in search.storage.flash.data")
 				label(for="flash-{{$index}}")
-					input(type="radio", id="flash-{{$index}}", name="flash[]", ng-model="search.storage.flash.selected", ng-value="flash.query", ng-change="selectFilter('flash', flash)")
+					input(type="radio", id="flash-{{$index}}", name="flash[]", ng-model="search.storage.flash.selected", ng-value="flash.query", ng-change="searchByFilter('flash', flash)")
 					span.badge.pull-right {{flash.total}}
 					| {{flash.name}}
 	.panel-body(ng-if="search.storage.ram.data.length")  
@@ -108,7 +108,7 @@
 		.list-group-item
 			.radio(ng-repeat="ram in search.storage.ram.data")
 				label(for="ram-{{$index}}")
-					input(type="radio", id="ram-{{$index}}", name="ram[]", ng-model="search.storage.ram.selected", ng-value="ram.query", ng-change="selectFilter('ram', ram)")
+					input(type="radio", id="ram-{{$index}}", name="ram[]", ng-model="search.storage.ram.selected", ng-value="ram.query", ng-change="searchByFilter('ram', ram)")
 					span.badge.pull-right {{ram.total}}
 					| {{ram.name}}
 	// Camera
@@ -121,7 +121,7 @@
 		.list-group-item
 			.radio(ng-repeat="camera in search.camera.data")
 				label(for="camera-{{$index}}")
-					input(type="radio", id="camera-{{$index}}", name="camera[]", ng-model="search.camera.selected", ng-value="camera.query", ng-change="selectFilter('camera', camera)")
+					input(type="radio", id="camera-{{$index}}", name="camera[]", ng-model="search.camera.selected", ng-value="camera.query", ng-change="searchByFilter('camera', camera)")
 					span.badge.pull-right {{camera.total}}
 					| {{camera.name}}
 	// Display
@@ -134,6 +134,6 @@
 		.list-group-item
 			.radio(ng-repeat="display in search.display.data")
 				label(for="display-{{$index}}")
-					input(type="radio", id="display-{{$index}}", name="display[]", ng-model="search.display.selected", ng-value="display.query", ng-change="selectFilter('display', display)")
+					input(type="radio", id="display-{{$index}}", name="display[]", ng-model="search.display.selected", ng-value="display.query", ng-change="searchByFilter('display', display)")
 					span.badge.pull-right {{display.total}}
 					| {{display.name}}
