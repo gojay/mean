@@ -69,7 +69,7 @@ describe('route: Products', function() {
 		$rootScope.$digest();
 
 		expect($state.current.name).toEqual('products.detail');
-		expect(productServiceMock.get).toHaveBeenCalledWith({ id:1 });
+		expect(productServiceMock.get).toHaveBeenCalledWith(1);
 		expect($injector.invoke($state.current.resolve.product)).toEqual('ProductDetail');
 	}));
 });

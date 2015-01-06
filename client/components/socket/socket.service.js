@@ -28,8 +28,10 @@ angular.module('exampleAppApp')
        * @param {Array} array
        * @param {Function} cb
        */
-      syncUpdates: function (modelName, array, cb) {
+      syncUpdates: function (modelName, data, cb) {
         cb = cb || angular.noop;
+        
+        var array = _.isObject(data) && _.has(data, 'data') ? data.data : data ;
 
         /**
          * Syncs item creation/updates on 'model:save'

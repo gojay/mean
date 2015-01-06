@@ -17,7 +17,7 @@
 			.panel-body(ng-show="loading")
 				three-bounce-spinner.spinner-wrapper-primary
 			.list-group.slide-right(ng-hide="loading", ng-switch-when="list")
-				a.list-group-item(ng-repeat="product in products.data | filter:filters.search.product | orderBy:filters.order.by.id", ui-sref="products.detail({productId:product.slug})")
+				a.list-group-item(ng-repeat="product in products.data | filter:filters.search.product | orderBy:filters.order.by.id", ui-sref="products.detail({ productId: product.slug })")
 					.media.col-md-3
 						figure.pull-left
 							img.media-object.img-rounded.img-responsive(img-lazy-load="{{product.image}}", width="100", height="100")

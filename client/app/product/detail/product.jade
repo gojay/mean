@@ -17,6 +17,8 @@
 						img(ng-src="{{product.meta.images.cdnUri + '/original_' + img}}", width="100px")
 .clear
 .row
+	.col-md-12
+		button.btn.btn-sm.btn-success(ng-click="open()") Open
 	// Specifications
 	.col-md-12(ng-if="product.category == 'android'")
 		.panel.panel-primary

@@ -33,13 +33,16 @@ angular.module('socketMock', [])
         }
       },
 
-      syncUpdates: function (modelName, array, cb) {
+      syncUpdates: function (modelName, data, cb) {
         cb = cb || angular.noop;
+
+        var array = _.isObject(data) && _.has(data, 'data') ? data.data : data ;
 
         /**
          * Syncs item creation/updates on 'model:save'
          */
         this.socket.on(modelName + ':save', function (item) {
+          
           var oldItem = _.find(array, item);
           var index = array.indexOf(oldItem);
           var event = 'created';

@@ -17,24 +17,25 @@ angular.module('exampleAppApp')
        * @return {Promise}
        */
       login: function(user, callback) {
+        var self = this;
         var cb = callback || angular.noop;
         var deferred = $q.defer();
 
         $http.post('/auth/local', {
           email: user.email,
           password: user.password
-        }).
-        success(function(data) {
+        })
+        .success(function(data) {
           $cookieStore.put('token', data.token);
           currentUser = User.get();
           deferred.resolve(data);
           return cb();
-        }).
-        error(function(err) {
-          this.logout();
+        })
+        .error(function(err) {
+          self.logout();
           deferred.reject(err);
           return cb(err);
-        }.bind(this));
+        });
 
         return deferred.promise;
       },
@@ -57,6 +58,8 @@ angular.module('exampleAppApp')
        * @return {Promise}
        */
       createUser: function(user, callback) {
+        var self = this;
+        
         var cb = callback || angular.noop;
 
         return User.save(user,
@@ -66,9 +69,9 @@ angular.module('exampleAppApp')
             return cb(user);
           },
           function(err) {
-            this.logout();
+            self.logout();
             return cb(err);
-          }.bind(this)).$promise;
+          }).$promise;
       },
 
       /**

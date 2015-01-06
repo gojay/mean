@@ -28,10 +28,10 @@ describe('Controller: MainCtrl', function () {
     $httpBackend.flush();
     expect(scope.awesomeThings.length).toBe(4);
 
-    socket.fire('thing:save', 'formSocket');
+    socket.fire('thing:save', 'fromSocket');
     expect(scope.awesomeThings.length).toBe(5);
 
-    socket.fire('thing:remove', 'formSocket');
+    socket.fire('thing:remove', 'fromSocket');
     expect(scope.awesomeThings.length).toBe(4);
   }));
 });

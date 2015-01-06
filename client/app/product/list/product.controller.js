@@ -51,7 +51,7 @@ angular.module('exampleAppApp')
 
 			/* get products query */
 
-			productService.all($stateParams)
+			productService.all(params)
 				.then(function(results) {
 				    $scope.products = results.products.data;
 				    $scope.products['title'] = title = $scope.breadcrumb.getTitle();

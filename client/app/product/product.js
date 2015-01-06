@@ -134,7 +134,7 @@ angular.module('exampleAppApp')
         url: '/detail/:productId',
         resolve: {
           product: function($stateParams, productService) {
-            return productService.get({ id: $stateParams.productId }).$promise;
+            return productService.get($stateParams.productId).$promise;
           }
         },
         views: {

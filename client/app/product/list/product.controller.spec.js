@@ -31,14 +31,14 @@ describe('Controller: ProductsList', function () {
   };
 
   describe('Controller: ProductsContentCtrl request by $httpBackend', function () {
-    var $scope, $rootScope, $location, $httpBackend, ProductsContentCtrl;
+    var $scope, $rootScope, $location, $httpBackend, ProductsContentCtrl, socket;
 
     // Initialize the controller and a mock scope
-    beforeEach(inject(function ($controller, _$rootScope_, _$location_, $templateCache, _$httpBackend_, productService) {
+    beforeEach(inject(function ($controller, _$rootScope_, _$location_, $templateCache, _$httpBackend_, productService, _socket_) {
       
       $httpBackend = _$httpBackend_;
-      $httpBackend.when('GET', '/api/products').respond({data:['products']});
-      $httpBackend.when('GET', '/api/products?page=2').respond({data:['products2']});
+      $httpBackend.when('GET', '/api/products').respond({data:['product']});
+      $httpBackend.when('GET', '/api/products?page=2').respond({data:['product']});
 
       $templateCache.put('app/main/main.html', '');
 
@@ -55,11 +55,14 @@ describe('Controller: ProductsList', function () {
       // spy $location.search
       spyOn($location, 'search').andReturn({});
 
+      socket = _socket_;
+
       ProductsContentCtrl = $controller('ProductsContentCtrl', {
         $scope: $scope,
         $location: $location,
         productData: productData,
-        productService: productService
+        productService: productService,
+        socket: socket
       });
     }));
 
@@ -70,7 +73,7 @@ describe('Controller: ProductsList', function () {
       
       expect($rootScope.$broadcast).toHaveBeenCalled();
       expect($scope.products).toBeDefined();
-      expect($scope.products.data).toEqual(['products']);
+      expect($scope.products.data).toEqual(['product']);
       expect($scope.loading).toBeFalsy();
     });
 
@@ -78,11 +81,22 @@ describe('Controller: ProductsList', function () {
       $scope.doPaging(2);
       expect($scope.loading).toBeTruthy();
       $httpBackend.flush();
-      expect($scope.products.data).toEqual(['products2']);
+      expect($scope.products.data).toEqual(['product']);
       expect($scope.loading).toBeFalsy();
       // expect($location.search).toHaveBeenCalled();
       // expect($location.search()).toEqual(jasmine.objectContaining({ page: 2 }));
-      
+    });
+
+    it('socket sync', function() {
+      $httpBackend.flush();
+      expect($scope.products.data.length).toBe(1);
+
+      socket.fire('product:save', 'product2');
+      expect($scope.products.data.length).toBe(2);
+
+      socket.fire('product:remove', 'product');
+      expect($scope.products.data).toEqual(['product2']);
+      expect($scope.products.data.length).toBe(1);
     });
   });
 

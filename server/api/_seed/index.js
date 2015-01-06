@@ -19,7 +19,8 @@ _.mixin(_.str.exports());
 var config = require('../../config/environment');
 var fs = require('fs');
 
-var phonesDir = 'assets/data/phones';
+// var phonesDir = 'assets/data/phones';
+var phonesDir = 'assets/data';
 
 var api_key = 'SEM3CD98EEC1BC2D8AC45C093BD923966239';
 var api_secret = 'NzQwZGQ5NzBlOTAyNGI5MWEzMGI2MGVjZDBmZDUwMjA';
@@ -431,9 +432,12 @@ router.post('/android', function(req, res) {
                     }
 
                     // images
-                    // var images = _.map(meta.images, function(image) {
-                    //     return config.root + '/' + image.replace('img', 'assets');
-                    // });
+                    var images = [];
+                    if(/phones/.test(phonesDir)) {
+                        images = _.map(meta.images, function(image) {
+                            return config.root + '/' + image.replace('img', 'assets');
+                        });
+                    }
 
                     // save product
                     var product = new Product();
@@ -447,12 +451,19 @@ router.post('/android', function(req, res) {
                     product.reviews = reviews;
                     product.meta = meta;
                     product.createdAt = faker.date.between('Jan 1, 2014', 'Nov 23, 2014');
-                    product.save(callback);
 
-                    // product.uploadAndSave(images, function(err, product) {
-                    //     if(err) return callback(err);
-                    //     callback();
-                    // });
+                    if(_.isEmpty(images)) {
+
+                        product.save(callback);
+
+                    } else {
+
+                        product.uploadAndSave(images, function(err, product) {
+                            if(err) return callback(err);
+                            callback();
+                        });
+
+                    }
                 });
             });
 

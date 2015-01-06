@@ -18,8 +18,8 @@ angular.module('exampleAppApp')
                     method: 'PUT'
                 }
             }),
-            get: function(param, callback) {
-                return this.resource.get({ id: param }, callback);
+            get: function(id) {
+                return this.resource.get({ id: id });
             },
             query: function(params, callback) {
                 return this.resource.query(params, callback);
