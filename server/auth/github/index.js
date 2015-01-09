@@ -12,8 +12,12 @@ router
 		https://github.com/jaredhanson/passport-facebook/issues/2#issuecomment-40193197
 	 */
 	.get('/', function(req, res, next){
+		var callbackURL = '/auth/github/callback';
+		if(req.query.referrer) {
+			callbackURL += '?referrer=' + encodeURI(req.query.referrer);
+		}
 		passport.authenticate('github', {
-			callbackURL: '/auth/github/callback?referrer=' + encodeURI(req.query.referrer),
+			callbackURL: callbackURL,
 			failureRedirect: '/signup',
 			session: false
 		})(req,res,next);

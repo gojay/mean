@@ -2,6 +2,43 @@
 
 angular.module('exampleAppApp')
     .factory('productService', function($q, $http, $resource) {
+
+        var findDeep = function(items, attrs) {
+          function match(value) {
+            for (var key in attrs) {
+              if(!_.isUndefined(value)) {
+                if (attrs[key] !== value[key]) {
+                  return false;
+                }
+              }
+            }
+
+            return true;
+          }
+          function traverse(value) {
+            var result;
+
+            _.forEach(value, function (val) {
+              if (match(val)) {
+                result = val;
+                return false;
+              }
+
+              if (_.isObject(val) || _.isArray(val)) {
+                result = traverse(val);
+              }
+
+              if (result) {
+                return false;
+              }
+            });
+
+            return result;
+          }
+          return traverse(items);
+        }
+        _.mixin({ 'findDeep': findDeep });
+        
         return {
             params: '',
             resource: $resource('/api/products/:id',  { id: '@_id' }, {

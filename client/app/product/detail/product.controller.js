@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsDetailCtrl', function($scope, $state, $stateParams, $modal, $log, product) {
+    .controller('ProductsDetailCtrl', function($scope, $state, $location, $modal, $log, product, Auth) {
         $scope.product = product;
 
         $scope.activeThumb = 0;
@@ -11,23 +11,38 @@ angular.module('exampleAppApp')
 
         // open modal login user
         $scope.open = function() {
-        	var referrer = $state.href('products.detail', $stateParams);
-            var modalInstance = $modal.open({
-                template: '<div class="modal-header">' +
-		            '<h3 class="modal-title">Login</h3>' +
+            // var referrer = $state.href($state.current.name, $state.params);
+        	var referrer = '/oauth';
+            $scope.modalInstance = $modal.open({
+                // size: 'lg',
+                template: '<div class="modal-header" style="border-bottom:0">' +
+		            '<h3 class="modal-title">Authentication</h3>' +
 		        '</div>' +
-		        '<div class="modal-body">' +
-		            '<login-form login-referrer='+ referrer +'></login-form>' +
-		        '</div>' +
+		        '<div class="modal-body" style="padding:0">' +
+                    '<tabset justified="true">'+
+                        '<tab>' +
+                            '<tab-heading>Sign in</tab-heading>' +
+                            '<div style="padding:20px">' +
+                                '<login-form login-dialog="true" login-success="close()"></login-form>' +
+                            '</div>' +
+                        '</tab>' +
+                        '<tab>' +
+                            '<tab-heading>Sign up</tab-heading>' +
+                            '<div style="padding:20px">' +
+                                '<signup-form signup-dialog="true" signup-success="close()"></signup-form>' +
+                            '</div>' +
+                        '</tab>' +
+                    '</tabset>' +
 		        '<div class="modal-footer">' +
 		            '<button class="btn btn-warning" ng-click="cancel()">Cancel</button>' +
 		        '</div>',
                 controller: 'ModalInstanceCtrl'
             });
 
-            modalInstance.result.then(function close(selectedItem) {
-                // $scope.selected = selectedItem;
-            }, function dismiss() {
+            $scope.modalInstance.result.then(function close() {
+                var isLoggedIn = Auth.isLoggedIn();
+                $log.info('isLoggedIn', isLoggedIn);
+            }, function cancel() {
                 $log.info('Modal dismissed at: ' + new Date());
             });
         };
@@ -40,18 +55,11 @@ angular.module('exampleAppApp')
     })
     // modal controller
 	.controller('ModalInstanceCtrl', function($scope, $modalInstance) {
-
-        /*$scope.items = items;
-        $scope.selected = {
-            item: $scope.items[0]
+    	// modal close
+        $scope.close = function() {
+            $modalInstance.close();
         };
-
-    	// modal login
-        $scope.login = function() {
-            $modalInstance.close($scope.selected.item);
-        };*/
-
-    	// modal cancel
+        // cancel 
         $scope.cancel = function() {
             $modalInstance.dismiss('cancel');
         };

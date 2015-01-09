@@ -375,7 +375,8 @@ angular.module('exampleAppApp')
 
         $scope.searchByFilter = function(type, filter) {
             // console.log('filter:select:%s', type, filter);
-            go(type, filter.query);
+            var query = filter.query || filter.value;
+            go(type, query);
         };
         $scope.clearFilter = function(name) {
             var filter = $scope.search[name];

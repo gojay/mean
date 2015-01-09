@@ -1,45 +1,100 @@
 'use strict';
 
+/**
+ * loginForm directive
+ *
+ * @example
+ * <login-form 
+ *     login-referrer="/path/redirect" 
+ *     login-success="loginSuccess()"
+ *     login-dialog="true">
+ * </login-form>
+ */
 angular.module('exampleAppApp')
-  .directive('loginForm', function (Auth, $location, $window) {
-    return {
-      templateUrl: 'components/loginForm/loginForm.html',
-      restrict: 'EA',
-      link: function ($scope, element, attrs) {
-      	var referrer;
-      	if(attrs.loginReferrer) {
-      		referrer = attrs.loginReferrer;
-      	}
+    .directive('loginForm', [
+        '$q', 
+        '$location', 
+        '$window', 
+        '$parse', 
+        '$timeout', 
+        'Auth', 
+        'Oauth.popup', 
+        function($q, $location, $window, $parse, $timeout, Auth, popup) {
+            return {
+                templateUrl: 'components/loginForm/loginForm.html',
+                restrict: 'EA',
+                link: function($scope, element, attrs) {
+                    var referrer, loginSuccessFn;
 
-      	$scope.user = {};
-	    $scope.errors = {};
+                    if (attrs.loginReferrer) {
+                        referrer = attrs.loginReferrer;
+                    }
 
-	    $scope.login = function(form) {
-	      $scope.submitted = true;
+                    if (attrs.loginSuccess) {
+                        loginSuccessFn = $parse(attrs.loginSuccess);
+                    }
 
-	      if(form.$valid) {
-	        Auth.login({
-	          email: $scope.user.email,
-	          password: $scope.user.password
-	        })
-	        .then( function() {
-	          // Logged in, redirect to home\
-	          var path = ( referrer ) ? referrer : '/' ;
-	          $location.path(path);
-	        })
-	        .catch( function(err) {
-	          $scope.errors.other = err.message;
-	        });
-	      }
-	    };
+                    $scope.showDialog = attrs.loginDialog && attrs.loginDialog === 'true';
+                    $scope.oauthLoading = false;
 
-	    $scope.loginOauth = function(provider) {
-	      var href = '/auth/' + provider;
-	      if( referrer ) {
-	      	href += '?referrer=' + referrer ;
-	      }
-	      $window.location.href = href;
-	    };
-      }
-    };
-  });
+                    $scope.user = {};
+                    $scope.errors = {};
+
+                    $scope.login = function(form) {
+                        $scope.submitted = true;
+
+                        if (form.$valid) {
+                            Auth.login({
+                                email: $scope.user.email,
+                                password: $scope.user.password
+                            })
+                            .then(function() {
+                                if (angular.isDefined(loginSuccessFn)) {
+                                    loginSuccessFn($scope);
+                                } else {
+                                    var path = (referrer) ? referrer : '/';
+                                    $location.path(path);
+                                }
+                            })
+                            .catch(function(err) {
+                                $scope.errors.other = err.message;
+                            });
+                        }
+                    };
+
+                    $scope.loginOauth = function(provider) {
+                        var url = '/auth/' + provider;
+                        if( !$scope.showDialog || angular.isUndefined(loginSuccessFn) ) {
+                            if (referrer) {
+                                url += '?referrer=' + referrer;
+                            }
+                            return $window.location.href = url;
+                        }
+
+                        var deferred = $q.defer();
+
+                        url += '?referrer=/oauth';
+
+                        popup.open(url, provider)
+                            .then(function() {
+                                Auth.getUserInAsync().then(function() {
+                                    $scope.oauthLoading = true;
+                                    $timeout(function() {
+                                        $scope.oauthLoading = false;
+                                        loginSuccessFn($scope);
+                                    }, 2000);
+                                }).catch(function(error) {
+                                    loginSuccessFn($scope);
+                                    $scope.errors.other = error.message;
+                                });
+                            }).catch(function(error) {
+                                loginSuccessFn($scope);
+                                $scope.errors.other = error.message;
+                            });
+
+                        return deferred.promise;
+                    };
+                }
+            };
+        }
+    ]);

@@ -7,6 +7,7 @@ var fs = require('fs');
 var config = require('../../config/environment');
 
 describe.only('API seeds', function() {
+  	this.timeout(30000);
 
 	it.skip('should seed categories', function(done) {
 		request(app)
@@ -22,7 +23,7 @@ describe.only('API seeds', function() {
 
 	it('should seed phones', function(done) {
 		request(app)
-			.post('/api/seeds/phone')
+			.post('/api/seeds/all')
 			.expect(201, done);
 	});
 

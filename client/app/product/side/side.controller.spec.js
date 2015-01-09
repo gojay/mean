@@ -183,23 +183,26 @@ describe('Controller: ProductsSideCtrl', function () {
 	});
 
 	it('searchByFilter', function(){
+		$scope.searchByFilter('os', { value: 'android 1.5' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5' });
+
 		$scope.searchByFilter('ram', { query: '512-1024' });
-		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', ram: '512-1024' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024' });
 
 		$scope.searchByFilter('flash', { query: '1024' });
-		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', ram: '512-1024', flash: '1024' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024', flash: '1024' });
 
 		$scope.searchByFilter('display', { query: '3-4' });
-		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', ram: '512-1024', flash: '1024', display: '3-4' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024', flash: '1024', display: '3-4' });
 
 		$scope.searchByFilter('camera', { query: '4-5' });
-		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', ram: '512-1024', flash: '1024', display: '3-4', camera: '4-5' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024', flash: '1024', display: '3-4', camera: '4-5' });
 
 		spyOn($scope.search.display, 'clear').andCallThrough();
 
 		$scope.clearFilter('display');
 		expect($scope.search.display.clear).toHaveBeenCalled();
-		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', ram: '512-1024', flash: '1024', display: null, camera: '4-5' });
+		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024', flash: '1024', display: null, camera: '4-5' });
 	});
 
 	it('searchByPrice', function(){

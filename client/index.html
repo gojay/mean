@@ -30,6 +30,7 @@
       <link rel="stylesheet" href="app/product/product.css">
       <link rel="stylesheet" href="components/loginForm/loginForm.css">
       <link rel="stylesheet" href="components/modal/modal.css">
+      <link rel="stylesheet" href="components/signupForm/signupForm.css">
       <!-- endinjector -->
     <!-- endbuild -->
   </head>
@@ -37,7 +38,7 @@
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-    <div ng-include='"components/navbar/navbar.html"'></div>
+    <div ng-include='"components/navbar/navbar.html"' ng-if="$state.current.name != 'oauth'"></div>
 
     <!-- Add your site or application content here -->
     <div ui-view="" class="slide-right" style="min-height:800px"></div>
@@ -104,6 +105,7 @@
           <script src="components/mongoose-error/mongoose-error.directive.js"></script>
           <script src="components/navbar/navbar.controller.js"></script>
           <script src="components/product/product.service.js"></script>
+          <script src="components/signupForm/signupForm.directive.js"></script>
           <script src="components/socket/socket.service.js"></script>
           <!-- endinjector -->
         <!-- endbuild -->

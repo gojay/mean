@@ -8,7 +8,9 @@ exports.setup = function(User, config) {
 			callbackURL : config.github.callbackURL
 		}, function (accessToken, refreshToken, profile, done) {
 
-			console.log('[github]', accessToken, refreshToken, profile);
+			console.log('[middleware:github]accessToken', accessToken);
+			console.log('[middleware:github]refreshToken', refreshToken);
+			console.log('[middleware:github]profile', profile.displayName);
 
 			User.findOne({ 'github.id': profile.id }, function (err, user) {
 				if(err) return done(err);

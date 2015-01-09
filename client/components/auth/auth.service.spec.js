@@ -77,49 +77,120 @@ describe('Service: Auth', function() {
 	    });
 	});
 
-	it('createUser', function() {
+	describe('createUser', function() {
     	var respond;
+    	beforeEach(function() {
+			$httpBackend.expectPOST('/api/users').respond(201, { token: 'token' });
+	    	$httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
 
-		$httpBackend.expectPOST('/api/users').respond(201, { token: 'token' });
-    	$httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
+			Auth.createUser({
+				name: 'user',
+				email: 'test@test.com'
+			}).then(function() {
+				respond = 'created';
+			}).catch(function() {
+				respond = 'fail';
+			});
+			$httpBackend.flush();
+    	});
 
-		Auth.createUser({
-			name: 'user',
-			email: 'test@test.com'
-		}).then(function() {
-			respond = 'created';
-		}).catch(function() {
-			respond = 'fail';
+		it('respond to be created', function() {
+			expect(respond).toBe('created');
 		});
-		$httpBackend.flush();
 
-		expect(respond).toBe('created');
-		expect(Auth.getToken()).toEqual('token');
-		expect(Auth.getCurrentUser().name).toEqual('user');
+		it('get token', function() {
+			expect(Auth.getToken()).toEqual('token');
+		});
+
+		it('get current user name to equal "user"', function() {
+			expect(Auth.getCurrentUser().name).toEqual('user');
+		});
 	});
 
-	it('login fail', function() {
+	describe('login fail', function() {
 		var result = {
 			success: null,
 			error: null
 		};
 
-    	$httpBackend.expectPOST('/auth/local').respond(404, 'User not found');
+		beforeEach(function() {
+	    	$httpBackend.expectPOST('/auth/local').respond(404, 'User not found');
 
-		Auth.login({ email: 'test@test.com', password: 'password' })
-			.then(function(data) {
-				result.success = data;
-			}, function(err) {
-				result.error = err;
-			});
-		$httpBackend.flush();
+			Auth.login({ email: 'test@test.com', password: 'password' })
+				.then(function(data) {
+					result.success = data;
+				}, function(err) {
+					result.error = err;
+				});
 
-		expect(Auth.logout).toHaveBeenCalled();
-		expect(result.success).toBeNull();
-		expect(result.error).toBe('User not found');
+			$httpBackend.flush();
+		});
 
-		expect(Auth.getCurrentUser()).toEqual({});
-		expect(Auth.isLoggedIn()).toBeFalsy();
-		expect(Auth.getToken()).toBeUndefined();
+		it('Auth logout to have been called, result success is null, and result error to be "user not found"', function() {
+			expect(Auth.logout).toHaveBeenCalled();
+			expect(result.success).toBeNull();
+			expect(result.error).toBe('User not found');
+		});
+
+		it('current user is empty, is logged in to be false and token undefined', function() {
+			expect(Auth.getCurrentUser()).toEqual({});
+			expect(Auth.isLoggedIn()).toBeFalsy();
+			expect(Auth.getToken()).toBeUndefined();
+		});
+
 	});
+});
+
+describe('Service: Oauth', function() {
+  	beforeEach(module('exampleAppApp'));
+
+  	describe('window', function() {
+  		var oauthWindow;
+  		beforeEach(inject(['Oauth.window', function(_oauthWindow_) {
+  			oauthWindow = _oauthWindow_
+  		}]));
+
+  		it('options for facebook, google, twitter & github are defined', function() {
+  			expect(oauthWindow.facebook).toBeDefined();
+  			expect(oauthWindow.google).toBeDefined();
+  			expect(oauthWindow.twitter).toBeDefined();
+  			expect(oauthWindow.github).toBeDefined();
+  		});
+  	});
+
+  	describe('popup', function() {
+  		var $q, $window, $interval, popup;
+  		beforeEach(inject(['$q', '$window', '$interval', '$templateCache', 'Oauth.popup', function(_$q_, _$window_, _$interval_, $templateCache, _popup_) {
+    		$templateCache.put('app/main/main.html', '');
+  			$q = _$q_;
+  			$window = _$window_;
+  			$interval = _$interval_;
+  			popup = _popup_;
+  		}]));
+
+		it('should be defined', function() {
+		    expect(popup).toBeDefined();
+		});
+
+		it('should add left and top offset options', function() {
+		    var preparedOptions = popup.prepareOptions('github');
+		    expect(preparedOptions.left).toBeDefined();
+		    expect(preparedOptions.top).toBeDefined();
+		});
+
+	  	it('should stringify popup options', function() {
+		    var options = {
+		        width: 481,
+		        height: 269
+		    };
+		    var stringOptions = popup.stringifyOptions(options);
+		    expect(stringOptions).toBe('width=481,height=269');
+		});
+
+		it('should open a new popup', function() {
+		    var open = popup.open(null, 'github');
+		    $interval.flush(300);
+		    expect(angular.isObject(open)).toBe(true);
+		});
+  	});
 });

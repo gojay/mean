@@ -1,11 +1,27 @@
 'use strict';
 
-xdescribe('Controller: ProductsDetailCtrl', function () {
+describe('Controller: ProductsDetailCtrl', function () {
 
   // load the controller's module
   beforeEach(angular.mock.module('exampleAppApp'));
 
-  var ProductsDetailCtrl, $scope, $httpBackend;
+  var $scope, $modal, $log, $document;
+
+  var fakeModal = {
+    result: {
+      then: function(confirmCallback, cancelCallback) {
+        this.confirmCallback = confirmCallback;
+        this.cancelCallback = cancelCallback;
+      }
+    },
+    close: function(item) {
+      this.result.confirmCallback(item);
+    },
+    dismiss: function(type) {
+      this.result.cancelCallback(type);
+    }
+  };
+
   var product = {
     title: 'Motorola',
     meta: {
@@ -17,15 +33,25 @@ xdescribe('Controller: ProductsDetailCtrl', function () {
   };
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope) {
+  beforeEach(inject(function ($controller, $rootScope, _$modal_, _$document_) {
     $scope = $rootScope.$new();
-    ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
+    $modal = _$modal_;
+    spyOn($modal, 'open').andReturn(fakeModal);
+
+    $log = { info: angular.noop };
+    spyOn($log, 'info').andCallThrough();
+
+    var ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
       $scope: $scope,
+      $modal: $modal,
+      $log: $log,
       product: product
     });
+
+    $document = _$document_;
   }));
 
-  it('should get product when fetched from xhr and type of object', function () {
+  it('should get product', function () {
     expect($scope.product).toEqual(product);
   });
 
@@ -33,6 +59,22 @@ xdescribe('Controller: ProductsDetailCtrl', function () {
     $scope.setThumb(1);
     expect($scope.activeThumb).toEqual(1);
   });
+
+  describe('trigger open', function() {
+    beforeEach(function() {
+      $scope.open();
+    });
+
+    it('should $modal.open have been called & modalInstance is defined', function() {
+      expect($modal.open).toHaveBeenCalled();
+      expect($scope.modalInstance).toBeDefined();
+    });
+
+    it('should $modal.dismiss, $Log.info have been called', function() {
+      $scope.modalInstance.dismiss('cancel');
+      expect($log.info).toHaveBeenCalled();
+    });
+  })
 
   /**
    * Test when in ProductsDetailCtrl

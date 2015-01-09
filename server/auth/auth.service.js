@@ -59,7 +59,7 @@ function hasRole(roleRequired) {
  */
 function signToken(id) {
   var token = jwt.sign({ _id: id }, config.secrets.session, { expiresInMinutes: 60 });
-  console.log('[token]', token);
+  console.log('[signToken]', token);
   return token;
 }
 

@@ -144,6 +144,111 @@ angular.module('exampleAppApp')
        */
       getToken: function() {
         return $cookieStore.get('token');
+      },
+
+      getUserInAsync: function() {
+        var deferred = $q.defer();
+        if(this.getToken()) {
+          if(_.isEmpty(currentUser)) {
+            currentUser = User.get();
+          }
+          deferred.resolve();
+        } else {
+          deferred.reject({ message: 'Authorization Failed'});
+        }
+        return deferred.promise;
       }
     };
-  });
+  })
+  /* based on angular satelizer popup */
+  .factory('Oauth.window', function(){
+    return {
+      facebook: { 
+        width: 481, 
+        height: 269 
+      },
+      google: { 
+        width: 580, 
+        height: 400 
+      },
+      twitter: { 
+        width: 495, 
+        height: 645 
+      },
+      github: {
+        width: 1020,
+        height: 618
+      }
+    };
+  })
+  .factory('Oauth.popup', [
+    '$q', 
+    '$interval', 
+    '$window', 
+    '$location',
+    'Oauth.window',
+    function($q, $interval, $window, $location, providerWindow) {
+      var popupWindow = null;
+      var polling = null;
+
+      var popup = {};
+
+      popup.popupWindow = popupWindow;
+
+      popup.open = function(url, provider) {
+          this.provider = provider;
+
+          var deferred = $q.defer();
+          var optionsString = popup.stringifyOptions(popup.prepareOptions(provider));
+
+          popupWindow = $window.open(url, '_blank', optionsString);
+
+          if (popupWindow && popupWindow.focus) {
+              popupWindow.focus();
+          }
+
+          popup.pollPopup(deferred);
+
+          return deferred.promise;
+      };
+
+      popup.pollPopup = function(deferred) {
+          popupWindow.document.title = 'Connect with ' + this.provider;
+          polling = $interval(function() {
+              try {
+                  if (popupWindow.oauthSuccess) {
+                      deferred.resolve();
+                      popupWindow.close();
+                      $interval.cancel(polling);
+                  }
+              } catch (error) {}
+
+              if (popupWindow.closed) {
+                  $interval.cancel(polling);
+                  deferred.reject({ message: 'Authorization Failed' });
+              }
+          }, 100);
+      };
+
+      popup.prepareOptions = function(provider) {
+        var options = providerWindow[provider];
+        var width = options.width || 500;
+        var height = options.height || 500;
+        return angular.extend({
+            width: width,
+            height: height,
+            left: $window.screenX + (($window.outerWidth - width) / 2),
+            top: $window.screenY + (($window.outerHeight - height) / 2.5)
+        }, options);
+      };
+
+      popup.stringifyOptions = function(options) {
+          var parts = [];
+          angular.forEach(options, function(value, key) {
+              parts.push(key + '=' + value);
+          });
+          return parts.join(',');
+      };
+
+      return popup;
+  }]);

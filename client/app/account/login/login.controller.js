@@ -24,7 +24,6 @@ angular.module('exampleAppApp')
     };
 
     $scope.loginOauth = function(provider) {
-      // $window.location.href = '/auth/' + provider;
-      $window.location.href = '/auth/' + provider + '?referrer=/settings';
+      $window.location.href = '/auth/' + provider;
     };
   });
