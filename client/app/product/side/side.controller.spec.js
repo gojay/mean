@@ -125,7 +125,7 @@ describe('Controller: ProductsSideCtrl', function () {
 
 		$state = _$state_;
 		spyOn($state, 'go').andCallFake(function(state, params){
-			dump('callFake', state, params);
+			// dump('callFake', state, params);
 		});
 
 		$timeout = _$timeout_;

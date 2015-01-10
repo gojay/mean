@@ -1,11 +1,23 @@
 'use strict';
 
-describe('Controller: ProductsDetailCtrl', function () {
+ddescribe('Controller: ProductsDetailCtrl', function () {
 
   // load the controller's module
   beforeEach(angular.mock.module('exampleAppApp'));
 
-  var $scope, $modal, $log, $document;
+  var $scope, $modal, $log, $httpBackend;
+
+  var product = {
+    _id: 1,
+    title: 'Motorola',
+    meta: {
+      images: {
+        cdnUri: '/images/phones',
+        files: ['motorola.0.jpg', 'motorola.1.jpg']
+      }
+    },
+    reviews: []
+  };
 
   var fakeModal = {
     result: {
@@ -22,18 +34,10 @@ describe('Controller: ProductsDetailCtrl', function () {
     }
   };
 
-  var product = {
-    title: 'Motorola',
-    meta: {
-      images: {
-        cdnUri: '/images/phones',
-        files: ['motorola.0.jpg', 'motorola.1.jpg']
-      }
-    }
-  };
-
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _$modal_, _$document_) {
+  beforeEach(inject(function ($controller, $rootScope, $templateCache, _$modal_, _$httpBackend_) {
+    $templateCache.put('app/main/main.html', '');
+
     $scope = $rootScope.$new();
     $modal = _$modal_;
     spyOn($modal, 'open').andReturn(fakeModal);
@@ -41,14 +45,14 @@ describe('Controller: ProductsDetailCtrl', function () {
     $log = { info: angular.noop };
     spyOn($log, 'info').andCallThrough();
 
+    $httpBackend = _$httpBackend_;
+
     var ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
       $scope: $scope,
       $modal: $modal,
       $log: $log,
       product: product
     });
-
-    $document = _$document_;
   }));
 
   it('should get product', function () {
@@ -74,7 +78,16 @@ describe('Controller: ProductsDetailCtrl', function () {
       $scope.modalInstance.dismiss('cancel');
       expect($log.info).toHaveBeenCalled();
     });
-  })
+  });
+
+  it('send review', function(){
+    $httpBackend.expectPOST('/api/products/1/review').respond(201, { name:'test', review:'ok' });
+
+    $scope.sendReview();
+    $httpBackend.flush();
+
+    expect($scope.product.reviews.length).toBe(1);
+  });
 
   /**
    * Test when in ProductsDetailCtrl

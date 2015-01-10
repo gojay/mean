@@ -12,13 +12,6 @@ describe('Service: Auth', function() {
     	Auth = _Auth_;
     	spyOn(Auth, 'logout').andCallThrough();
 
-    	/*User = _User_;
-		spyOn(User, 'get').andCallFake(function(){
-			var deferred = $q.defer();
-			deferred.resolve({ role: 'user', name: 'user' });
-			return { $promise: deferred.promise };
-		});*/
-
 		User = _User_;
 		spyOn(User, 'get').andCallThrough();
 
@@ -137,7 +130,6 @@ describe('Service: Auth', function() {
 			expect(Auth.isLoggedIn()).toBeFalsy();
 			expect(Auth.getToken()).toBeUndefined();
 		});
-
 	});
 });
 
@@ -164,6 +156,8 @@ describe('Service: Oauth', function() {
     		$templateCache.put('app/main/main.html', '');
   			$q = _$q_;
   			$window = _$window_;
+  			spyOn($window, 'open').andCallThrough();
+
   			$interval = _$interval_;
   			popup = _popup_;
   		}]));
@@ -188,9 +182,10 @@ describe('Service: Oauth', function() {
 		});
 
 		it('should open a new popup', function() {
-		    var open = popup.open(null, 'github');
+		    var open = popup.open('github.com', 'github');
 		    $interval.flush(300);
 		    expect(angular.isObject(open)).toBe(true);
+		    expect($window.open).toHaveBeenCalled();
 		});
   	});
 });

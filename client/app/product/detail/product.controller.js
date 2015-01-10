@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsDetailCtrl', function($scope, $state, $location, $modal, $log, product, Auth) {
+    .controller('ProductsDetailCtrl', function($scope, /*$state, */$location, $modal, $log, product, productService, Auth) {
         $scope.product = product;
 
         $scope.activeThumb = 0;
@@ -47,9 +47,17 @@ angular.module('exampleAppApp')
             });
         };
 
+        $scope.review = {
+            user: null,
+            body: '',
+            rate: 0
+        };
+
         // user post review
         $scope.sendReview = function() {
-        	$log.log('sendReview');
+            productService.sendReview($scope.product._id, $scope.review).$promise.then(function(data){
+                $scope.product.reviews.push(data);
+            });
         };
 
     })

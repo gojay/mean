@@ -41,7 +41,7 @@ angular.module('exampleAppApp')
         
         return {
             params: '',
-            resource: $resource('/api/products/:id',  { id: '@_id' }, {
+            resource: $resource('/api/products/:id/:controller',  { id: '@_id' }, {
                 query: {
                     method: 'GET',
                     isArray: false,
@@ -53,8 +53,17 @@ angular.module('exampleAppApp')
                 },
                 update: {
                     method: 'PUT'
+                },
+                postReview: {
+                    method: 'POST',
+                    params: {
+                        controller: 'review'
+                    }
                 }
             }),
+            sendReview: function(id, data) {
+                return this.resource.postReview({ id: id }, data);
+            },
             get: function(id) {
                 return this.resource.get({ id: id });
             },

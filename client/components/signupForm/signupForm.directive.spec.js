@@ -1,6 +1,6 @@
 'use strict';
 
-xdescribe('Directive: signupForm', function () {
+describe('Directive: signupForm', function () {
   var $window;
 
   // load the directive's module and view
@@ -13,9 +13,42 @@ xdescribe('Directive: signupForm', function () {
     $provide.value('$window', $window);
   }));
   beforeEach(module('components/signupForm/signupForm.html'));
-  beforeEach(module('components/signupForm/loginOauth.html'));
+  beforeEach(module('components/loginForm/loginOauth.html'));
 
   var element, scope, Auth, $httpBackend, $location;
+
+  /* Helpers */
+
+  var getEl = function(type, name, errType) {
+    var el = {
+      input: function() {
+        return element.find('input[name="'+ name +'"]');
+      },
+      message: function() {
+        var errClass = '.err-' + errType.toLowerCase();
+        return this.input().siblings(errClass).not('.ng-hide');
+      },
+      submit: function() {
+        return element.find('button[type="submit"]');
+      }
+    };
+    return el[type]();
+  };
+  var setEl = function(name, value) {
+    var el = getEl('input', name);
+    el.val(value).trigger('input');
+  };
+  var submitForm = function(inputs) {
+    if(inputs) {
+      angular.forEach(inputs, function(v,k) {
+        setEl(k,v);
+      });
+      scope.$digest();
+    }
+    getEl('submit').click();
+  };
+
+  /* /Helpers */
 
   beforeEach(inject(function ($rootScope, $templateCache, _$location_, _$httpBackend_, _Auth_) {
     $templateCache.put('app/main/main.html', '');
@@ -25,7 +58,7 @@ xdescribe('Directive: signupForm', function () {
 
     Auth = _Auth_;
 
-    spyOn(Auth, 'signup').andCallThrough();
+    spyOn(Auth, 'createUser').andCallThrough();
     
     $httpBackend = _$httpBackend_;
 
@@ -41,88 +74,81 @@ xdescribe('Directive: signupForm', function () {
     }));
 
     describe('form invalid', function() {
-      it('should show message error email && password required', function() {
-        element.find('button[type="submit"]').click();
+      it('should show all message are required', function() {
+        submitForm();
 
-        expect(element.find('#input-email > .help-block:first-child').hasClass('ng-hide')).toBeFalsy();
-        expect(element.find('#input-password > .help-block').hasClass('ng-hide')).toBeFalsy();
+        expect(getEl('message', 'name', 'required')).toBeTruthy();
+        expect(getEl('message', 'email', 'required')).toBeTruthy();
+        expect(getEl('message', 'password', 'required')).toBeTruthy();
 
-        expect(scope.form.$valid).toBeFalsy();
+        expect(scope.form.$invalid).toBeTruthy();
+        expect(scope.form.name.$invalid).toBeTruthy();
+        expect(scope.form.name.$error.required).toBeTruthy();
         expect(scope.form.email.$invalid).toBeTruthy();
         expect(scope.form.email.$error.required).toBeTruthy();
         expect(scope.form.password.$invalid).toBeTruthy();
         expect(scope.form.password.$error.required).toBeTruthy();
       });
 
-      it('should show message error email required', function() {
-        element.find('input[name="password"]').val('password').trigger('input');
-        
-        scope.$digest();
-          
-        element.find('button[type="submit"]').click();
+      it('should show email & password error required messages', function() {
+        submitForm({ name: 'name' });
 
-        expect(element.find('#input-email > .help-block:first-child').hasClass('ng-hide')).toBeFalsy();
+        expect(getEl('message', 'email', 'required')).toBeTruthy();
+        expect(getEl('message', 'password', 'required')).toBeTruthy();
 
-        expect(scope.form.$valid).toBeFalsy();
+        expect(scope.form.$invalid).toBeTruthy();
         expect(scope.form.email.$invalid).toBeTruthy();
         expect(scope.form.email.$error.required).toBeTruthy();
-        expect(scope.form.password.$valid).toBeTruthy();
+        expect(scope.form.password.$invalid).toBeTruthy();
+        expect(scope.form.password.$error.required).toBeTruthy();
       });
 
       it('should show message error email not valid', function() {
-        element.find('input[name="email"]').val('test').trigger('input');
-        element.find('input[name="password"]').val('password').trigger('input');
-        
-        scope.$digest();
-          
-        element.find('button[type="submit"]').click();
+        submitForm({
+          name: 'test',
+          email: 'email',
+          password: 'password',
+        });
 
-        expect(element.find('#input-email > .help-block:last-child').hasClass('ng-hide')).toBeFalsy();
+        expect(getEl('message', 'email', 'email')).toBeTruthy();
 
-        expect(scope.form.$valid).toBeFalsy();
+        expect(scope.form.$invalid).toBeTruthy();
         expect(scope.form.email.$invalid).toBeTruthy();
         expect(scope.form.email.$error.email).toBeTruthy();
-        expect(scope.form.password.$valid).toBeTruthy();
       });
 
-      it('should show message error password required', function() {
-        element.find('input[name="email"]').val('test@test.com').trigger('input');
+      it('should show message error password minlength', function() {
+        submitForm({
+          name: 'test',
+          email: 'email',
+          password: '12',
+        });
         
-        scope.$digest();
-          
-        element.find('button[type="submit"]').click();
+        expect(getEl('message', 'password', 'minlength')).toBeTruthy();
 
-        expect(element.find('#input-password > .help-block').hasClass('ng-hide')).toBeFalsy();
-
-        expect(scope.form.email.$valid).toBeTruthy();
-
-        expect(scope.form.$valid).toBeFalsy();
-        expect(scope.form.password.$valid).toBeFalsy();
-        expect(scope.form.password.$error.required).toBeTruthy();
+        expect(scope.form.$invalid).toBeTruthy();
+        expect(scope.form.password.$invalid).toBeTruthy();
+        expect(scope.form.password.$error.minlength).toBeTruthy();
       });
     });
 
     describe('Auth: local', function() {
       describe('signup successful', function() {
         beforeEach(function() {
-          $httpBackend.expectPOST('/auth/local').respond({ token: 'token' });
+          $httpBackend.expectPOST('/api/users').respond(201, { token: 'token' });
           $httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
 
-          scope.user = {
+          submitForm({
+            name: 'test',
             email: 'test@test.com',
-            password: 'password'
-          };
-          scope.$digest();
-
-          element.find('button[type="submit"]').click();
-
-          expect(scope.form.$valid).toBeTruthy();
+            password: 'password',
+          });
 
           $httpBackend.flush();
         });
 
-        it('should form valid & Auth signup have been called', function() {
-          expect(Auth.signup).toHaveBeenCalled();
+        it('should Auth createUser to have been called', function() {
+          expect(Auth.createUser).toHaveBeenCalled();
         });
 
         it('should errors are empty', function() {
@@ -134,51 +160,22 @@ xdescribe('Directive: signupForm', function () {
         });
       });
 
-      describe('signup fail: 404', function() {
+      describe('signup fail: 422', function() {
         beforeEach(function() {
-          $httpBackend.expectPOST('/auth/local').respond(404, { message: 'user not found!' });
+          $httpBackend.expectPOST('/api/users').respond(422, { message: 'email already taken!' });
           
-          element.find('input[name="email"]').val('test@test.com').trigger('input');
-          element.find('input[name="password"]').val('password').trigger('input');
-
-          scope.$digest();
-
-          element.find('button[type="submit"]').click();
+          submitForm({
+            name: 'test',
+            email: 'test@test.com',
+            password: 'password',
+          });
 
           $httpBackend.flush();
         });
 
-        it('should form valid & Auth signup have been called', inject(function ($compile) {
-          expect(Auth.signup).toHaveBeenCalled();
+        it('should show email mongoose error message', inject(function ($compile) {
+          expect(getEl('message', 'email', 'mongoose')).toBeTruthy();
         }));
-
-        it('should error others defined', inject(function ($compile) {
-          expect(scope.errors.other).toBeDefined();
-          expect(scope.errors.other).toBe('user not found!');
-        }));
-
-        it('should show error message', inject(function ($compile) {
-          expect(element.find('#error-others > .help-block').text()).toEqual('user not found!');
-        }));
-      });
-    });
-
-    describe('Auth: oauth', function() {
-      it('should redirect to auth facebook', function() {
-        scope.signupOauth('facebook');
-        expect($window.location.href).toBe('/auth/facebook');
-      });
-      it('should redirect to auth twitter', function() {
-        scope.signupOauth('twitter');
-        expect($window.location.href).toBe('/auth/twitter');
-      });
-      it('should redirect to auth google', function() {
-        scope.signupOauth('google');
-        expect($window.location.href).toBe('/auth/google');
-      });
-      it('should redirect to auth github', function() {
-        scope.signupOauth('github');
-        expect($window.location.href).toBe('/auth/github');
       });
     });
   });
@@ -192,22 +189,21 @@ xdescribe('Directive: signupForm', function () {
 
     describe('Auth: local', function() {
       beforeEach(function() {
-        $httpBackend.expectPOST('/auth/local').respond({ token: 'token' });
+        $httpBackend.expectPOST('/api/users').respond(201, { token: 'token' });
         $httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
-        element.find('input[name="email"]').val('test@test.com').trigger('input');
-        element.find('input[name="password"]').val('password').trigger('input');
-
-        scope.$digest();
-
-        element.find('button[type="submit"]').click();
+          
+        submitForm({
+          name: 'test',
+          email: 'test@test.com',
+          password: 'password'
+        });
         
-        expect(scope.form.$valid).toBeTruthy();
-
         $httpBackend.flush();
       });
 
       it('should to have been called', function() {
-        expect(Auth.signup).toHaveBeenCalledWith({
+        expect(Auth.createUser).toHaveBeenCalledWith({
+          name: 'test',
           email: 'test@test.com',
           password: 'password'
         });
@@ -220,25 +216,25 @@ xdescribe('Directive: signupForm', function () {
 
     describe('Auth: oauth', function() {
       it('should redirect to auth facebook with referrer query', inject(function($compile) {
-        scope.signupOauth('facebook');
+        scope.loginOauth('facebook');
         expect($window.location.href).toBe('/auth/facebook?referrer=/settings');
       }));
       it('should redirect to auth twitter with referrer query', inject(function($compile) {
-        scope.signupOauth('twitter');
+        scope.loginOauth('twitter');
         expect($window.location.href).toBe('/auth/twitter?referrer=/settings');
       }));
       it('should redirect to auth google with referrer query', inject(function($compile) {
-        scope.signupOauth('google');
+        scope.loginOauth('google');
         expect($window.location.href).toBe('/auth/google?referrer=/settings');
       }));
       it('should redirect to auth github with referrer query', inject(function($compile) {
-        scope.signupOauth('github');
+        scope.loginOauth('github');
         expect($window.location.href).toBe('/auth/github?referrer=/settings');
       }));
     });
   });
 
-  describe('with callback signup success', function() {
+  describe('with callback signupSuccess', function() {
     beforeEach(inject(function($compile) {
       scope.signupSuccess = angular.noop;
       spyOn(scope, 'signupSuccess').andCallThrough();
@@ -249,68 +245,17 @@ xdescribe('Directive: signupForm', function () {
     }));
 
     it('signupSuccess toHaveBeenCalled', function() {
-      $httpBackend.expectPOST('/auth/local').respond({ token: 'token' });
+      $httpBackend.expectPOST('/api/users').respond(201, { token: 'token' });
       $httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
-
-      element.find('input[name="email"]').val('test@test.com').trigger('input');
-      element.find('input[name="password"]').val('password').trigger('input');
-
-      scope.$digest();
-
-      element.find('button[type="submit"]').click();
       
-      expect(scope.form.$valid).toBeTruthy();
-
+      submitForm({
+        name: 'test',
+        email: 'test@test.com',
+        password: 'password'
+      });
+      
       $httpBackend.flush();
 
-      expect(scope.signupSuccess).toHaveBeenCalled();
-    });
-  });
-
-  describe('with dialog', function() {
-    var $q, $timeout, Auth, popup;
-
-    beforeEach(inject(['$q', '$timeout', '$compile', 'Auth', 'Oauth.popup', 
-      function(_$q_, _$timeout_, $compile, _Auth_, _popup_) {
-        $q = _$q_;
-        $timeout = _$timeout_;
-
-        // mock oauth.popup sevice
-        popup = _popup_;
-        spyOn(popup, 'open').andCallFake(function(){
-          var deferred = $q.defer();
-          deferred.resolve();
-          return deferred.promise;
-        });
-
-        // mock Auth sevice
-        Auth = _Auth_;
-        spyOn(Auth, 'getUserInAsync').andCallFake(function(){
-          var deferred = $q.defer();
-          deferred.resolve();
-          return deferred.promise;
-        });
-
-        scope.signupSuccess = angular.noop;
-        spyOn(scope, 'signupSuccess').andCallThrough();
-
-        element = angular.element('<signup-form signup-success="signupSuccess()" signup-dialog="true"></signup-form>');
-        element = $compile(element)(scope);
-        scope.$apply();
-      }]
-    ));
-
-    it('should show popup when signup oauth', function() {
-      scope.signupOauth('github');
-      expect(popup.open).toHaveBeenCalled();
-      scope.$digest();
-
-      expect(Auth.getUserInAsync).toHaveBeenCalled();
-      expect(scope.oauthLoading).toBeTruthy();
-
-      $timeout.flush();
-
-      expect(scope.oauthLoading).toBeFalsy();
       expect(scope.signupSuccess).toHaveBeenCalled();
     });
   });

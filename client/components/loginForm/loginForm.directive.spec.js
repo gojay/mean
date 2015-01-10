@@ -1,6 +1,6 @@
 'use strict';
 
-ddescribe('Directive: loginForm', function () {
+describe('Directive: loginForm', function () {
 
   var $window;
 
@@ -247,7 +247,7 @@ ddescribe('Directive: loginForm', function () {
     });
   });
 
-  describe('with callback login success', function() {
+  describe('with callback loginSuccess', function() {
     beforeEach(inject(function($compile) {
       scope.loginSuccess = angular.noop;
       spyOn(scope, 'loginSuccess').andCallThrough();
@@ -276,8 +276,8 @@ ddescribe('Directive: loginForm', function () {
     });
   });
 
-  describe('with dialog', function() {
-    var $q, $timeout, Auth, popup;
+  describe('with dialog/popup', function() {
+    var $q, $timeout, Auth, popup, deferredPopup;
 
     beforeEach(inject(['$q', '$timeout', '$compile', 'Auth', 'Oauth.popup', 
       function(_$q_, _$timeout_, $compile, _Auth_, _popup_) {
@@ -287,9 +287,8 @@ ddescribe('Directive: loginForm', function () {
         // mock oauth.popup sevice
         popup = _popup_;
         spyOn(popup, 'open').andCallFake(function(){
-          var deferred = $q.defer();
-          deferred.resolve();
-          return deferred.promise;
+          deferredPopup = $q.defer();
+          return deferredPopup.promise;
         });
 
         // mock Auth sevice
@@ -306,12 +305,15 @@ ddescribe('Directive: loginForm', function () {
         element = angular.element('<login-form login-success="loginSuccess()" login-dialog="true"></login-form>');
         element = $compile(element)(scope);
         scope.$apply();
+
+        scope.loginOauth('github');
       }]
     ));
 
-    it('should show popup when login oauth', function() {
-      scope.loginOauth('github');
+    it('should show popup when login oauth, then get user in async. finally callback loginSuccess have been called', function() {
       expect(popup.open).toHaveBeenCalled();
+
+      deferredPopup.resolve();
       scope.$digest();
 
       expect(Auth.getUserInAsync).toHaveBeenCalled();
@@ -321,6 +323,14 @@ ddescribe('Directive: loginForm', function () {
 
       expect(scope.oauthLoading).toBeFalsy();
       expect(scope.loginSuccess).toHaveBeenCalled();
+    });
+
+    it('oauth failed', function() {
+      deferredPopup.reject({ message: 'Authorization failed' });
+      scope.$digest();
+
+      expect(scope.loginSuccess).toHaveBeenCalled();
+      expect(scope.errors.other).toEqual('Authorization failed');
     });
   });
 });

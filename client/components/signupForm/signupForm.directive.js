@@ -2,7 +2,7 @@
 
 /**
  * signupForm directive
- *
+ * 
  * @example
  * <signup-form 
  * 		signup-referrer="/path/redirect"
@@ -44,28 +44,28 @@ angular.module('exampleAppApp')
 
                         if (form.$valid) {
                             Auth.createUser({
-                                    name: $scope.user.name,
-                                    email: $scope.user.email,
-                                    password: $scope.user.password
-                                })
-                                .then(function() {
-                                    if (angular.isDefined(signupSuccessFn)) {
-                                        signupSuccessFn($scope);
-                                    } else {
-                                        var path = (referrer) ? referrer : '/';
-                                        $location.path(path);
-                                    }
-                                })
-                                .catch(function(err) {
-                                    err = err.data;
-                                    $scope.errors = {};
+                                name: $scope.user.name,
+                                email: $scope.user.email,
+                                password: $scope.user.password
+                            })
+                            .then(function() {
+                                if (angular.isDefined(signupSuccessFn)) {
+                                    signupSuccessFn($scope);
+                                } else {
+                                    var path = (referrer) ? referrer : '/';
+                                    $location.path(path);
+                                }
+                            })
+                            .catch(function(err) {
+                                err = err.data;
+                                $scope.errors = {};
 
-                                    // Update validity of form fields that match the mongoose errors
-                                    angular.forEach(err.errors, function(error, field) {
-                                        form[field].$setValidity('mongoose', false);
-                                        $scope.errors[field] = error.message;
-                                    });
+                                // Update validity of form fields that match the mongoose errors
+                                angular.forEach(err.errors, function(error, field) {
+                                    form[field].$setValidity('mongoose', false);
+                                    $scope.errors[field] = error.message;
                                 });
+                            });
                         }
                     }
 
