@@ -29,6 +29,7 @@ module.exports = function(config) {
       'client/bower_components/angular-spinkit/build/angular-spinkit.js',
       'client/bower_components/angular-paging/angular-paging.js',
       'client/bower_components/angular-slider/angular-slider.js',
+      'client/bower_components/moment/moment.js',
       'client/app/app.js',
       'client/app/app.coffee',
       'client/app/**/*.js',

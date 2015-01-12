@@ -116,7 +116,7 @@ var buildMatchFilters = function(query) {
     }
     
     return _.assign(filters, comparisonFilter);
-}
+};
 
 // load parameters middleware
 exports.load = function(req, res, next, id) {
@@ -283,9 +283,72 @@ exports.destroy = function(req, res) {
     });
 };
 
+/* Reviews */
+
+exports.loadReview = function(req, res, next, id) {
+    var product = req.product;
+    var review = product.reviews.id(id);
+    if (!review) return res.send(404, 'review not found');
+    req.review = review;
+    next();
+};
+
+// Get list of reviews 
+exports.showReviews = function(req, res) {
+    // page
+    var page = req.query.page,
+        ppage = (page && page > 0 ? page : 1 ) - 1;
+
+    var perPage = 3,
+        skip = ppage > 0 ? (ppage * perPage) : 0,
+        limit = perPage + skip;
+
+    var options = {
+        sort: { "reviews.createdAt": -1 },
+        page: ppage + 1,
+        perPage: perPage,
+        skip: skip,
+        limit: limit
+    };
+
+    Product.getReviews(req.params.id, options, function(err, reviews) {
+        if (err) {
+            return handleError(res, err);
+        }
+        return res.json(reviews);
+    });
+};
+
+// Create a new product review in the DB
+exports.addReview = function(req, res) {
+    var product = req.product;
+    var user = req.user;
+
+    product.addReview(user, req.body, function(err, respond) {
+        if (err) {
+            return handleError(res, err);
+        }
+        return res.json(201, respond);
+    });
+};
+
+// Remove a product review in the DB
+exports.removeReview = function(req, res) {
+    var product = req.product;
+    product.removeReview(req.reviewId, function(err) {
+        if (err) {
+            return handleError(res, err);
+        }
+        return res.send(204);
+    });
+};
+
 function handleError(res, err) {
     if(err.name && err.name == 'ValidationError') {
         return res.json(422, err);
+    }
+    else if(err.message) {
+        return res.json(404, err.message);
     }
     return res.send(500, err);
 }

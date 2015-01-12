@@ -105,7 +105,7 @@ exports.loadComments = function(req, res, next, id) {
     if (!comment) return res.send(404, 'comment not found');
     req.comment = comment;
     next();
-}
+};
 
 // Get list of comments 
 exports.showComments = function(req, res) {

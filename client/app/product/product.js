@@ -94,11 +94,11 @@ angular.module('exampleAppApp')
       })
       .state('products.detail', {
         url: '/detail/:productId',
-        resolve: {
+        /*resolve: {
           product: function($stateParams, productService) {
             return productService.get($stateParams.productId).$promise;
           }
-        },
+        },*/
         views: {
           'content@products': {
             templateUrl: 'app/product/detail/product.html',

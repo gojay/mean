@@ -1,0 +1,49 @@
+div(ng-init="showPostReview = false", style="position:relative")
+	.text-right
+		button.btn.btn-sm.btn-success(ng-click="showPostReview = !showPostReview") 
+			i.fa.fa-comment-o
+			= ' '
+			| Leave a Review
+	hr
+	.post-review.slide-down(ng-show="showPostReview")
+		div(ng-switch="isLoggedIn()")
+			div(ng-switch-when="false")
+				p Please login first, to post a review
+				button.btn.btn-sm.btn-default(ng-click="showLoginDialog()") Login
+			div(ng-switch-when="true")
+				form(name='form', ng-submit='reviews.send(form)', novalidate='')
+					.form-group
+						label Rating
+						div
+							rating(max="5", ng-model="reviews.data.rate", on-hover="hoveringOver(value)", on-leave="overStar = null")
+							span.label(ng-class="{'label-warning': percent<30, 'label-info': percent>=30 && percent<70, 'label-success': percent>=70}", ng-show="overStar") {{percent}} %
+					.form-group(ng-class='{ "has-success": form.body.$valid && submitted, "has-error": form.body.$invalid && submitted }')
+						label Review
+						textarea.form-control(name='body', ng-model='reviews.data.body', required='')
+						p.help-block.err-required(ng-show='form.body.$error.required && submitted')
+							| Review is required
+					.form-group.has-error
+						p.help-block(ng-show="reviews.error")
+							|  {{ reviews.error | json }}
+					button.btn.btn-sm.btn-success(type="submit", ng-disabled="reviews.loading") 
+						span(ng-show="reviews.loading")
+							i.fa.fa-spinner.fa-spin
+							= ' '
+						| {{ reviews.loading ? 'Loading...' : 'Submit' }}
+		hr
+	three-bounce-spinner.spinner-wrapper-primary.spinner-inline(ng-show="reviews.loading", style="left:45%")
+	div(ng-repeat="review in reviews.list.data", ng-class="{'loading': reviews.loading}")
+		.row.slide-down
+			.col-md-12
+				rating(readonly="true", max="5", ng-model="review.rate")
+				| {{review.user.name}}
+				p.pull-right.text-muted {{review.createdAt}}
+				p {{review.body}}
+		hr(ng-hide="$last")
+	div.margin-top-bottom(ng-if="reviews.list.pages > 1")
+		//- pagination(total-items="reviews.list.total", ng-model="reviews.list.currentPage", items-per-page="reviews.list.perPage", max-size="3", class="pagination-sm", ng-change="reviews.get({ page: reviews.list.currentPage }, true)")
+		button.btn.btn-sm.btn-block.btn-default(ng-click="reviews.loadMore()", ng-show="reviews.hasMore()") 
+			span(ng-show="reviews.loading")
+				i.fa.fa-spinner.fa-spin
+				= ' '
+			| {{ reviews.loading ? 'Loading...' :  'Load more reviews' }}			

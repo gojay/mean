@@ -292,25 +292,31 @@ ProductSchema.methods = {
         }, 'product');
     },
 
-    addComment: function(user, comment, cb) {
+    addReview: function(user, review, cb) {
         this.reviews.push({
-            body: comment.body,
+            rate: review.rate,
+            body: review.body,
             user: user._id
         });
 
-        if (!this.user.email) this.user.email = 'anonymouse@localhost.com';
-
-        this.save(cb);
+        this.save(function(err, product){
+            if(err) return cb(err);
+            var lastReview = product.reviews[product.reviews.length - 1];
+            User.findById(lastReview.user, '_id name email', function(err, user) {
+                lastReview.user = user;
+                cb(null, lastReview);
+            });
+        });
     },
 
-    removeComment: function(commentId, cb) {
+    removeReview: function(reviewId, cb) {
         var index = _.indexOf(this.reviews, {
-            id: commentId
+            id: reviewId
         });
         if (index) {
             this.reviews.splice(index, 1);
         } else {
-            return cb('not found');
+            return cb({message: 'review not found'});
         }
         this.save(cb);
     }
@@ -326,47 +332,80 @@ ProductSchema.statics = {
     /**
      * order reviews
      * @example
-        db.products.aggregate([
-            {$match: {_id: new ObjectId("545353b7213c9a101a7ed4f1")}},
+        db.products.aggregate( [
+            {$match: {_id: new ObjectId("549311c9ae47c02c1204a7fd")}},
+            {$project:{_id:1, reviews:1, total:{$size:'$reviews'}}},
             {$unwind: "$reviews"},
-            {$sort: {"reviews.createdAt":-1}},
+            {$sort: { "reviews.createdAt":-1 }},
             {$limit: 2},
-            {$group: {_id:"$_id", reviews: {$push:"$reviews"}}}
+            {$group: {_id:"$_id", reviews: {$push:"$reviews"}, total:{ $first:'$total' }}},
+            {
+                    $project: {
+                        total: 1,
+                        limit: { $literal: options.limit },
+                        skip: { $literal: options.skip },
+                        pages: { $divide: ['$total', options.limit] },
+                        currentPage: { $literal: options.page },
+                        perPage: { $literal: options.limit },
+                        data: '$reviews'
+                    }
+            }
         ]);
      *
      */
 
     getReviews: function(id, options, done) {
-        var options = _.extend({
-            page: 1,
-            perPage: 5,
-            sort: {
-                "reviews.createdAt": -1
+        // return done(options);
+        var aggregate = [{
+            $match: { _id: new ObjectId(id) }
+        }, { 
+            $project: {
+                _id: 0, 
+                reviews:1, 
+                total: { $size:'$reviews' }
             }
-        }, options);
-
-        var limit = options.perPage,
-            skip = options.perPage * options.page;
-
-        this.aggregate([
-        {
-            $match: { _id: ObjectId(id) }
         }, {
             $unwind: "$reviews"
         }, {
             $sort: options.sort
         }, {
-            $limit: limit
+            $limit: options.limit
         }, {
-            $skip: skip
+            $skip: options.skip
         }, {
             $group: {
                 _id: "$_id",
-                reviews: {
-                    $push: "$reviews"
-                }
+                reviews: { $push: "$reviews" }, 
+                total:{ $first:'$total' }
             }
-        }], done);
+        }, {
+            $project: {
+                _id: 0,
+                total: 1,
+                limit: { $literal: options.limit },
+                skip: { $literal: options.skip },
+                pages: { $divide: ['$total', options.perPage] },
+                currentPage: { $literal: options.page },
+                perPage: { $literal: options.perPage },
+                data: '$reviews'
+            }
+        }];
+        this.aggregate(aggregate, function(err, results) {
+            if(err) return done(err);
+            if(_.isEmpty(results)) {
+                return done({message: 'Review not found'});
+            }
+
+            async.each(results[0].data, function(review, callback){
+                User.findById(review.user, '_id name email', function(err, user) {
+                    review.user = user;
+                    callback();
+                });
+            }, function(err) {
+                if(err) return done(err);
+                return done(null, results.pop());
+            });
+        });
     },
 
     /**
@@ -821,9 +860,6 @@ ProductSchema.statics = {
             { $project: { _id: 1, total: 1 } }
         ])
      *
-     */
-
-    /**
      * get all clock_speed
      *
         db.products.aggregate([
@@ -846,7 +882,7 @@ ProductSchema.statics = {
         if(!/^[0-9a-fA-F]{24}$/.test(id)) {
             query = { slug:id };
         }
-        this.findOne(query, projection)
+        this.findOne(query/*, projection */)
             .populate('reviews.user', 'name email')
             .exec(done);
     },

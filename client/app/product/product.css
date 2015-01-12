@@ -239,3 +239,21 @@ section .pagination {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+/* tab content */
+
+section .tab-content {
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-bottom-left-radius: 5px;
+    padding: 15px;
+}
+
+section .tab-content .panel {
+    margin-bottom: 0;
+}
+
+section .loading {
+    opacity: .5;
+}

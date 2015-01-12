@@ -54,13 +54,22 @@ angular.module('exampleAppApp')
                 update: {
                     method: 'PUT'
                 },
+                getReviews: {
+                    method: 'GET',
+                    params: {
+                        controller: 'reviews'
+                    }
+                },
                 postReview: {
                     method: 'POST',
                     params: {
-                        controller: 'review'
+                        controller: 'reviews'
                     }
                 }
             }),
+            getReviews: function(params) {
+                return this.resource.getReviews(params);
+            },
             sendReview: function(id, data) {
                 return this.resource.postReview({ id: id }, data);
             },

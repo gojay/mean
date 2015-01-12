@@ -49,7 +49,7 @@ angular.module('exampleAppApp')
                 query.category = 'all';
             }
 
-            console.log('$state.go', query);
+            // console.log('$state.go', query);
 
             $state.go('products.query', query);
         }
@@ -57,7 +57,7 @@ angular.module('exampleAppApp')
         /* products on loaded */
 
         function onLoaded(evt, data) {
-            console.log('products:loaded', data);
+            // console.log('products:loaded', data);
 
             // oldMaxPrice = $scope.search.price.options.max;
 
