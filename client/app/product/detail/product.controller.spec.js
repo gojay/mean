@@ -78,15 +78,13 @@ describe('Controller: ProductsDetailCtrl', function () {
     expect($scope.activeThumb).toEqual(1);
   });
 
-  it('should $modal.open not to have been called when user is logged in', function() {
-      spyOn(Auth, 'isLoggedIn').andCallFake(function() {
-        return true;
-      });
+  it('should modal opened', inject(function(Modal) {
+      spyOn(Modal, 'auth').andCallThrough();
       $scope.showLoginDialog();
-      expect($modal.open).not.toHaveBeenCalled();
-  });
+      expect(Modal.auth).not.toHaveBeenCalled();
+  }));
 
-  describe('showLoginDialog', function() {
+  xdescribe('showLoginDialog', function() {
     beforeEach(function() {
       spyOn(Auth, 'isLoggedIn').andCallFake(function() {
         return false;
@@ -98,15 +96,6 @@ describe('Controller: ProductsDetailCtrl', function () {
       expect($modal.open).toHaveBeenCalled();
       expect($scope.modalInstance).toBeDefined();
     });
-
-    /*it('should get current user after modal closed (user already authenticated)', function() {
-      spyOn(Auth, 'getCurrentUser').andCallFake(function() {
-        return { _id: 99 };
-      });
-      $scope.modalInstance.close();
-      $scope.$digest();
-      expect($scope.review.user).toBe(99);
-    });*/
 
     it('should $modal.dismiss, $Log.info have been called', function() {
       $scope.modalInstance.dismiss('cancel');

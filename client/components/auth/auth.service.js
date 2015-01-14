@@ -146,6 +146,13 @@ angular.module('exampleAppApp')
         return $cookieStore.get('token');
       },
 
+      /**
+       * Get user in asynchronus
+       *
+       * Called after login oauth success with modal
+       * 
+       * @return {Promise}
+       */
       getUserInAsync: function() {
         var deferred = $q.defer();
         if(this.getToken()) {
@@ -156,6 +163,23 @@ angular.module('exampleAppApp')
         } else {
           deferred.reject({ message: 'Authorization Failed'});
         }
+        return deferred.promise;
+      },
+
+      /**
+       * Refresh token
+       */
+      refreshToken: function() {
+        var deferred = $q.defer();
+        $http.post('/auth/delegation/refresh_token')
+          .success(function(data) {
+            var token = data.token;
+            $cookieStore.put('token', token);
+            deferred.resolve(token);
+          })
+          .error(function(error) {
+            deferred.reject(error);
+          })
         return deferred.promise;
       }
     };

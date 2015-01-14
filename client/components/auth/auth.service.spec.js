@@ -6,7 +6,7 @@ describe('Service: Auth', function() {
 
   	beforeEach(module('exampleAppApp'));
 
-	beforeEach(inject(function ($q, _User_, _Auth_, _$httpBackend_, _$cookieStore_, $templateCache) {
+	beforeEach(inject(function ($q, _User_, _Auth_, _$httpBackend_, _$cookieStore_, $templateCache, jwtHelper) {
     	$templateCache.put('app/main/main.html', '');
 
     	Auth = _Auth_;
@@ -18,9 +18,11 @@ describe('Service: Auth', function() {
     	$httpBackend = _$httpBackend_;
 
     	$cookieStore = _$cookieStore_;
+
+    	spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
 	}));
 
-	describe('simulate login - changePassword - logout', function() {
+	describe('scenario: login - changePassword - logout', function() {
 		beforeEach(function() {
 	    	$httpBackend.expectPOST('/auth/local').respond({ token: 'token' });
 	    	$httpBackend.expectGET('/api/users/me').respond({ _id: 3, role: 'user', name: 'user' });
@@ -29,7 +31,7 @@ describe('Service: Auth', function() {
 			$httpBackend.flush();
 	    });
 
-	    it('login', function() {
+	    it('login successful', function() {
 			Auth.isLoggedInAsync(function(loggedIn){
 				expect(isLoggedIn).toBeTruthy();
 			});
@@ -43,7 +45,7 @@ describe('Service: Auth', function() {
 			expect(Auth.isAdmin()).toBeFalsy();
 	    });
 
-	    it('changePassword', function() {
+	    it('changePassword successful', function() {
 	    	var respond;
 
 			expect(Auth.getToken()).not.toBeUndefined();
@@ -62,7 +64,7 @@ describe('Service: Auth', function() {
     		expect(respond).toBe('updated');
 	    });
 
-	    it('logout', function() {
+	    it('logout successful', function() {
 	    	Auth.logout();
 			expect(Auth.getToken()).toBeUndefined();
 			expect(Auth.getCurrentUser()).toEqual({});
@@ -131,6 +133,46 @@ describe('Service: Auth', function() {
 			expect(Auth.getToken()).toBeUndefined();
 		});
 	});
+
+	it('get user in asnyc', function() {
+    	$cookieStore.put('token', '123456');
+
+    	$httpBackend.expectGET('/api/users/me', function(headers) {
+	       return headers['Authorization'] == 'Bearer 123456';
+	    }).respond({ _id: 3, role: 'user', name: 'user' });
+
+    	Auth.getUserInAsync();
+
+    	$httpBackend.flush();
+
+    	expect(User.get).toHaveBeenCalled();
+	});
+
+	it('refresh token', inject(function($rootScope) {
+    	$cookieStore.put('token', '123456');
+    	expect(Auth.getToken()).toBe('123456');
+
+    	$httpBackend.expectPOST('/auth/delegation/refresh_token', null, function(headers) {
+	       return headers['Authorization'] == 'Bearer 123456';
+	    }).respond({ token: '67890' });
+
+    	Auth.refreshToken().then(function(newToken){
+    		expect(newToken).toBe('67890');
+    	});
+
+    	$httpBackend.flush();
+
+    	expect(Auth.getToken()).toBe('67890');
+
+    	// try to request with authorization
+    	$httpBackend.expectGET('/api/users/me', function(headers) {
+	       return headers['Authorization'] == 'Bearer 67890';
+	    }).respond({ _id: 3, role: 'user', name: 'user' });
+
+    	Auth.getUserInAsync();
+
+    	$httpBackend.flush();
+	}));
 });
 
 describe('Service: Oauth', function() {

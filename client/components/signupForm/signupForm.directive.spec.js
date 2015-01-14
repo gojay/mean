@@ -50,7 +50,7 @@ describe('Directive: signupForm', function () {
 
   /* /Helpers */
 
-  beforeEach(inject(function ($rootScope, $templateCache, _$location_, _$httpBackend_, _Auth_) {
+  beforeEach(inject(function ($rootScope, $templateCache, _$location_, _$httpBackend_, _Auth_, jwtHelper) {
     $templateCache.put('app/main/main.html', '');
     $templateCache.put('app/account/settings/settings.html', '');
 
@@ -64,6 +64,8 @@ describe('Directive: signupForm', function () {
 
     $location = _$location_;
     spyOn($location, 'path').andCallThrough();
+
+    spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
   }));
 
   describe('default', function() {

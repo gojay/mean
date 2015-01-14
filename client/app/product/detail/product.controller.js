@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsDetailCtrl', function($scope, /*$state, */ $stateParams, $modal, $log, /*product, */productService, Auth) {
+    .controller('ProductsDetailCtrl', function($scope, /*$state, */ $stateParams, $modal, $log, /*product, */productService, Auth, Modal) {
         $scope.isLoggedIn = Auth.isLoggedIn;
         $scope.loading = true;
 
@@ -22,7 +22,7 @@ angular.module('exampleAppApp')
         /* reviews */
 
         $scope.reviews = {
-            error: null,
+            errors: null,
             loading: false,
             firstTime: true,
             list: null,
@@ -66,6 +66,9 @@ angular.module('exampleAppApp')
                 });
                 self.list = reviews;
                 self.loading = false;
+            }).catch(function(error) {
+                $log.error('get:reviews', error);
+                self.errors = { get: error };
             });
         };
         // check has more reviews
@@ -100,6 +103,9 @@ angular.module('exampleAppApp')
                 angular.forEach(reviews.data, function(review) {
                     self.list.data.push(review);
                 });
+            }).catch(function(error) {
+                $log.error('load:reviews', error);
+                self.errors = { load: error };
             });
         };
         // user send review
@@ -111,7 +117,13 @@ angular.module('exampleAppApp')
                 productService.sendReview($scope.product._id, self.data).$promise.then(function(review){
                     self.add(review);
                 }).catch(function(error) {
-                    self.error = error;
+                    err = err.data;
+                    self.errors.form = {};
+                    // Update validity of form fields that match the mongoose errors
+                    angular.forEach(err.errors, function(error, field) {
+                        form[field].$setValidity('mongoose', false);
+                        self.errors.form[field] = error.message;
+                    });
                 });
             }
         };
@@ -123,7 +135,9 @@ angular.module('exampleAppApp')
         };
 
         /* open modal login user */
-        $scope.showLoginDialog = function() {
+        $scope.showLoginDialog = Modal.auth();
+        
+        /*$scope.showLoginDialog = function() {
             if(Auth.isLoggedIn()) return;
 
             // var referrer = $state.href($state.current.name, $state.params);
@@ -159,8 +173,7 @@ angular.module('exampleAppApp')
             }, function cancel() {
                 $log.info('Modal dismissed at: ' + new Date());
             });
-        };
-
+        };*/
     })
     // modal controller
 	.controller('ModalInstanceCtrl', function($scope, $modalInstance) {

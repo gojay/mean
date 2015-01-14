@@ -14,4 +14,15 @@ angular.module('exampleAppApp')
         }
       });
     };
+
+    // Modal.confirm.delete returns a function that will open a modal when ran
+    // We use closure to define the callback for the modal's confirm action here in the controller
+    $scope.modalDelete = Modal.confirm.delete(function(user) { // callback when modal is confirmed
+      User.remove({ id: user._id });
+      angular.forEach($scope.users, function(u, i) {
+        if (u === user) {
+          $scope.users.splice(i, 1);
+        }
+      });
+    });
   });

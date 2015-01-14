@@ -22,9 +22,8 @@ div(ng-init="showPostReview = false", style="position:relative")
 						textarea.form-control(name='body', ng-model='reviews.data.body', required='')
 						p.help-block.err-required(ng-show='form.body.$error.required && submitted')
 							| Review is required
-					.form-group.has-error
-						p.help-block(ng-show="reviews.error")
-							|  {{ reviews.error | json }}
+						p.help-block.err-required(ng-show='form.body.$error.mongoose')
+							| {{ reviews.errors.form.body }}
 					button.btn.btn-sm.btn-success(type="submit", ng-disabled="reviews.loading") 
 						span(ng-show="reviews.loading")
 							i.fa.fa-spinner.fa-spin

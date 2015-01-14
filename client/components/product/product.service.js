@@ -282,6 +282,114 @@ angular.module('exampleAppApp')
                 "title": "Motorola CHARM™ with MOTOBLUR™",
                 "__v": 0,
                 "comments": []
+            },
+            search: {
+                loading: false,
+                category: {
+                    data: [
+                        {
+                            "_id": "electronics",
+                            "path": "products/electronics",
+                            "name": "Electronics",
+                            "parent": "products",
+                            "count": 200,
+                            "__v": 0,
+                            "children": [
+                                {
+                                    "_id": "desktops",
+                                    "path": "products/electronics/desktops",
+                                    "name": "Desktops",
+                                    "parent": "electronics",
+                                    "count": 100,
+                                    "__v": 0,
+                                    "children": []
+                                },
+                                {
+                                    "_id": "laptops",
+                                    "path": "products/electronics/laptops",
+                                    "name": "Laptops",
+                                    "parent": "electronics",
+                                    "count": 100,
+                                    "__v": 0,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "_id": "mobile-phones",
+                            "path": "products/mobile-phones",
+                            "name": "Mobile Phones",
+                            "parent": "products",
+                            "count": 192,
+                            "__v": 0,
+                            "children": [
+                                {
+                                    "_id": "android",
+                                    "path": "products/mobile-phones/android",
+                                    "parent": "mobile-phones",
+                                    "name": "Android",
+                                    "count": 32,
+                                    "__v": 0,
+                                    "children": []
+                                },
+                                {
+                                    "_id": "phones",
+                                    "path": "products/mobile-phones/phones",
+                                    "name": "Phones",
+                                    "parent": "mobile-phones",
+                                    "count": 150,
+                                    "__v": 0,
+                                    "children": []
+                                },
+                                {
+                                    "_id": "tablets",
+                                    "path": "products/mobile-phones/tablets",
+                                    "name": "Tablets",
+                                    "parent": "mobile-phones",
+                                    "count": 10,
+                                    "__v": 0,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                brand: {
+                    selected: [],
+                    data: []
+                },
+                price: {
+                    options: {},
+                    selected: {
+                        min: 0,
+                        max: 100
+                    }
+                },
+                os: {
+                    selected: null,
+                    data: []
+                },
+                storage: {
+                    flash: {
+                        selected: null,
+                        data: []
+                    },
+                    ram: {
+                        selected: null,
+                        data: []
+                    }
+                },
+                display: {
+                    selected: null,
+                    data: [],
+                    clear: function() {
+                        this.selected = [];
+                    }
+                },
+                camera: {
+                    selected: null,
+                    data: []
+                }
             }
         };
     });

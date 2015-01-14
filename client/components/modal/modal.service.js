@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-  .factory('Modal', function ($rootScope, $modal) {
+  .factory('Modal', function ($rootScope, $modal, Auth) {
     /**
      * Opens a modal
      * @param  {Object} scope      - an object to be merged with modal's scope
@@ -13,13 +13,15 @@ angular.module('exampleAppApp')
       scope = scope || {};
       modalClass = modalClass || 'modal-default';
 
-      angular.extend(modalScope, scope);
-
-      return $modal.open({
-        templateUrl: 'components/modal/modal.html',
+      var template = scope.modal.template ? { template: scope.modal.template } : { templateUrl: 'components/modal/modal.html' };
+      var options = angular.extend({
         windowClass: modalClass,
         scope: modalScope
-      });
+      }, template);
+
+      angular.extend(modalScope, scope);
+
+      return $modal.open(options);
     }
 
     // Public API here
@@ -71,6 +73,51 @@ angular.module('exampleAppApp')
               del.apply(event, args);
             });
           };
+        }
+      },  
+
+      /* Auth Signin/Signup modals */
+      auth: function(data) {
+        data = data || angular.noop;
+
+        return function() {
+          if(Auth.isLoggedIn()) return;
+
+          var authModal = openModal({
+            modal: {
+              template: '<div class="modal-header" style="border-bottom:0">' +
+                  '<h3 class="modal-title text-center">Authentication</h3>' +
+              '</div>' +
+              '<div class="modal-body" style="padding:0">' +
+                  '<tabset justified="true">'+
+                      '<tab>' +
+                          '<tab-heading>Sign in</tab-heading>' +
+                          '<div style="padding:20px">' +
+                              '<login-form login-dialog="true" login-success="modal.close($event)"></login-form>' +
+                          '</div>' +
+                      '</tab>' +
+                      '<tab>' +
+                          '<tab-heading>Sign up</tab-heading>' +
+                          '<div style="padding:20px">' +
+                              '<signup-form signup-dialog="true" signup-success="modal.close($event)"></signup-form>' +
+                          '</div>' +
+                      '</tab>' +
+                  '</tabset>' +
+              '<div class="modal-footer">' +
+                  '<button class="btn btn-warning" ng-click="modal.cancel($event)">Cancel</button>' +
+              '</div>',
+              close: function(e) {
+                authModal.close(e);
+              },
+              cancel: function(e) {
+                authModal.dismiss(e);
+              }
+            }
+          }, 'modal-primary');
+
+          authModal.result.then(function(event) {
+            data.apply(event, args);
+          });
         }
       }
     };

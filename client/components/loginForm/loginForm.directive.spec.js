@@ -18,7 +18,7 @@ describe('Directive: loginForm', function () {
 
   var element, scope, Auth, $httpBackend, $location;
 
-  beforeEach(inject(function ($rootScope, $templateCache, _$location_, _$httpBackend_, _Auth_) {
+  beforeEach(inject(function ($rootScope, $templateCache, _$location_, _$httpBackend_, _Auth_, jwtHelper) {
     $templateCache.put('app/main/main.html', '');
     $templateCache.put('app/account/settings/settings.html', '');
 
@@ -32,6 +32,9 @@ describe('Directive: loginForm', function () {
 
     $location = _$location_;
     spyOn($location, 'path').andCallThrough();
+
+    spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
+
   }));
 
   describe('default', function() {

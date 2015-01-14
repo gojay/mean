@@ -18,12 +18,16 @@ angular.module('exampleAppApp', [
   'angular-data.DSCacheFactory',
   'angular-spinkit',
   'angular-paging',
+  'angular-jwt',
   'uiSlider',
   'Scope.safeApply'
 ])
-  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, $urlMatcherFactoryProvider) {
-    /* https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-make-a-trailing-slash-optional-for-all-routes */
-    /*$urlMatcherFactoryProvider.strictMode(false);
+  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, $urlMatcherFactoryProvider, jwtInterceptorProvider) {
+
+    /* 
+     * https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-make-a-trailing-slash-optional-for-all-routes
+     *
+    $urlMatcherFactoryProvider.strictMode(false);
     $urlRouterProvider.rule(function ($injector, $location) {
       var path = $location.url();
       // check to see if the path already has a slash where it should be
@@ -34,15 +38,32 @@ angular.module('exampleAppApp', [
         return path.replace('?', '/?');
       }
       return path + '/';
-    });*/
+    });
+    */
     
     $urlRouterProvider
       .otherwise('/');
 
     $locationProvider.html5Mode(true);
-    $httpProvider.interceptors.push('authInterceptor');
-  })
 
+    /* http interceptors */
+
+    // $httpProvider.interceptors.push('authInterceptor');
+    
+    // angular-jwt
+    jwtInterceptorProvider.tokenGetter = function(Auth, jwtHelper) {
+      var token = Auth.getToken();
+      if(token && jwtHelper.isTokenExpired(token)) {
+        Auth.refreshToken().then(function(newToken) {
+          return newToken;
+        });
+      } else {
+        return token; 
+      }
+    }
+    $httpProvider.interceptors.push('jwtInterceptor');
+  })
+/*
   .factory('authInterceptor', function ($rootScope, $q, $cookieStore, $location) {
     return {
       // Add authorization token to headers
@@ -68,16 +89,16 @@ angular.module('exampleAppApp', [
       }
     };  
   })
-
-  .run(function ($rootScope, $state, $location, $http, $compile, Auth, DSCacheFactory) {
-    // set HTTP defaults cache
+*/
+  .run(function ($rootScope, $state, $location, $http, $compile, Auth, Modal, DSCacheFactory) {
+    /* set HTTP defaults cache
     DSCacheFactory('appHTTPCache', {
         maxAge: 900000, // Items added to this cache expire after 15 minutes.
         cacheFlushInterval: 3600000, // This cache will clear itself every hour.
         deleteOnExpire: 'aggressive', // Items will be deleted from this cache right when they expire.
         storageMode: 'localStorage' // This cache will sync itself with `localStorage`.
     });
-    // $http.defaults.cache = DSCacheFactory.get('appHTTPCache');
+    $http.defaults.cache = DSCacheFactory.get('appHTTPCache');*/
 
     // Redirect to login if route requires auth and you're not logged in
     $rootScope.$on('$stateChangeStart', function (event, next) {
@@ -85,8 +106,17 @@ angular.module('exampleAppApp', [
       $rootScope.$state = $state;
       Auth.isLoggedInAsync(function(loggedIn) {
         if (next.authenticate && !loggedIn) {
-          $location.path('/login');
+          // $location.path('/login');
+          Modal.auth();
         }
       });
+    });
+
+    // unauthenticated
+    $rootScope.$on('unauthenticated', function(event, err) {
+      Auth.logout();
+      // redirect to login page / show modal login
+      // $location.path('/login');
+      Modal.auth();
     });
   });
