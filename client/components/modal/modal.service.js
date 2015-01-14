@@ -72,16 +72,21 @@ angular.module('exampleAppApp')
             deleteModal.result.then(function(event) {
               del.apply(event, args);
             });
+
+            return deleteModal;
           };
         }
       },  
 
       /* Auth Signin/Signup modals */
-      auth: function(data) {
-        data = data || angular.noop;
+      auth: function(cbClose, cbCancel) {
+        cbClose = cbClose || angular.noop;
+        cbCancel = cbCancel || angular.noop;
 
         return function() {
           if(Auth.isLoggedIn()) return;
+
+          var args = Array.prototype.slice.call(arguments);
 
           var authModal = openModal({
             modal: {
@@ -116,8 +121,12 @@ angular.module('exampleAppApp')
           }, 'modal-primary');
 
           authModal.result.then(function(event) {
-            data.apply(event, args);
+            cbClose.apply(event, args);
+          }, function cancel() {
+            cbCancel.apply(event, args);
           });
+
+          return authModal;
         }
       }
     };

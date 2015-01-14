@@ -19,29 +19,11 @@ describe('Controller: ProductsDetailCtrl', function () {
     reviews: []
   };
 
-  var fakeModal = {
-    result: {
-      then: function(confirmCallback, cancelCallback) {
-        this.confirmCallback = confirmCallback;
-        this.cancelCallback = cancelCallback;
-      }
-    },
-    close: function(item) {
-      this.result.confirmCallback(item);
-    },
-    dismiss: function(type) {
-      this.result.cancelCallback(type);
-    }
-  };
-
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, $templateCache, _$q_, _$modal_, _$httpBackend_, _productService_, _Auth_) {
+  beforeEach(inject(function ($controller, $rootScope, $templateCache, _$q_, _$httpBackend_, _productService_, _Auth_) {
     $templateCache.put('app/main/main.html', '');
 
     $scope = $rootScope.$new();
-
-    $modal = _$modal_;
-    spyOn($modal, 'open').andReturn(fakeModal);
 
     $log = { info: angular.noop };
     spyOn($log, 'info').andCallThrough();
@@ -60,7 +42,6 @@ describe('Controller: ProductsDetailCtrl', function () {
 
     var ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
       $scope: $scope,
-      $modal: $modal,
       $log: $log,
       $stateParams: { productId: 1 }
     });
@@ -83,25 +64,6 @@ describe('Controller: ProductsDetailCtrl', function () {
       $scope.showLoginDialog();
       expect(Modal.auth).not.toHaveBeenCalled();
   }));
-
-  xdescribe('showLoginDialog', function() {
-    beforeEach(function() {
-      spyOn(Auth, 'isLoggedIn').andCallFake(function() {
-        return false;
-      });
-      $scope.showLoginDialog();
-    });
-
-    it('should $modal.open to have been called & modalInstance is defined', function() {
-      expect($modal.open).toHaveBeenCalled();
-      expect($scope.modalInstance).toBeDefined();
-    });
-
-    it('should $modal.dismiss, $Log.info have been called', function() {
-      $scope.modalInstance.dismiss('cancel');
-      expect($log.info).toHaveBeenCalled();
-    });
-  });
 
   describe('reviews', function() {
     beforeEach(function() {
