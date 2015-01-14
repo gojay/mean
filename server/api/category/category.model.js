@@ -17,7 +17,8 @@ var CategorySchema = new Schema({
         type: String,
         trim: true,
         lowercase: true,
-        set: function(id) { return _.slugify(id);
+        set: function(id) { 
+          return _.slugify(id);
         }
     },
     name: {

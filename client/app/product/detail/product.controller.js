@@ -27,7 +27,6 @@ angular.module('exampleAppApp')
             firstTime: true,
             list: null,
             data: {
-                // user: Auth.getCurrentUser()._id,
                 body: '',
                 rate: 0
             },

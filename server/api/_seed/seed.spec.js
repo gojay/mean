@@ -7,7 +7,7 @@ var fs = require('fs');
 var config = require('../../config/environment');
 
 describe.only('API seeds', function() {
-  	this.timeout(30000);
+  	this.timeout(9999999);
 
 	it.skip('should seed categories', function(done) {
 		request(app)
@@ -21,7 +21,19 @@ describe.only('API seeds', function() {
 			.expect(201, done);
 	});
 
-	it('should seed phones', function(done) {
+	it.skip('should seed android', function(done) {
+		request(app)
+			.post('/api/seeds/android')
+			.expect(201, done);
+	});
+
+	it.skip('should seed products', function(done) {
+		request(app)
+			.post('/api/seeds/products')
+			.expect(201, done);
+	});
+
+	it('should seed all', function(done) {
 		request(app)
 			.post('/api/seeds/all')
 			.expect(201, done);
