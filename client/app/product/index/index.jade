@@ -1,7 +1,11 @@
 style
 	include ../product.css
 
-#products.container
+.spinner-wrapper-primary.spinner-inline(ng-show="populate.loading", style="left:45%")
+	.wandering-cubes-spinner
+	p.margin-top.text-primary.text-center
+		| Populating...
+#products.container(ng-class="{'loading': populate.loading}")
 	.row
 		aside.col-md-3(ng-hide="$state.current.name == 'products.detail'")
 			div(ui-view="side")

@@ -89,7 +89,7 @@ var statics = {
           return item._id; 
         });
 
-        paths.push(category);
+        paths.unshift(category);
 
         var conditions = { _id: { $in:paths } },
             doc        = { $inc: { count:value } },

@@ -44,7 +44,7 @@ describe('Service: productService', function () {
 
   it('should productService "all" resolved', function () {
 
-    $httpBackend.expectGET('/api/categories/products').respond('categories');
+    $httpBackend.expectGET('/api/categories?parent=products').respond('categories');
     $httpBackend.expectGET('/api/products/filters').respond('filters');
     $httpBackend.expectGET('/api/products').respond('products');
     var result = productService.all(null, { exclude: 'products' }).then(function(results){
@@ -90,7 +90,7 @@ describe('Service: productService', function () {
     expect(urlParameter).toEqual(encodeURI('?q[brand][]=htc&q[brand][]=samsung&q[price][gte]=100&q[price][lte]=1000&q[os]=android+1.5&q[ram][gte]=512&q[ram][lte]=1024&q[flash][gt]=1024&page=2'));
 
     // all
-    $httpBackend.expectGET('/api/categories/products'+urlParameter).respond('categories');
+    $httpBackend.expectGET('/api/categories?parent=products').respond('categories');
     $httpBackend.expectGET('/api/products/filters'+urlParameter).respond('filters');
     $httpBackend.expectGET('/api/products'+urlParameter).respond('products');
     var result = productService.all().then(function(results){

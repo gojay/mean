@@ -2,34 +2,54 @@
 
 angular.module('exampleAppApp')
     .controller('ProductsContentCtrl',
-        function($scope, $rootScope, $location, productData, productService, socket) {
+        function($scope, $rootScope, $location, filterFilter, productService, socket) {
             var params = $location.search();
 
             $scope.loading = true;
 
             /* get all products */
 
-            productService.query(params).$promise.then(function(products) {
-                $scope.products = products;
+            productService.all(params).then(function(results) {
+                $scope.products = results.products.data;
                 $scope.products.title = 'All Products';
-                $rootScope.$broadcast('products:loaded', { filters: productData.filters.data });
+                $rootScope.$broadcast('products:loaded', { 
+                    categories: results.categories.data,
+                    filters: results.filters.data 
+                });
 
                 $scope.loading = false;
-	        	socket.syncUpdates('product', $scope.products);
+	        	socket.syncUpdates('product', $scope.products, function(event, item) {
+                    if(event == 'created') {
+                        $scope.products.total++;
+                    } else if(event == 'deleted') {
+                        $scope.products.total--;
+                    }
+                    // update product pages
+                    $scope.products.pages = Math.ceil($scope.products.total/$scope.products.perPage);
+                    // brodcast product loaded
+                    $rootScope.$broadcast('products:loaded', item.data);
+	        	});
             });
 
             /* products pagination */
 
-            $scope.doPaging = function(page) {
+            $scope.doPaging = function() {
                 // $location.search('page', page);
                 $scope.loading = true;
-                params['page'] = page;
+                params['page'] = $scope.products.currentPage;
     			productService.query(params).$promise.then(function(products) {
                     $scope.products = products;
                     $scope.products.title = 'All Products';
                     $scope.loading = false;
                 });
-            }
+            };
+
+            /*$scope.$watchCollection('filters.search.query', function(newCollection, oldCollection, scope) {
+            	if(!_.isEqual(newCollection, oldCollection)) {
+	            	console.log('filters', newCollection, oldCollection)
+	            	console.log('filters', filterFilter($scope.products.data, newCollection).length)
+            	}
+            });*/
 
 	        $scope.$on('destroy', function() {
 	            socket.unSyncUpdates('product');
@@ -58,6 +78,7 @@ angular.module('exampleAppApp')
 
 				    $rootScope.$broadcast('products:loaded', {
 				        params: params,
+                        categories: results.categories.data,
 				        filters: results.filters.data
 				    });
 				    $scope.loading = false;
@@ -68,11 +89,11 @@ angular.module('exampleAppApp')
 
 			/* products pagination */
 
-			$scope.doPaging = function(page) {
+			$scope.doPaging = function() {
 			    // $location.search('page', page);
 			    $scope.loading = true;
 				productService
-    				.setParam('page', page)
+    				.setParam('page', $scope.products.currentPage)
 					.all()
 					.then(function(results) {
 				        $scope.products = results.products.data;

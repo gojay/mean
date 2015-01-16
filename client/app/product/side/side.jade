@@ -1,7 +1,15 @@
-.margin-top-bottom.panel.panel-default
-	// Category
-	.panel-heading Category
-	accordion(close-others="true")
+.margin-top-bottom.panel.panel-default(ng-class="{'panel-loading': loading}")
+	// -------------------- Category  --------------------
+	.panel-heading 
+		| Category
+		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
+	div.panel-body(ng-if="search.category.data.length == 0", ng-class="{'panel-loading': loading}")
+		three-bounce-spinner.spinner-wrapper-primary.spinner-inline(ng-show="loading", style="left:38%")
+		.alert.alert-warning(ng-hide="loading")
+			i.fa.fa-warning
+			= ' '
+			| Categories not exists!
+	accordion(ng-if="search.category.data.length > 0", close-others="true")
 		accordion-group(ng-repeat="group in search.category.data", is-disabled="group.count == 0", is-open="group.open")
 			accordion-heading
 				div(ng-click="searchByCategory(group, $event)")
@@ -29,14 +37,20 @@
 					i.fa.fa-angle-right &nbsp;
 					| {{category.name}}
 					fading-circle-spinner.spinner-inline.spinner-sm(ng-show="!category.open && category.loading", style="left:65%")
-	// Brands
+	//  -------------------- Brands  --------------------
 	.panel-heading 
-		| Brands	
+		| Brands
 		span(ng-if="search.brand.selected.length") &nbsp;({{search.brand.selected.length}})
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
 		button.btn.btn-link(ng-show="search.brand.selected.length > 0", ng-click="clearFilter('brand')") 
 			i.fa.fa-close
-	.list-group(ng-class="{'loading': search.loading}") 
+	div.panel-body(ng-if="search.brand.data.length == 0", ng-class="{'panel-loading': loading}")
+		three-bounce-spinner.spinner-wrapper-primary.spinner-inline(ng-show="loading", style="left:38%")
+		.alert.alert-warning(ng-hide="loading")
+			i.fa.fa-warning
+			= ' '
+			| Brands not exists!
+	.list-group(ng-if="search.brand.data.length > 0", ng-class="{'loading': search.loading}") 
 		.list-group-item
 			.form-group.has-feedback
 				input.form-control(type="text", placeholder="Search brand.." ng-model="search.brand.query")
@@ -47,10 +61,16 @@
 						input(type="checkbox", id="brand-{{$index}}" name="brands[]" ng-click="searchByBrand($event, brand.id)" ng-model="brand.selected")
 						span.badge.pull-right {{brand.total}}
 						| {{brand.name}}
-	// Price
+	//  -------------------- Price  --------------------
 	.panel-heading Price
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
-	.list-group(ng-class="{'loading': search.loading}") 
+	div.panel-body(ng-if="search.price.options.max == 0", ng-class="{'panel-loading': loading}")
+		three-bounce-spinner.spinner-wrapper-primary.spinner-inline(ng-show="loading", style="left:38%")
+		.alert.alert-warning(ng-hide="loading")
+			i.fa.fa-warning
+			= ' '
+			| Price not exists!
+	.list-group(ng-if="search.price.options.max > 0", ng-class="{'loading': search.loading}") 
 		.list-group-item
 			.form-group.col-md-6.prefix.afix
 				label.col-md-12.text-center Minimum
@@ -74,7 +94,7 @@
 							i.fa.fa-plus
 			.form-group
 				slider(floor="{{search.price.options.min}}", ceiling="{{search.price.options.max}}", step="{{search.price.options.step}}", ng-model-low="search.price.selected.min", ng-model-high="search.price.selected.max", translate="currencyFormatting")
-	// OS
+	//  -------------------- OS --------------------
 	.panel-heading(ng-if="search.os.data.length") OS
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
 		button.btn.btn-link(ng-show="search.os.selected", ng-click="clearFilter('os')") 
@@ -86,7 +106,7 @@
 					input(type="radio", id="os-{{$index}}", name="os[]", ng-model="search.os.selected", ng-value="os.value", ng-change="searchByFilter('os', os)")
 					span.badge.pull-right {{os.total}}
 					| {{os.name}}
-	// Storage
+	//  -------------------- Storage --------------------
 	.panel-heading(ng-if="search.storage.flash.data.length || search.storage.ram.data.length", ng-class="{'loading': search.loading}") Storage
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
 	.panel-body(ng-if="search.storage.flash.data.length") 
@@ -111,7 +131,7 @@
 					input(type="radio", id="ram-{{$index}}", name="ram[]", ng-model="search.storage.ram.selected", ng-value="ram.query", ng-change="searchByFilter('ram', ram)")
 					span.badge.pull-right {{ram.total}}
 					| {{ram.name}}
-	// Camera
+	//  -------------------- Camera --------------------
 	.panel-heading(ng-if="search.camera.data.length") 
 		| Camera
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")
@@ -124,7 +144,7 @@
 					input(type="radio", id="camera-{{$index}}", name="camera[]", ng-model="search.camera.selected", ng-value="camera.query", ng-change="searchByFilter('camera', camera)")
 					span.badge.pull-right {{camera.total}}
 					| {{camera.name}}
-	// Display
+	//  -------------------- Display --------------------
 	.panel-heading(ng-if="search.display.data.length") 
 		| Screen Size
 		fading-circle-spinner.spinner-wrapper-primary.spinner-inline.spinner-sm(ng-show="search.loading")

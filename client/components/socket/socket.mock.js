@@ -42,18 +42,20 @@ angular.module('socketMock', [])
          * Syncs item creation/updates on 'model:save'
          */
         this.socket.on(modelName + ':save', function (item) {
+
+          var doc = item.doc ? item.doc : item ;
           
-          var oldItem = _.find(array, item);
+          var oldItem = _.find(array, doc);
           var index = array.indexOf(oldItem);
           var event = 'created';
 
           // replace oldItem if it exists
           // otherwise just add item to the collection
           if (oldItem) {
-            array.splice(index, 1, item);
+            array.splice(index, 1, doc);
             event = 'updated';
           } else {
-            array.push(item);
+            array.push(doc);
           }
 
           cb(event, item, array);
@@ -64,7 +66,8 @@ angular.module('socketMock', [])
          */
         this.socket.on(modelName + ':remove', function (item) {
           var event = 'deleted';
-          _.remove(array, function(value) { return value == item });
+          var doc = item.doc ? item.doc : item ;
+          _.remove(array, function(value) { return value == doc });
           cb(event, item, array);
         });
       },

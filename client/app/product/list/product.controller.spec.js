@@ -35,12 +35,18 @@ describe('Controller: ProductsList', function () {
 
     // Initialize the controller and a mock scope
     beforeEach(inject(function ($controller, _$rootScope_, _$location_, $templateCache, _$httpBackend_, productService, _socket_) {
+      $templateCache.put('app/main/main.html', '');
       
       $httpBackend = _$httpBackend_;
-      $httpBackend.when('GET', '/api/products').respond({data:['product']});
-      $httpBackend.when('GET', '/api/products?page=2').respond({data:['product']});
-
-      $templateCache.put('app/main/main.html', '');
+      $httpBackend.when('GET', '/api/categories?parent=products').respond(['categories']);
+      $httpBackend.when('GET', '/api/products').respond({
+        total: 1,
+        perPage: 12,
+        pages: 1,
+        currentPage: 1,
+        data:['product']
+      });
+      $httpBackend.when('GET', '/api/products/filters').respond(['filters']);
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
@@ -78,9 +84,19 @@ describe('Controller: ProductsList', function () {
     });
 
     it('should do paging', function() {
-      $scope.doPaging(2);
-      expect($scope.loading).toBeTruthy();
       $httpBackend.flush();
+      $scope.products.currentPage = 2;
+
+      $httpBackend.expectGET('/api/products?page=2').respond({
+        currentPage: 2,
+        data:['product']
+      });
+
+      $scope.doPaging();
+      expect($scope.loading).toBeTruthy();
+      
+      $httpBackend.flush();
+      
       expect($scope.products.data).toEqual(['product']);
       expect($scope.loading).toBeFalsy();
       // expect($location.search).toHaveBeenCalled();
@@ -91,12 +107,16 @@ describe('Controller: ProductsList', function () {
       $httpBackend.flush();
       expect($scope.products.data.length).toBe(1);
 
-      socket.fire('product:save', 'product2');
+      socket.fire('product:save', { doc: 'product2', data: productData });
       expect($scope.products.data.length).toBe(2);
+      expect($scope.products.total).toBe(2);
+      expect($rootScope.$broadcast).toHaveBeenCalled();
 
-      socket.fire('product:remove', 'product');
+      socket.fire('product:remove', { doc: 'product', data: productData });
       expect($scope.products.data).toEqual(['product2']);
       expect($scope.products.data.length).toBe(1);
+      expect($scope.products.total).toBe(1);
+      expect($rootScope.$broadcast).toHaveBeenCalled();
     });
   });
 
@@ -123,13 +143,31 @@ describe('Controller: ProductsList', function () {
 
       // mock productService
       productServiceMock = {
+        all: function(){
+          var defer = $q.defer();
+          defer.resolve({
+            categories: {
+              data: []
+            },
+            filters: {
+              data: []
+            },
+            products: {
+              data: {
+                currentPage: 1,
+                data:['products']
+              }
+            }
+          });
+          return defer.promise;
+        },
         query: function(){
           deferred = $q.defer();
-          // deferred.resolve({data:['products']});
           return { $promise: deferred.promise };
         }
-      }
-      // call productService.query
+      };
+      // call productService
+      spyOn(productServiceMock, 'all').andCallThrough();
       spyOn(productServiceMock, 'query').andCallThrough();
 
       $controller('ProductsContentCtrl', {
@@ -138,30 +176,33 @@ describe('Controller: ProductsList', function () {
         productData: productData,
         productService: productServiceMock
       });
+
+      expect($scope.loading).toBeTruthy();
+
+      $scope.$digest();
     }));
 
     it('should get products', function() {
-      expect($scope.loading).toBeTruthy();
-
-      deferred.resolve({data:['products']});
-      $scope.$digest();
-
-      expect(productServiceMock.query).toHaveBeenCalled();
+      expect(productServiceMock.all).toHaveBeenCalled();
       expect($rootScope.$broadcast).toHaveBeenCalled();
       expect($scope.products).toBeDefined();
-      expect($scope.products).toEqual({ data:['products'], title: 'All Products' });
+      expect($scope.products).toEqual({ currentPage:1, data:['products'], title: 'All Products' });
       expect($scope.loading).toBeFalsy();
     });
 
     it('should do paging', function() {
-      deferred.resolve({data:['products2']});
+      $scope.products.currentPage = 2;
 
-      $scope.doPaging(2);
+      $scope.doPaging();
       expect($scope.loading).toBeTruthy();
+      deferred.resolve({
+        currentPage: 2,
+        data:['products2']
+      });
       $scope.$digest();
 
-      expect(productServiceMock.query).toHaveBeenCalled();
-      expect($scope.products).toEqual({ data:['products2'], title: 'All Products' });
+      expect(productServiceMock.query).toHaveBeenCalledWith({ page: 2 });
+      expect($scope.products).toEqual({ currentPage:2, data:['products2'], title: 'All Products' });
       expect($scope.loading).toBeFalsy();
       // expect($location.search).toHaveBeenCalled();
       // expect($location.search()).toEqual(jasmine.objectContaining({ page: 2 }));
@@ -188,9 +229,15 @@ describe('Controller: ProductsList', function () {
       var urlParameter = productService.urlParameter(stateParams);
 
       $httpBackend = _$httpBackend_;
-      $httpBackend.when('GET', '/api/categories/products'+urlParameter).respond('categories');
+      $httpBackend.when('GET', '/api/categories?parent=products').respond('categories');
       $httpBackend.when('GET', '/api/products/filters'+urlParameter).respond('filters');
-      $httpBackend.when('GET', '/api/products'+urlParameter).respond('products');
+      $httpBackend.when('GET', '/api/products'+urlParameter).respond({
+        total: 1,
+        perPage: 12,
+        pages: 1,
+        currentPage: 1,
+        data:['product']
+      });
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
@@ -220,17 +267,17 @@ describe('Controller: ProductsList', function () {
         $stateParams: stateParams,
         productService: productService
       });
-    }));
 
-    it('should get products', function(){
       expect($scope.loading).toBeTruthy();
       expect($scope.products).toBeUndefined();
       expect($scope.breadcrumb.set).toHaveBeenCalled();
 
       $httpBackend.flush();
+    }));
 
+    it('should get products', function(){
       expect($scope.products).toBeDefined();
-      expect($scope.products).toEqual('products');
+      expect($scope.products.data).toEqual(['product']);
       expect($scope.breadcrumb.getTitle).toHaveBeenCalled();
       expect($rootScope.$broadcast).toHaveBeenCalled();
       expect($scope.loading).toBeFalsy();
@@ -238,13 +285,16 @@ describe('Controller: ProductsList', function () {
     });
 
     it('should do paging', function() {
+      expect($scope.products.currentPage).toBeDefined();
+
       stateParams.page = 2;
       var urlParameter2 = productService.urlParameter(stateParams);
-      $httpBackend.when('GET', '/api/categories/products'+urlParameter2).respond('categories');
-      $httpBackend.when('GET', '/api/products/filters'+urlParameter2).respond('filters');
+      $httpBackend.when('GET', '/api/categories?parent=products').respond('categories');
       $httpBackend.when('GET', '/api/products'+urlParameter2).respond({ data: 'products2' });
+      $httpBackend.when('GET', '/api/products/filters'+urlParameter2).respond('filters');
 
-      $scope.doPaging(2);
+      $scope.products.currentPage = 2;
+      $scope.doPaging();
       expect($scope.loading).toBeTruthy();
       $httpBackend.flush();
 
@@ -314,15 +364,25 @@ describe('Controller: ProductsList', function () {
       expect($scope.products).toBeUndefined();
       expect($scope.breadcrumb.set).toHaveBeenCalled();
 
-      deferred.resolve({ 
-        products: { data: { data: 'products' } },
-        filters : { data: { data: 'filters' } } 
+      deferred.resolve({
+        categories: {
+          data: []
+        },
+        filters: {
+          data: []
+        },
+        products: {
+          data: {
+            currentPage: 1,
+            data:['products']
+          }
+        }
       });
       $scope.$digest();
 
       expect(productServiceMock.all).toHaveBeenCalledWith(stateParams);
       expect($scope.products).toBeDefined();
-      expect($scope.products.data).toEqual('products');
+      expect($scope.products.data).toEqual(['products']);
       expect($scope.breadcrumb.getTitle).toHaveBeenCalled();
       expect($rootScope.$broadcast).toHaveBeenCalled();
       expect($scope.loading).toBeFalsy();
@@ -330,21 +390,38 @@ describe('Controller: ProductsList', function () {
     });
 
     it('should do paging', function() {
-      expect($scope.loading).toBeTruthy();
+      deferred.resolve({
+        categories: {
+          data: []
+        },
+        filters: {
+          data: []
+        },
+        products: {
+          data: {
+            currentPage: 1,
+            data:['products']
+          }
+        }
+      });
+      $scope.$digest();
 
+      /*expect($scope.products.currentPage).toBeDefined();
+      $scope.products.currentPage = 2;
+
+      $scope.doPaging();
+      expect($scope.loading).toBeTruthy();
       deferred.resolve({ 
         products: { data: { data: 'products2' } },
-        filters : { data: { data: 'filtrs2' } } 
+        filters : { data: { data: 'filters2' } } 
       });
-
-      $scope.doPaging(2);
       $scope.$digest();
 
       expect(productServiceMock.setParam).toHaveBeenCalled();
       expect(productServiceMock.all).toHaveBeenCalled();
       expect($scope.products.data).toEqual('products2');
       expect($scope.products.title).toEqual('Product Title');
-      expect($scope.loading).toBeFalsy();
+      expect($scope.loading).toBeFalsy();*/
     });
   });
 

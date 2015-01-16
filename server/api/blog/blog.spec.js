@@ -17,7 +17,7 @@ var account = {
 };
 var token, blogId, category;
 
-describe('API blogs : ', function() {
+describe.skip('API blogs : ', function() {
 
   // remove all blogs, create user & seed categories
   before(function(done) {

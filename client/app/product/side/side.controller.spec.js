@@ -1,13 +1,15 @@
 'use strict';
 
-describe('Controller: ProductsSideCtrl', function () {
+describe('Controller: ProductsSideCtrl ->', function () {
 
 	beforeEach(module('exampleAppApp'));
 
-	var $scope, $rootScope, $state, $timeout, $event;
+	var $scope, $rootScope, $state, $timeout, $event, productDummy;
 
-	beforeEach(inject(function($controller, _$rootScope_, _$state_, _$timeout_, productDummy){
+	beforeEach(inject(function($controller, _$rootScope_, _$state_, _$timeout_, _productDummy_){
 		$event = jasmine.createSpyObj('event', ['preventDefault', 'stopPropagation']);
+
+		productDummy = _productDummy_;
 
 		$rootScope = _$rootScope_;
 		$scope = $rootScope.$new();
@@ -108,7 +110,7 @@ describe('Controller: ProductsSideCtrl', function () {
 		expect($state.go).not.toHaveBeenCalled();
 	});
 
-	describe('products:loaded', function() {
+	describe('products:loaded ->', function() {
 		var data = {
 			params: {},
 			filters: {
@@ -190,19 +192,27 @@ describe('Controller: ProductsSideCtrl', function () {
 		});
 
 		it('load parameter & filter : category', function() {
+			// add categories into the 'products:loaded' data
+			data.categories = productDummy.search.category.data;
+			// set category parameter of products:loaded data
 			setParam('category', 'android');
+			// set category filters of products:loaded data
 			setFilters('category', [
 				{ "_id" : "android", "total" : 10 },
 				{ "_id" : "phones", "total" : 20 }
 	        ]);
 			$rootScope.$broadcast('products:loaded', data);
 
+			// this category is opened
 			var category = _.findDeep($scope.search.category.data, { _id: 'android' });
-			var categorySibling = _.findDeep($scope.search.category.data, { _id: 'phones' });
-			var parent = _.find($scope.search.category.data, { _id: category.parent });
-
 			expect(category.open).toBeTruthy();
+
+			// the category sibling is closed
+			var categorySibling = _.findDeep($scope.search.category.data, { _id: 'phones' });
 			expect(categorySibling.open).toBeFalsy();
+
+			// number of this parent category to be 30
+			var parent = _.find($scope.search.category.data, { _id: category.parent });
 			expect(parent.count).toBe(30);
 		});
 

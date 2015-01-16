@@ -24,8 +24,9 @@ exports.index = function(req, res) {
 
 // Get a single category
 exports.show = function(req, res) {
-  Category.findById(req.params.id, function(err, _category) {
+  Category.findById(req.query.parent, function(err, _category) {
     if(err) { return handleError(res, err); }
+    if(!_category) return res.json([]);
     _category.getChildrenTree(function (err, categories) {
       return res.json(categories);
     });

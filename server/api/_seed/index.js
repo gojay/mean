@@ -19,8 +19,9 @@ _.mixin(_.str.exports());
 var config = require('../../config/environment');
 var fs = require('fs');
 
-// var phonesDir = 'assets/data/phones';
-var phonesDir = 'assets/data';
+var DO_UPLOAD = false;
+var PHONES_DIRECTORY = 'assets/data';
+// var PHONES_DIRECTORY = 'assets/data/phones';
 
 var api_key = 'SEM3CD98EEC1BC2D8AC45C093BD923966239';
 var api_secret = 'NzQwZGQ5NzBlOTAyNGI5MWEzMGI2MGVjZDBmZDUwMjA';
@@ -73,7 +74,7 @@ function getCategoryName(phone) {
     return category;
 }
 
-function populateCategory(q, done) {
+function populateCategory(q, callback) {
     var productCategory;
 
     var queues = {
@@ -120,6 +121,7 @@ function populateCategory(q, done) {
         },*/
         product: function(done) {
             console.info('seed category product...');
+            
             async.waterfall([
                 function(callback) {
                     var cats = [], childs = [];
@@ -177,10 +179,10 @@ function populateCategory(q, done) {
 
             async.waterfall([
                 function(callback) {
-                    console.info('getting phones from json...');
+                    console.info('getting android from json...');
                     var phones = [];
 
-                    fs.readFile(config.root + '/'+ phonesDir + '/phones.json', 'utf8', function (err, data) {
+                    fs.readFile(config.root + '/'+ PHONES_DIRECTORY + '/phones.json', 'utf8', function (err, data) {
                         if (err) return callback(err);
 
                         var phoneData = JSON.parse(data);
@@ -202,7 +204,7 @@ function populateCategory(q, done) {
                     });
                 },
                 function(categories, phones, callback){
-                    console.info('saving phone categories...');
+                    console.info('saving android categories...');
 
                     var android = new Category({ _id: 'android', name: 'Android'});
                     Category.findOne({ _id: /mobile/i }, function(err, mobile) {
@@ -248,11 +250,12 @@ function populateCategory(q, done) {
     }
 
     Category.remove(function (err) {
-        productCategory = new Category({ _id: 'products', name: 'products' });
+        productCategory = new Category({ _id: 'products' });
         productCategory.save(function() {
             async.series(series, function(err, results) {
-                if(q) return done(err, results[q]);
-                return done(err, results);
+                if(err) return callback(err);
+                if(q) return callback(null, results[q]);
+                callback(null, results)
             });
         });
     });
@@ -318,7 +321,7 @@ var Populate = {
                 console.info('\n-----------\n');
                 console.info('queue : %s', phone.name);
 
-                var jsonFile = _.sprintf('%s/%s/%s.json', config.root, phonesDir, phone.id);
+                var jsonFile = _.sprintf('%s/%s/%s.json', config.root, PHONES_DIRECTORY, phone.id);
                 fs.readFile(jsonFile, 'utf8', function (err, data) {
                     if(err) return callback(err);
 
@@ -338,7 +341,7 @@ var Populate = {
                     }, function(err, reviews) { 
                         // images
                         var images = [];
-                        if(!/phones/.test(phonesDir)) {
+                        if(!/phones/.test(PHONES_DIRECTORY) && DO_UPLOAD) {
                             images = _.map(meta.images, function(image) {
                                 return config.root + '/' + image.replace('img', 'assets');
                             });
@@ -357,7 +360,7 @@ var Populate = {
                         product.meta = meta;
                         product.createdAt = faker.date.between('Jan 1, 2014', 'Nov 23, 2014');
 
-                        if(_.isEmpty(images)) {
+                        if(_.isEmpty(images) || !DO_UPLOAD ) {
 
                             product.save(callback);
 
@@ -571,13 +574,15 @@ var Populate = {
 router.post('/categories', function(req, res) {
     populateCategory(null, function(err, categories) {
         if(err) return res.json(500, err);
+        console.log(categories)
         res.json(201, categories);
     });
 });
 router.post('/category/:name', function(req, res) {
-    populateCategory(req.params.name, function(err, categories) {
+    var name = req.params.name;
+    populateCategory(name, function(err, categories) {
         if(err) return res.json(500, err);
-        res.json(201, categories);
+        res.json(201, categories[name]);
     });
 });
 /*
@@ -669,7 +674,7 @@ router.post('/android', function(req, res) {
         if (err) return res.json(500, err);
         Populate.android.do(true, results, function(err) {
             if (err) return res.json(500, err);
-            res.send(201);
+            res.json(201, { message: 'Created!' });
         });
     });
 });
@@ -730,7 +735,7 @@ router.post('/all', function(req, res) {
 
                 Populate.products.do(false, data, function(err) {
                     if(err) return callback(err);
-                    res.send(201);
+                    res.json(201, { message: 'Created!' });
                 });
             }]
         }, function(err, results) {

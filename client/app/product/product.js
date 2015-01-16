@@ -9,12 +9,12 @@ angular.module('exampleAppApp')
         data: {
           title: 'Products'
         },
-        resolve: {
-          // get products categories & filters
-          productData: function(productService) {
-            return productService.all(null, { exclude: 'products' });
-          }
-        },
+        // resolve: {
+        //   // get products categories & filters
+        //   productData: function(productService) {
+        //     return productService.all(null, { exclude: 'products' });
+        //   }
+        // },
         views: {
           '': { 
             templateUrl: 'app/product/index/index.html',

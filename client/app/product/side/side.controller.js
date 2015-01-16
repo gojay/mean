@@ -3,6 +3,8 @@
 angular.module('exampleAppApp')
     .controller('ProductsSideCtrl', function($scope, $rootScope, $state, $timeout) {
 
+        $scope.loading = true;
+
         function setCollapsibleGroup(data, old) { 
           _.forEach(data, function(item) {
             item.loading = false;
@@ -13,10 +15,41 @@ angular.module('exampleAppApp')
           })
         }
 
-        var categories = $scope.search.category.data;
+        var findDeep = function(items, attrs) {
+          function match(value) {
+            for (var key in attrs) {
+              if(!_.isUndefined(value)) {
+                if (attrs[key] !== value[key]) {
+                  return false;
+                }
+              }
+            }
 
-        // indentifier for $watch price
-        // var oldMaxPrice;
+            return true;
+          }
+          function traverse(value) {
+            var result;
+
+            _.forEach(value, function (val) {
+              if (match(val)) {
+                result = val;
+                return false;
+              }
+
+              if (_.isObject(val) || _.isArray(val)) {
+                result = traverse(val);
+              }
+
+              if (result) {
+                return false;
+              }
+            });
+
+            return result;
+          }
+          return traverse(items);
+        }
+        _.mixin({ 'findDeep': findDeep });
 
         /* state go */
         var query = {};
@@ -59,7 +92,11 @@ angular.module('exampleAppApp')
         function onLoaded(evt, data) {
             // console.log('products:loaded', data);
 
-            // oldMaxPrice = $scope.search.price.options.max;
+            $scope.search.loading = true;
+
+            /* set categories */
+            var categories;
+            $scope.search.category.data = categories = data.categories;
 
             /* set filters data */
             var filters = data.filters;
@@ -70,6 +107,7 @@ angular.module('exampleAppApp')
             $scope.search.os.data = filters.os;
             $scope.search.camera.data = filters.camera;
             $scope.search.display.data = filters.display;
+            $scope.search.price.options = filters.price;
 
             /* 
             atur filter berdasarkan parameter (url)
@@ -79,6 +117,7 @@ angular.module('exampleAppApp')
             var paramsFn = {
                 /* category */
                 category: function() {
+                    if(_.isEmpty($scope.search.category.data)) return;
 
                     /* 
                     set category filters
@@ -182,6 +221,9 @@ angular.module('exampleAppApp')
                 brand: function() {
                     var brand = $scope.search.brand,
                         selected = params.brand;
+
+                    if(_.isEmpty(brand)) return;
+
                     // set brands selected
                     if (selected) {
                         // nilai selected adalah array
@@ -224,12 +266,10 @@ angular.module('exampleAppApp')
                     prices = _.map(prices, function(num) {
                         return parseInt(num);
                     });
-                    // $timeout(function() {
-                        $scope.search.price.selected = {
-                            min: prices[0],
-                            max: prices[1]
-                        };
-                    // });
+                    $scope.search.price.selected = {
+                        min: prices[0],
+                        max: prices[1]
+                    };
                 },
                 os: function() {
                     $scope.search.os.selected = params.os;
@@ -274,6 +314,7 @@ angular.module('exampleAppApp')
                 paramsFn['default']();
             }
 
+            $scope.loading = false;
             $scope.search.loading = false;
         }
 

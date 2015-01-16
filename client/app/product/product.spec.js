@@ -32,7 +32,7 @@ describe('route: Products', function() {
 		spyOn(productServiceMock, 'get').andReturn({ $promise:'ProductDetail' });
 	}));
 
-	it('should location /products resolve productData', inject(function($injector) {
+	xit('should location /products resolve productData', inject(function($injector) {
 		expect($state.href('products')).toEqual('/products');
 
 		$state.go('products');

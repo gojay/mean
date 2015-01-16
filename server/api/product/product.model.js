@@ -219,11 +219,11 @@ ProductSchema.pre('remove', function(next) {
                 return done(null, 'the images are empty');
             }
 
-            console.log('pre:remove:delete', self.meta.images);
+            // console.log('pre:remove:delete', self.meta.images);
 
             var q = async.queue(function (file, callback) {
                 var pattern = localPath + '/*' + file;
-                console.log('remove:images', pattern);
+                // console.log('remove:images', pattern);
                 glob(pattern, {}, function(err, files) {
                     if(err) return callback(err);
                     async.each(files, function(file, _callback) {
@@ -250,7 +250,7 @@ ProductSchema.pre('remove', function(next) {
     // optional callback
     function(err, results){
         if (err) return next(err);
-        console.log('pre:remove', results);
+        // console.log('pre:remove', results);
         next();
     });
 });
@@ -309,6 +309,22 @@ ProductSchema.methods = {
         });
     },
 
+    /**
+     * Remove a review
+     *
+     * @example
+     * db.products.update(
+     *      { _id: ObjectId( "4f8dcb06ee21783d7400003c" )}, 
+            { 
+                $pull: {
+                    reviews: { _id: ObjectId( "4f8dfb06ee21783d7134503a" ) }
+                }
+            }
+        )
+     *     
+     * @param  {Integer}   reviewId - Review ID
+     * @param  {Function}  cb       - Callback after review removed
+     */
     removeReview: function(reviewId, cb) {
         var index = _.indexOf(this.reviews, {
             id: reviewId
@@ -326,11 +342,224 @@ ProductSchema.methods = {
  * Statics
  */
 
+var isNumeric = function(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+};
+
+
 var ObjectId = require('mongoose').Types.ObjectId;
 ProductSchema.statics = {
 
     /**
-     * order reviews
+     * Build match filters aggregation from query
+     *
+     * @example
+     * api/products?
+     *     q[all]=aria&
+     *     q[brand]=htc&
+     *     q[os]=android+2.1&
+     *     q[display][gte]=3&q[display][lte]=4&
+     *     q[camera][gte]=4&q[camera][lte]=5&
+     *     q[flash][gte]=256&q[flash][lte]=512&
+     *     q[ram][gte]=256&q[ram][lte]=512&
+     *     q[price][gte]=0&q[price][lte]=100
+     *
+     * - booleanFilters {Object} - $or, $and, $not
+     *     all - [title, body, meta.description] or
+     *     q[title]=bla&
+     *     q[body]=foo&
+     *     q[operator]=and
+     * - brand {String | Object}
+     * - os {String | Object}
+     * - display {Object} - lt, lte, gte, gt
+     * - camera {Object} - lt, lte, gte, gt
+     * - flash {Object} - lt, lte, gte, gt
+     * - ram {Object} - lt, lte, gte, gt
+     */
+    buildFilters: function(query) {
+        var self = this;
+
+        var filters = {
+            build: function(query) {
+                var _this = this;
+
+                this.query = query;
+                this.filters = {};
+
+                var fn = ['match', 'fields', 'sort', 'limit', 'skip'];
+                _.forEach(fn, function(v) {
+                    _this[v]();
+                });
+
+                return this.filters;
+            },
+            match: function() {
+                var query = this.query;
+
+                var match;
+                if( query.q ) {
+                    match = {};
+
+                    var booleanFilter, comparisonFilter;
+                    var booleanOperator = function() {
+                        var defaultOp = '$or';
+                        if(query.q.operator) {
+                            var op = query.q.operator.toLowerCase();
+                            return _.indexOf(['or', 'and', 'not'], op) == -1 ? defaultOp : '$' + op ;
+                        }
+                        return defaultOp;
+                    }();
+                    var booleanFields = ['title', 'body', 'meta.description'];
+                    var excludeFields = ['operator'];
+
+                    var metaFields = {
+                        'os': 'meta.android.os',
+                        'camera': 'meta.camera.primary',
+                        'display': 'meta.display.screenSize',
+                        'flash': 'meta.storage.flash',
+                        'ram': 'meta.storage.ram'
+                    };
+
+                    // set filter fields
+                    var filterFields = _.chain(query.q)
+                                        .pick(function(value, key) {
+                                            return _.indexOf(excludeFields, key) == -1;
+                                        })
+                                        .transform(function(result, value, key) {
+                                            var metaKeys = _.keys(metaFields);
+                                            if(key == 'all' || isNumeric(key)) {
+                                                if(_.isArray(value)) value = value[0];
+
+                                                result['title'] = value;
+                                                result['body'] = value;
+                                                result['meta.description'] = value;
+                                                delete result[key];
+                                            } else {
+                                                var index = _.indexOf(metaKeys, key);
+                                                if(index > -1){
+                                                    key = metaFields[metaKeys[index]];
+                                                }
+                                                result[key] = value;
+                                            }
+                                        })
+                                        .transform(function(result, value, key) {
+                                            var isCategory = /category/i.test(key);
+
+                                            var newValue;
+                                            if(_.isString(value)) {
+                                                newValue = isCategory ? value : isNumeric(value) ? parseInt(value) : { $regex: _.humanize(value), $options:'i' };
+                                            }
+                                            else if(_.isPlainObject(value)) {
+                                                newValue = _.transform(value, function(result, value, key) {
+                                                    result['$'+key] = isNumeric(value) ? parseFloat(value) : value ;
+                                                });
+                                            } 
+                                            else {
+                                                var regexValues = _.map(value, function(val){
+                                                    var regex = isNumeric(val) ? parseInt(val) : (isCategory ? val : new RegExp(_.humanize(val), 'i'));
+                                                    return regex;
+                                                });
+                                                newValue = { $in: regexValues };
+                                            }
+                                            result[key] = newValue;
+                                        })
+                                        .value();
+                    
+                    // pick boolean filter ($or, $and)
+                    // @return Array
+                    booleanFilter = _.chain(filterFields)
+                                        .pick(function(value, key) {
+                                            return _.indexOf(booleanFields, key) > -1;
+                                        })
+                                        .map(function(item, key) {
+                                            var obj = {};
+                                            obj[key] = item;
+                                            return obj;
+                                        })
+                                        .value();
+                    
+                    // pick comparison filter ($gt, $gte, $lt, $lte)
+                    // @return Object
+                    comparisonFilter = _.pick(filterFields, function(value, key) {
+                        return _.indexOf(booleanFields, key) == -1;
+                    });
+
+                    if(!_.isEmpty(booleanFilter)) {
+                        match[booleanOperator] = booleanFilter;
+                    }
+                }
+                
+                this.filters.match = _.assign(match, comparisonFilter);
+            },
+            fields: function() {
+                var query = this.query;
+
+                var exclude = ['meta', 'reviews'];
+                if( query.select ) {
+                    if(_.isString(query.select)) {
+                        var _select = query.select.replace(/\s/g, '').split('|');
+                        exclude = _.map(
+                            _.filter(_select, function(item) { return /^\-/.test(item) }),
+                            function(item) { 
+                                return item.replace('-', ''); 
+                            }
+                        );
+                    } else {
+                        _.forEach(query.select, function(v, k){
+                            if(v == '-1') exclude.push(k);
+                        });
+                    }
+                } 
+
+                var selectedFields = _.xor(_.keys(self.schema.paths), ['_id', '__v']),
+                    fields = {};
+                _.forEach(_.xor(selectedFields, exclude), function(item) {
+                    fields[item] = '$'+item; 
+                });
+
+                this.filters.fields = fields;
+            },
+            sort: function() {
+                var query = this.query;
+
+                var serializer = this.query.serializer || 'data';
+
+                var sort;
+                if( query.sort ) {
+                    sort = {};
+                    var _sort = query.sort.replace(/\s/g, '').split('|');
+
+                    _.forEach(_sort, function(item) {
+                        var key = /rates/.test(item) ? item : serializer+'.'+item ;
+                        sort[key.replace('-', '')] = /^\-/.test(item) ? -1 : 1 ;
+                    });
+                }
+
+                this.filters.sort = sort;
+            },
+            limit: function() {
+                this.filters.limit = this.query.show || 12;
+            },
+            skip: function() {
+                var skip = 0;
+
+                var page = this.query.page;
+                var ppage = (page && page > 0 ? page : 1 ) - 1;
+                if(ppage > 0) {
+                    skip = ppage * this.filters.limit;
+                }
+                _.assign(this.filters, {
+                    skip: skip,
+                    page: page,
+                });
+            }
+        };
+
+        return filters.build(query);
+    },
+
+    /**
+     * get product reviews
      * @example
         db.products.aggregate( [
             {$match: {_id: new ObjectId("549311c9ae47c02c1204a7fd")}},
@@ -353,7 +582,6 @@ ProductSchema.statics = {
         ]);
      *
      */
-
     getReviews: function(id, options, done) {
         // return done(options);
         var aggregate = [{
@@ -469,8 +697,7 @@ ProductSchema.statics = {
         ])
      *
      */
-    
-    getFilters: function(query, done) {
+    getFilters: function(queries, done) {
         var self = this;
 
         self.custom = {
@@ -640,21 +867,23 @@ ProductSchema.statics = {
             }
         };
 
+        var query = self.buildFilters(queries);
+        var q = query.q;
         async.auto({
             filters: function(callback) {
-                if(!_.has(query, 'category')) return callback(null, query);
+                if(!_.has(q, 'category')) return callback(null, q);
 
-                var categories = _.isString(query.category) ? query.category : query.category['$in'];
+                var categories = _.isString(q.category) ? q.category : q.category['$in'];
                 Category.getPathDescendants(categories, function(err, data) {
                     if(err) return callback(err);
                     if(data.length > 0) {
-                        query.category = { $in: data };
+                        q.category = { $in: data };
                     }
-                    return callback(null, query);
+                    return callback(null, q);
                 });
             },
             category: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return k != 'category'; });
+                var filters = _.pick(results.match, function(v, k){ return k != 'category'; });
                 var aggregate = [
                     { $match: filters },
                     { $group : { _id : "$category", total : { $sum : 1 } } },
@@ -663,7 +892,7 @@ ProductSchema.statics = {
                 self.aggregate(aggregate, callback);
             }],
             brands: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return k != 'brand'; });
+                var filters = _.pick(results.match, function(v, k){ return k != 'brand'; });
                 var aggregate = [
                     { $match: filters },
                     {
@@ -695,7 +924,7 @@ ProductSchema.statics = {
                 });
             }],
             price: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return k != 'price'; });
+                var filters = _.pick(results.match, function(v, k){ return k != 'price'; });
                 var match = _.assign({ $and : [{price: {$exists:true} }, {price: {$ne:0}}] }, filters);
                 var aggregate = [
                     { $match: match },
@@ -708,10 +937,14 @@ ProductSchema.statics = {
                     }},
                     { $project: { _id: 0, min: 1, max: 1, avg: 1, sum: 1, step: { $literal: 1 } } },
                 ];
-                self.aggregate(aggregate, callback);
+                self.aggregate(aggregate, function(err, results) {
+                    if(err) return callback(err);
+                    results = (_.isEmpty(results)) ? { min:0, max: 0, step: 1 } : results.pop() ;
+                    callback(null, results);
+                });
             }],
             os: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/os/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/os/.test(k); });
                 var match = _.assign({ "meta.android.os": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -722,7 +955,7 @@ ProductSchema.statics = {
                 self.aggregate(aggregate, callback);
             }],
             /*os: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/os/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/os/.test(k); });
 
                 var defaultFilter = { 
                     $or: [
@@ -785,7 +1018,7 @@ ProductSchema.statics = {
                 });
             }],*/
             camera: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/camera/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/camera/.test(k); });
                 var match = _.assign({ "meta.camera.primary": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -800,7 +1033,7 @@ ProductSchema.statics = {
                 });
             }],
             display: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/display/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/display/.test(k); });
                 var match = _.assign({ "meta.display.screenSize": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -815,7 +1048,7 @@ ProductSchema.statics = {
                 });
             }],
             flash: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/flash/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/flash/.test(k); });
                 var match = _.assign({ "meta.storage.flash": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -830,7 +1063,7 @@ ProductSchema.statics = {
                 });
             }],
             ram: ['filters', function(callback, results) {
-                var filters = _.pick(results.filters, function(v, k){ return !/ram/.test(k); });
+                var filters = _.pick(results.match, function(v, k){ return !/ram/.test(k); });
                 var match = _.assign({ "meta.storage.ram": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -887,21 +1120,22 @@ ProductSchema.statics = {
             .exec(done);
     },
 
-    list: function(options, done) {
+    list: function(query, done) {
         var self = this;
 
-        var filters = options.filters;
-        if( filters && filters.category ) {
-            return Category.getPathDescendants(filters.category, function(err, data) {
+        var filters = self.buildFilters(query);
+        var match = filters.match;
+        if( match && match.category ) {
+            return Category.getPathDescendants(match.category, function(err, data) {
                 if(err) return done(err);
                 if(data.length > 0) {
-                    options.filters.category = { $in: data };
+                    filters.match.category = { $in: data };
                 }
-                return self.query(options, done);
+                return self.query(filters, done);
             });
         } 
 
-        self.query(options, done);
+        self.query(filters, done);
     },
 
     /**
@@ -959,8 +1193,8 @@ ProductSchema.statics = {
 
         /* filters : $match
         -----------------------------------------------------------*/
-        if( options.filters ) {
-            aggregate.push({ $match: options.filters });
+        if( options.match ) {
+            aggregate.push({ $match: options.match });
         }
 
         /* group 0 & unwind
@@ -971,7 +1205,7 @@ ProductSchema.statics = {
 
         /* group 1
         -----------------------------------------------------------*/
-        var fields = _.mapValues(options.select, function(value){
+        var fields = _.mapValues(options.fields, function(value){
             return { $first: value.replace('$', '$data.') };
         });
 
@@ -1002,7 +1236,7 @@ ProductSchema.statics = {
 
         /* group 2
         -----------------------------------------------------------*/
-        options.select.image = {
+        options.fields.image = {
             $cond: { 
                 if : { $eq: ['$image', null] },  
                 then: imageCallback,
@@ -1031,22 +1265,22 @@ ProductSchema.statics = {
                 ]
             },
             review: "$review"
-        }, options.select);
+        }, options.fields);
         var group2 = { _id: 0, data: { $push: data }, total: { $first: '$total'} };
         aggregate.push({ $group: group2 });
 
         /* projection
         -----------------------------------------------------------*/
         var fields = {};
-        _.forEach(options.select, function(value, k) { fields[k] = 1 });
+        _.forEach(options.fields, function(value, k) { fields[k] = 1 });
         var projection = {
             _id: 0,
             total: 1,
             limit: { $literal: options.limit },
             skip: { $literal: options.skip },
-            pages: { $divide: ['$total', options.perPage] },
+            pages: { $divide: ['$total', options.limit] },
             currentPage: { $literal: options.page },
-            perPage: { $literal: options.perPage },
+            perPage: { $literal: options.limit },
             data: 1
         };
         aggregate.push({ $project: projection });
@@ -1058,7 +1292,16 @@ ProductSchema.statics = {
 
         this.aggregate(aggregate, function(err, results){
             if(err) return done(err);
-            var response = !_.isEmpty(results) ? results[0] : { data: [], total: 0 } ;
+            var response = !_.isEmpty(results) ? results[0] : 
+                            { 
+                                data: [], 
+                                total: 0, 
+                                limit: options.limit,
+                                skip: 0,
+                                pages: 0,
+                                perPage: options.limit,
+                                currentPage: 1 
+                            };
             done(null, response);
         });
     }

@@ -6,12 +6,12 @@ var should = require('should');
 var fs = require('fs');
 var config = require('../../config/environment');
 
-describe.only('API seeds', function() {
-  	this.timeout(9999999);
+describe('API seeds', function() {
+  	this.timeout(30000);
 
-	it.skip('should seed categories', function(done) {
+	it('should seed categories', function(done) {
 		request(app)
-			.post('/api/seeds/category')
+			.post('/api/seeds/category/product')
 			.expect(201, done);
 	});
 
@@ -33,10 +33,9 @@ describe.only('API seeds', function() {
 			.expect(201, done);
 	});
 
-	it('should seed all', function(done) {
+	it.skip('should seed all', function(done) {
 		request(app)
 			.post('/api/seeds/all')
 			.expect(201, done);
 	});
-
 });

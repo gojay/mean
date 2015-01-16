@@ -3,12 +3,19 @@
 	div.margin-top-bottom(ng-switch="products.data.length")
 		// pagination top
 		.row
-			paging.col-md-8(ng-show="products.pages > 1", page="products.currentPage", page-size="products.perPage", total="products.total", show-prev-next="true", scroll-top="true", paging-action="doPaging(page)")
+			.col-md-8(ng-show="products.pages > 1")
+				pagination(ng-model="products.currentPage", total-items="products.total", items-per-page="products.perPage", max-size="5", class="pagination-sm", boundary-links="true", ng-change="doPaging()")
 			.text-right(ng-hide="!products.total", ng-class="{true:'col-md-4', false:'col-md-12'}[products.pages > 1]")
 				small View {{ products.skip }} - {{products.limit + products.skip}} of {{products.total}} results
 		// alert notfound
 		.alert.alert-warning(ng-switch-when="0")
-			| Products Not Found!
+			p Products Not Found!
+			p 
+				button.btn.btn-success.btn-primary(ng-click="$parent.populate.do('android')", ng-disabled="$parent.populate.loading") 
+					span(ng-show="$parent.populate.loading")
+						i.fa.fa-spinner.fa-spin
+						= ' '
+					| {{ $parent.populate.loading ? 'Populating..' : $parent.populate.response.message || 'Create dummy products ?' }}
 		// product lists
 		.panel.panel-default(ng-switch-default, ng-switch="filters.view.selected")
 			.panel-heading
@@ -17,10 +24,10 @@
 			.panel-body(ng-show="loading")
 				three-bounce-spinner.spinner-wrapper-primary
 			.list-group.slide-right(ng-hide="loading", ng-switch-when="list")
-				a.list-group-item(ng-repeat="product in products.data | filter:filters.search.product | orderBy:filters.order.by.id", ui-sref="products.detail({ productId: product.slug })")
+				a.list-group-item(ng-repeat="product in products.data | limitTo:products.limit | filter:filters.search.product | orderBy:filters.order.by.id", ui-sref="products.detail({ productId: product.slug })")
 					.media.col-md-3
 						figure.pull-left
-							img.media-object.img-rounded.img-responsive(img-lazy-load="{{product.image}}", width="100", height="100")
+							img.media-object.img-rounded.img-responsive(img-lazy-load="{{product.image || '//placehold.it/200x200' }}", width="100", height="100")
 					.col-md-6
 						h4.list-group-item-heading {{product.title}}
 						p.list-group-item-text {{product.body}}
@@ -51,5 +58,4 @@
 								i.fa.fa-shopping-cart.fa-fw &nbsp;
 								| Add to Cart
 	// pagination bottom
-	paging(ng-show="products.pages > 1", page="products.page", page-size="products.perPage", total="products.total", show-prev-next="true", scroll-top="true", paging-action="doPaging(page)")
-			
+	pagination(ng-show="products.pages > 1", ng-model="products.currentPage", total-items="products.total", items-per-page="products.perPage", max-size="5", class="pagination-sm", boundary-links="true", ng-change="doPaging()")

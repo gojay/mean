@@ -198,6 +198,11 @@ section .thumbnail {
 /* Side
 -------------------------------------------------- */
 
+#products.container.loading, 
+.panel.panel-loading {
+    opacity: .3;
+}
+
 .panel .panel-heading h3 {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -205,6 +210,13 @@ section .thumbnail {
 }
 .panel .panel-heading:not(:first-child) {
   border-radius: 0;
+}
+.panel .panel-body.panel-loading {
+    position: relative;
+    height: 80px;
+}
+.panel .panel-body.panel-hide {
+    visibility: hidden;
 }
 
 .list-group .list-group-item.well {
@@ -256,4 +268,8 @@ section .tab-content .panel {
 
 section .loading {
     opacity: .5;
+}
+
+aside .alert {
+    margin-bottom: 0;
 }

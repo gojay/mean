@@ -7,15 +7,14 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsCtrl', function($scope, $state, productData) {
-
-        var categories = productData.categories.data,
-            filters = productData.filters.data;
+    .controller('ProductsCtrl', function($scope, $state, productService) {
 
         /* breadcrumb */
 
         $scope.breadcrumb = {
             set: function(params) {
+                if(_.isEmpty($scope.search.category.data)) return;
+                
                 var breadcrumbs = this.data;
                 breadcrumbs.splice(1, breadcrumbs.length);
 
@@ -240,12 +239,12 @@ angular.module('exampleAppApp')
                         _id: id
                     });
                 },
-                data: categories
+                data: []
             },
             brand: {
                 query: '',
                 selected: [],
-                data: filters.brands,
+                data: [],
                 get: function(id) {
                     return _.find(this.data, {
                         id: id
@@ -256,7 +255,11 @@ angular.module('exampleAppApp')
                 }
             },
             price: {
-                options: filters.price,
+                options: {
+                    min: 0,
+                    max: 0,
+                    step: 1
+                },
                 selected: {
                     min: 0,
                     max: 0
@@ -264,7 +267,7 @@ angular.module('exampleAppApp')
             },
             os: {
                 selected: null,
-                data: filters.os,
+                data: [],
                 clear: function() {
                 	this.selected = null;
                 }
@@ -272,14 +275,14 @@ angular.module('exampleAppApp')
             storage: {
                 flash: {
                     selected: null,
-                    data: filters.flash,
+                    data: [],
 	                clear: function() {
 	                	this.selected = null;
 	                }
                 },
                 ram: {
                     selected: null,
-                    data: filters.ram,
+                    data: [],
 	                clear: function() {
 	                	this.selected = null;
 	                }
@@ -287,14 +290,14 @@ angular.module('exampleAppApp')
             },
             camera: {
                 selected: null,
-                data: filters.camera,
+                data: [],
                 clear: function() {
                 	this.selected = null;
                 }
             },
             display: {
                 selected: null,
-                data: filters.display,
+                data: [],
                 clear: function() {
                 	this.selected = null;
                 }
@@ -302,13 +305,30 @@ angular.module('exampleAppApp')
         };
 
         $scope.$watch('search.price.options', function(newValue, oldValue, scope) {
-            if (newValue[0]) {
-                var price = _.mapValues(newValue[0], function(val) {
-                    return parseInt(val);
-                });
-                $scope.search.price.options = price;
-                $scope.search.price.selected.min = 0;
-                $scope.search.price.selected.max = price.max;
-            }
+            var price = _.mapValues(newValue, function(val) {
+                return parseInt(val);
+            });
+            $scope.search.price.options = price;
+            $scope.search.price.selected.min = 0;
+            $scope.search.price.selected.max = price.max;
         }, true);
+
+        /* populate dummy products */
+
+        $scope.populate = {
+            response: null,
+            loading: false,
+            do: function(param) {
+                var self = this;
+                self.loading = true;
+                productService.populate(param)
+                    .then(function(data) {
+                        self.response = data;
+                        self.loading = false;
+                    }).catch(function(err) {
+                        self.response = err;
+                        self.loading = false;
+                    });
+            }
+        };
     });

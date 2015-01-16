@@ -2,42 +2,6 @@
 
 angular.module('exampleAppApp')
     .factory('productService', function($q, $http, $resource) {
-
-        var findDeep = function(items, attrs) {
-          function match(value) {
-            for (var key in attrs) {
-              if(!_.isUndefined(value)) {
-                if (attrs[key] !== value[key]) {
-                  return false;
-                }
-              }
-            }
-
-            return true;
-          }
-          function traverse(value) {
-            var result;
-
-            _.forEach(value, function (val) {
-              if (match(val)) {
-                result = val;
-                return false;
-              }
-
-              if (_.isObject(val) || _.isArray(val)) {
-                result = traverse(val);
-              }
-
-              if (result) {
-                return false;
-              }
-            });
-
-            return result;
-          }
-          return traverse(items);
-        }
-        _.mixin({ 'findDeep': findDeep });
         
         return {
             params: '',
@@ -85,7 +49,7 @@ angular.module('exampleAppApp')
                 var urlParameter = this.urlParameter(filters);
 
                 var urls = {
-                    categories : $http.get('/api/categories/products'+ urlParameter),
+                    categories : $http.get('/api/categories?parent=products'),
                     filters    : $http.get('/api/products/filters'+ urlParameter),
                     products   : $http.get('/api/products'+ urlParameter),
                 };
@@ -118,7 +82,7 @@ angular.module('exampleAppApp')
             },
             urlParameter: function(filters) {
                 var urlParameter = '';
-                if(filters) {
+                if(!_.isEmpty(filters)) {
                     // define string field parameters 
                     var fieldStr = ['category', 'brand', 'os'];
                     // filtering 
@@ -167,6 +131,15 @@ angular.module('exampleAppApp')
             setParams: function(params) {
                 this.params = _.assign(this.params, params);
                 return this;
+            },
+            // populate dummy products
+            populate: function(param) {
+                param = param || 'all';
+                var deferred = $q.defer();
+                $http.post('/api/seeds/'+param)
+                    .success(deferred.resolve)
+                    .error(deferred.reject);
+                return deferred.promise;
             }
         }
     })

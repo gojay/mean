@@ -37,20 +37,21 @@ angular.module('exampleAppApp')
          * Syncs item creation/updates on 'model:save'
          */
         socket.on(modelName + ':save', function (item) {
-
           console.log('client:socket:on:%s:save', modelName);
 
-          var oldItem = _.find(array, {_id: item._id});
+          var doc = item.doc ? item.doc : item ;
+
+          var oldItem = _.find(array, {_id: doc._id});
           var index = array.indexOf(oldItem);
           var event = 'created';
 
           // replace oldItem if it exists
           // otherwise just add item to the collection
           if (oldItem) {
-            array.splice(index, 1, item);
+            array.splice(index, 1, doc);
             event = 'updated';
           } else {
-            array.push(item);
+            array.push(doc);
           }
 
           cb(event, item, array);
@@ -60,11 +61,10 @@ angular.module('exampleAppApp')
          * Syncs removed items on 'model:remove'
          */
         socket.on(modelName + ':remove', function (item) {
-          
           console.log('client:socket:on:%s:remove', modelName);
           
           var event = 'deleted';
-          _.remove(array, {_id: item._id});
+          _.remove(array, {_id: item.doc._id});
           cb(event, item, array);
         });
       },
