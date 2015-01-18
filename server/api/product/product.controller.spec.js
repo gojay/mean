@@ -9,8 +9,8 @@ var Product = require('./product.model');
 
 var config = require('../../config/environment');
 
-describe('Controller : products : ', function() {
-  this.timeout(30000);
+describe('API : products : ', function() {
+  this.timeout(180000);
 
   before(function(done) {
     Category.remove(function() {
@@ -112,7 +112,7 @@ describe('Controller : products : ', function() {
         .expect(422, done);
     });
 
-    it('should respond 201 and count of the relevant category increased when, admin created a product', function(done) {
+    it('should respond 201, when admin created a product', function(done) {
       category = 'phones';
 
       var meta = { 
@@ -138,32 +138,19 @@ describe('Controller : products : ', function() {
         .expect(201)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
-          if(err) return done(err);
+          should.not.exist(err);
+
           var product = res.body;
 
           product.should.be.instanceof(Object).and.have.properties('_id', 'meta');
           product.meta.images.files.should.have.lengthOf(2);
           productId = product._id;
 
-          /*
-          check categories count
-          ----------------------
-          this category = 1
-          this parent category ('mobile-phones') = 1
-          this root category ('products') = 1
-          */
-          Category.findById(category, function(err, category) {
-            category.should.containEql({ count:1 });
-            category.getAncestors({}, "_id, count", function (err, categories) {
-              categories.should.containDeep([{ _id: 'products', count: 1 }]).and.containDeep([{ _id: 'mobile-phones', count: 1 }]);
-              done();
-            });
-          });
-
+          done();
         });
     });
 
-    it('should respond 200 and count of the relevant category increased, when admin edited a product', function(done) {
+    it('should respond 200, when admin edited a product', function(done) {
       category = 'laptops';
 
       request(app)
@@ -177,52 +164,20 @@ describe('Controller : products : ', function() {
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
-          if(err) return done(err);
-          var product = res.body;
-
-          product.should.be.instanceof(Object);
-          product.meta.images.files.should.have.lengthOf(1);
-
-          /*
-          check categories count
-          ----------------------
-          this category = 1
-          this parent category ('electronics') = 1
-          this root category ('products') = 1
-          */
-          Category.findById(category, function(err, category) {
-            category.should.containEql({ count:1 });
-            category.getAncestors({}, "_id, count", function (err, categories) {
-              categories.should.containDeep([{ _id: 'products', count:1 }]).and.containDeep([{ _id: 'electronics', count:1 }]);
-              done();
-            });
-          });
-
+          should.not.exist(err);
+          res.body.meta.images.files.should.have.length(1);
+          done();
         });
     });
 
-    it('should respond 204 and count of the relevant category is null, when admin deleted a product', function(done) {
+    it('should respond 204, when admin deleted a product', function(done) {
       request(app)
         .del('/api/products/' + productId)
         .set('Authorization', account.admin.token)
         .expect(204)
         .end(function(err, res) {
-          if(err) return done(err);
-
-          /*
-          check categories count
-          ----------------------
-          this category = 0
-          this parent category ('electronics') = 0
-          this root category ('products') = 0
-          */
-          Category.findById(category, function(err, category) {
-            category.should.containEql({ count: 0 });
-            category.getAncestors({}, "_id, count", function (err, categories) {
-              categories.should.containDeep([{ _id: 'products', count: 0 }]).and.containDeep([{ _id: 'electronics', count: 0 }]);
-              done();
-            });
-          });
+          should.not.exist(err);
+          done();
         });
     });
   });

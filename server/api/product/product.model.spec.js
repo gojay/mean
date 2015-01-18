@@ -9,12 +9,12 @@ var Product = require('./product.model');
 var Category = require('../category/category.model');
 var config = require('../../config/environment');
 
-function getImages(name) {
+function getLocalImages(name) {
     var pattern = config.root + '/client/images/phones/*'+ name +'*';
     return glob.sync(pattern);
 }
 
-describe.only('Model : Product :', function() {
+describe('Model : Product :', function() {
     this.timeout(30000);
 
     var productId;
@@ -70,7 +70,7 @@ describe.only('Model : Product :', function() {
             product.meta.images.cdnUri.should.be.equal('/images/phones');
             productId = product._id;
 
-            var images = getImages('dell-streak');
+            var images = getLocalImages('dell-streak');
             images.should.be.an.instanceOf(Array).and.have.lengthOf(10); // preview & original
 
             /*
@@ -135,7 +135,8 @@ describe.only('Model : Product :', function() {
         Product.findById(productId, function(err, product) {
             product.remove(function(err) {
                 should.not.exist(err);
-                var images = getImages('dell-streak');
+
+                var images = getLocalImages('dell-streak');
                 images.should.have.lengthOf(0);
 
                 /*
@@ -198,7 +199,6 @@ describe.only('Model : Product :', function() {
 
     	it('should filters exist', function(done) {
     		should.exist(filters);
-    		console.log(filters);
     		done();
     	});
 
@@ -354,5 +354,4 @@ describe.only('Model : Product :', function() {
         	Product.remove(done);
     	});
     });
-
 });

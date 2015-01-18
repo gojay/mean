@@ -6,7 +6,9 @@ describe('Controller: ProductsSideCtrl ->', function () {
 
 	var $scope, $rootScope, $state, $timeout, $event, productDummy;
 
-	beforeEach(inject(function($controller, _$rootScope_, _$state_, _$timeout_, _productDummy_){
+	beforeEach(inject(function($controller, $templateCache, _$rootScope_, _$state_, _$timeout_, _productDummy_){
+      	$templateCache.put('app/main/main.html', '');
+
 		$event = jasmine.createSpyObj('event', ['preventDefault', 'stopPropagation']);
 
 		productDummy = _productDummy_;
@@ -25,8 +27,7 @@ describe('Controller: ProductsSideCtrl ->', function () {
 		$controller('ProductsSideCtrl', {
 			$scope: $scope,
 			$rootScope: $rootScope,
-			$state: $state,
-			$timeout: $timeout
+			$state: $state
 		})
 	}));
 
@@ -242,9 +243,9 @@ describe('Controller: ProductsSideCtrl ->', function () {
 			setParam('price', { min: 10, max: 1600 });
 			$rootScope.$broadcast('products:loaded', data);
 
-			// expect($scope.search.price.selected.min).not.toBe(10);
-			// expect($scope.search.price.selected.min).not.toBe(1600);
-			// $timeout.flush();
+			expect($scope.search.price.selected.min).not.toBe(10);
+			expect($scope.search.price.selected.min).not.toBe(1600);
+			$timeout.flush();
 			
 			expect($scope.search.price.selected.min).toBe(10);
 			expect($scope.search.price.selected.max).toBe(1600);

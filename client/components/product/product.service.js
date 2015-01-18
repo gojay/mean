@@ -2,7 +2,6 @@
 
 angular.module('exampleAppApp')
     .factory('productService', function($q, $http, $resource) {
-        
         return {
             params: '',
             resource: $resource('/api/products/:id/:controller',  { id: '@_id' }, {
@@ -49,7 +48,7 @@ angular.module('exampleAppApp')
                 var urlParameter = this.urlParameter(filters);
 
                 var urls = {
-                    categories : $http.get('/api/categories?parent=products'),
+                    categories : $http.get('/api/categories/products'),
                     filters    : $http.get('/api/products/filters'+ urlParameter),
                     products   : $http.get('/api/products'+ urlParameter),
                 };

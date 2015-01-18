@@ -6,7 +6,7 @@ var should = require('should');
 var fs = require('fs');
 var config = require('../../config/environment');
 
-describe('API seeds', function() {
+describe.skip('API seeds', function() {
   	this.timeout(30000);
 
 	it('should seed categories', function(done) {

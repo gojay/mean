@@ -19,7 +19,7 @@ _.mixin(_.str.exports());
 var config = require('../../config/environment');
 var fs = require('fs');
 
-var DO_UPLOAD = false;
+var PHONES_UPLOAD = true;
 var PHONES_DIRECTORY = 'assets/data';
 // var PHONES_DIRECTORY = 'assets/data/phones';
 
@@ -341,7 +341,7 @@ var Populate = {
                     }, function(err, reviews) { 
                         // images
                         var images = [];
-                        if(!/phones/.test(PHONES_DIRECTORY) && DO_UPLOAD) {
+                        if(!/phones/.test(PHONES_DIRECTORY) && PHONES_UPLOAD) {
                             images = _.map(meta.images, function(image) {
                                 return config.root + '/' + image.replace('img', 'assets');
                             });
@@ -360,7 +360,7 @@ var Populate = {
                         product.meta = meta;
                         product.createdAt = faker.date.between('Jan 1, 2014', 'Nov 23, 2014');
 
-                        if(_.isEmpty(images) || !DO_UPLOAD ) {
+                        if(_.isEmpty(images) || !PHONES_UPLOAD ) {
 
                             product.save(callback);
 
@@ -661,7 +661,11 @@ router.post('/android', function(req, res) {
     var minimum = 1,
         maximum = 20;
 
-     async.series({
+    if(!_.isEmpty(req.body.upload)) {
+        PHONES_UPLOAD = req.body.upload;
+    }
+
+    async.series({
         // create users
         users: function(callback) {
             populateUser(maximum, callback);

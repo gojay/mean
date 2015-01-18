@@ -3,30 +3,43 @@ div(ng-show="error")
 		strong {{error.status}}
 		p {{error.data || error.message}}
 div(ng-hide="error")
-	.row
-		.col-md-4(style="position:relative; height:400px")
-			div(ng-repeat="img in product.meta.images", style="position:absolute; top:0; left:0")
-				img.slide-right(ng-if="$index == activeThumb", ng-src="{{img}}")
-		.col-md-8(style="background:white, height:400px")
-			.row
-				hgroup.col-md-12
-					h2.col-md-10 {{product.title}}
-					.col-md-2
-						button.btn.btn-sm.btn-primary Edit
-			hr 
-			.col-md-12
-				p {{product.body}}
+	.col-md-12
+		.row
+			//- .col-md-6
+			//- 	.row
+			//- 		.col-md-3.prefix.bhoechie-tab-menu
+			//- 			.list-group
+			//- 				a.list-group-item.text-center(ng-repeat="img in product.meta.images.files", ng-click="setThumb($index)", ng-class="{'active': activeThumb == $index}", style="padding:0")
+			//- 					img(ng-src="{{getImage(img, 'preview')}}")
+			//- 		.col-md-9.bhoechie-tab(ng-repeat="img in product.meta.images.files")
+			//- 			img.fade-in(ng-if="$index == activeThumb", ng-src="{{getImage(img)}}")
+			//- .col-md-6(style="background:white, height:400px")
+			//- 	.row
+			//- 		hgroup.col-md-12
+			//- 			h2.col-md-10 {{product.title}}
+			//- 	hr 
+			//- 	.col-md-12
+			//- 		p {{product.body}}
+			.col-md-4(style="position:relative; height:400px")
+				div(ng-repeat="img in product.meta.images.files", style="position:absolute; top:0; left:0")
+					img.slide-right(ng-if="$index == activeThumb", ng-src="{{getImage(img)}}")
+			.col-md-8
 				.row
-					.col-md-3(ng-repeat="img in product.meta.images.files")
-						a.thumbnail(href="#", ng-click="setThumb($index)", ng-class="{'active': activeThumb == $index}")
-							img(ng-src="{{product.meta.images.cdnUri + '/original_' + img}}", width="100px")
-	.clear
-	.row
-		tabset(justified="true")
-			tab(heading="Description") {{product.meta.description}}
-			tab
-				tab-heading Specifications
-				div(ng-include="'app/product/detail/specification.html'")
-			tab(select="reviews.get()")
-				tab-heading {{product.reviews.length}} Reviews
-				div(ng-include="'app/product/detail/reviews.html'")
+					hgroup.col-md-12
+						h2.col-md-10 {{product.title}}
+				hr 
+				.col-md-12
+					p {{product.body}}
+					.btn-group
+						button.btn.btn-default(ng-repeat="img in product.meta.images.files", ng-click="setThumb($index)", ng-class="{'btn-primary active': activeThumb == $index}")
+							img(ng-src="{{getImage(img, 'preview')}}", width="100px")
+	.col-md-12.margin-top-bottom
+		.row
+			tabset(justified="true")
+				tab(heading="Description") {{product.meta.description}}
+				tab
+					tab-heading Specifications
+					div(ng-include="'app/product/detail/specification.html'")
+				tab(select="reviews.get()")
+					tab-heading {{product.reviews.length}} Reviews
+					div(ng-include="'app/product/detail/reviews.html'")

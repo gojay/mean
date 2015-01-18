@@ -20,23 +20,11 @@ var account = {
 };
 var token = null;
 
-describe.skip('API categories : ', function() {
+describe('API : categories :', function() {
 
-  // seed categories
+  // seed product categories
   before(function(done) {
-      request(app)
-        .post('/api/seeds/categories')
-        .expect(201, done);
-  });
-
-  it('should model category get descendants is an array & have length 6', function(done) {
-    Category.getPathDescendants(["Databases", "Languages"], function(err, categories) {
-        categories.should.be.instanceof(Array).and.have.length(6);
-        Category.getPathDescendants(["android"], function(err, _categories) {
-          _categories.should.be.instanceof(Array).and.have.length(8);
-          done();
-        });
-    });
+    Category.remove(done);
   });
 
   it('should categories respond with JSON array', function(done) {
@@ -45,8 +33,8 @@ describe.skip('API categories : ', function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .end(function(err, res) {
-        if (err) return done(err);
-        res.body.should.be.instanceof(Array).and.not.be.empty;
+        should.not.exist(err);
+        res.body.should.be.instanceof(Array);
         done();
       });
   });
@@ -121,7 +109,7 @@ describe.skip('API categories : ', function() {
   });
 
   after(function(done) {
-    Category.remove().exec(done);
+    Category.remove(done);
   });
 
 });

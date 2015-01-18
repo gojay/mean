@@ -21,7 +21,6 @@
     "angular-cache": "~3.2.2",
     "angular-spinkit": "~0.3.3",
     "angular-slider": "https://github.com/prajwalkman/angular-slider.git#~0.1.6",
-    "angular-paging": "*",
     "angular-ui-utils": "bower",
     "moment": "~2.9.0",
     "angular-jwt": "~0.0.6"

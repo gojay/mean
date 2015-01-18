@@ -102,7 +102,6 @@ var statics = {
         });
       });
     });
-
   },
 
   // getListCount: function(cb) {

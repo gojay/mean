@@ -27,7 +27,6 @@ module.exports = function(config) {
       'client/bower_components/ngAnimate-animate.css/animate.js',
       'client/bower_components/angular-cache/dist/angular-cache.js',
       'client/bower_components/angular-spinkit/build/angular-spinkit.js',
-      'client/bower_components/angular-paging/angular-paging.js',
       'client/bower_components/angular-slider/angular-slider.js',
       'client/bower_components/angular-jwt/dist/angular-jwt.js',
       'client/bower_components/moment/moment.js',

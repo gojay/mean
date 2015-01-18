@@ -17,7 +17,7 @@ var account = [{
 
 var token = null;
 
-describe('Controller : users', function() {
+describe('Controller : users : ', function() {
 	var user;
 
 	before(function(done) {

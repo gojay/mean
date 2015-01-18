@@ -266,10 +266,13 @@ angular.module('exampleAppApp')
                     prices = _.map(prices, function(num) {
                         return parseInt(num);
                     });
-                    $scope.search.price.selected = {
-                        min: prices[0],
-                        max: prices[1]
-                    };
+                    
+                    $timeout(function() {
+                        $scope.search.price.selected = {
+                            min: prices[0],
+                            max: prices[1]
+                        };
+                    });
                 },
                 os: function() {
                     $scope.search.os.selected = params.os;

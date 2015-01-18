@@ -1,6 +1,12 @@
+h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .clear {
     margin: 20px 0;
 }
+
 /* media */
 
 .media {
@@ -68,11 +74,6 @@
     top: 120px;
 }*/
 
-#products h2 {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 /* http://bootsnipp.com/snippets/featured/responsive-list-groups-for-ratings
 -------------------------------------------------- */
 
@@ -116,6 +117,14 @@ section .ratings {
 section .thumbnail {
     padding: 0;
 }
+
+/* pagination */
+
+section .pagination {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 #products .thumbnail .caption-full {
     padding: 9px;
     color: #333;
@@ -159,7 +168,6 @@ section .thumbnail {
 }
 .col-item .rating {
     /*width: 50%;*/
-    
     float: left;
     font-size: 17px;
     text-align: right;
@@ -199,58 +207,53 @@ section .thumbnail {
 -------------------------------------------------- */
 
 #products.container.loading, 
-.panel.panel-loading {
+aside .panel.panel-loading {
     opacity: .3;
 }
-
-.panel .panel-heading h3 {
+aside .panel .panel-heading h3 {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #777;
 }
-.panel .panel-heading:not(:first-child) {
+aside .panel .panel-heading:not(:first-child) {
   border-radius: 0;
 }
-.panel .panel-body.panel-loading {
+aside .panel .panel-body.panel-loading {
     position: relative;
     height: 80px;
 }
-.panel .panel-body.panel-hide {
+aside .panel .panel-body.panel-hide {
     visibility: hidden;
 }
-
-.list-group .list-group-item.well {
+aside .list-group .list-group-item.well {
   margin-bottom: 0;
   border: 0;
 }
-
-.list-group .list-group-item h5 {
+aside .list-group .list-group-item h5 {
   margin-top: 0;
   margin-bottom: 0;
 }
-
-.list-group .list-wrapper {
+aside .list-group .list-wrapper {
   max-height: 300px;
   overflow-y: auto;
 }
-
-.list-group .list-wrapper .badge {
+aside .list-group .list-wrapper .badge {
   margin-right: 10px;
 }
 
 /* angular-slider */
 
-slider span.bubble {
+aside slider span.bubble {
   top: -30px;
   font-size: 1em;
 }
 
-/* pagination */
-
-section .pagination {
-  margin-top: 0;
-  margin-bottom: 0;
+aside .alert {
+    margin-bottom: 0;
 }
+
+/* detail
+-------------------------------------------------- */
 
 /* tab content */
 
@@ -270,6 +273,72 @@ section .loading {
     opacity: .5;
 }
 
-aside .alert {
-    margin-bottom: 0;
+/* bhoechie tab
+  http://bootsnipp.com/snippets/featured/simple-vertical-tab
+--------------------------------------------------
+
+div.bhoechie-tab-container{
+  background-color: #ffffff;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  border:1px solid #ddd;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  -moz-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  background-clip: padding-box;
+  opacity: 0.97;
+  filter: alpha(opacity=97);
 }
+div.bhoechie-tab-menu div.list-group{
+  margin-bottom: 0;
+}
+div.bhoechie-tab-menu div.list-group>a{
+  margin-bottom: 0;
+}
+div.bhoechie-tab-menu div.list-group>a .glyphicon,
+div.bhoechie-tab-menu div.list-group>a .fa {
+  color: #5A55A3;
+}
+div.bhoechie-tab-menu div.list-group>a:first-child{
+  border-top-right-radius: 0;
+  -moz-border-top-right-radius: 0;
+}
+div.bhoechie-tab-menu div.list-group>a:last-child{
+  border-bottom-right-radius: 0;
+  -moz-border-bottom-right-radius: 0;
+}
+div.bhoechie-tab-menu div.list-group>a:hover,
+div.bhoechie-tab-menu div.list-group>a.active,
+div.bhoechie-tab-menu div.list-group>a.active .glyphicon,
+div.bhoechie-tab-menu div.list-group>a.active .fa{
+  background-color: transparent;
+  background-image: transparent;
+  color: #ffffff;
+}
+div.bhoechie-tab-menu div.list-group>a.active:after{
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-top: -13px;
+  border-left: 0;
+  border-bottom: 13px solid transparent;
+  border-top: 13px solid transparent;
+  border-left: 10px solid #428bca;
+}
+div.bhoechie-tab-menu div.list-group>.list-group-item{
+  min-height: 40px;
+}
+div.bhoechie-tab-menu div.list-group>a:not(:first-child){
+  border-top: 0;
+}
+
+div.bhoechie-tab-content{
+  background-color: #ffffff;
+  padding-left: 20px;
+  padding-top: 10px;
+}
+
+div.bhoechie-tab div.bhoechie-tab-content:not(.active){
+  display: none;
+} */

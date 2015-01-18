@@ -33,7 +33,6 @@ router.get('/decode', auth.isAuthenticated(), function(req, res) {
     res.json(decoded);
 });
 
-
 router.post('/refresh_token', auth.isAuthenticated(), auth.refreshToken);
 
 module.exports = router;

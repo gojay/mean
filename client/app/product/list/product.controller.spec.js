@@ -38,7 +38,7 @@ describe('Controller: ProductsList', function () {
       $templateCache.put('app/main/main.html', '');
       
       $httpBackend = _$httpBackend_;
-      $httpBackend.when('GET', '/api/categories?parent=products').respond(['categories']);
+      $httpBackend.when('GET', '/api/categories/products').respond(['categories']);
       $httpBackend.when('GET', '/api/products').respond({
         total: 1,
         perPage: 12,
@@ -229,7 +229,7 @@ describe('Controller: ProductsList', function () {
       var urlParameter = productService.urlParameter(stateParams);
 
       $httpBackend = _$httpBackend_;
-      $httpBackend.when('GET', '/api/categories?parent=products').respond('categories');
+      $httpBackend.when('GET', '/api/categories/products').respond('categories');
       $httpBackend.when('GET', '/api/products/filters'+urlParameter).respond('filters');
       $httpBackend.when('GET', '/api/products'+urlParameter).respond({
         total: 1,
@@ -289,7 +289,7 @@ describe('Controller: ProductsList', function () {
 
       stateParams.page = 2;
       var urlParameter2 = productService.urlParameter(stateParams);
-      $httpBackend.when('GET', '/api/categories?parent=products').respond('categories');
+      $httpBackend.when('GET', '/api/categories/products').respond('categories');
       $httpBackend.when('GET', '/api/products'+urlParameter2).respond({ data: 'products2' });
       $httpBackend.when('GET', '/api/products/filters'+urlParameter2).respond('filters');
 

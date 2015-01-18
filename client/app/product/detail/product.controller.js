@@ -13,7 +13,13 @@ angular.module('exampleAppApp')
             $scope.error = error;
         });
 
-        /* set active thumbnail */
+        /* product image */
+
+        $scope.getImage = function(img, type) {
+            type = type || 'original';
+            return $scope.product.meta.images.cdnUri + '/' + type + '_' + img;
+        };
+
         $scope.activeThumb = 0;
         $scope.setThumb = function(index) {
             $scope.activeThumb = index;
