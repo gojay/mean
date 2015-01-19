@@ -697,7 +697,7 @@ ProductSchema.statics = {
         ])
      *
      */
-    getFilters: function(queries, done) {
+    getFilters: function(query, done) {
         var self = this;
 
         self.custom = {
@@ -867,23 +867,24 @@ ProductSchema.statics = {
             }
         };
 
-        var query = self.buildFilters(queries);
-        var q = query.q;
+        var queries = self.buildFilters(query);
+        console.log('queries', queries);
+        var match = queries.match;
         async.auto({
             filters: function(callback) {
-                if(!_.has(q, 'category')) return callback(null, q);
+                if(!_.has(match, 'category')) return callback(null, queries);
 
-                var categories = _.isString(q.category) ? q.category : q.category['$in'];
+                var categories = _.isString(match.category) ? match.category : match.category['$in'];
                 Category.getPathDescendants(categories, function(err, data) {
                     if(err) return callback(err);
                     if(data.length > 0) {
-                        q.category = { $in: data };
+                        queries.match.category = { $in: data };
                     }
-                    return callback(null, q);
+                    return callback(null, queries);
                 });
             },
             category: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return k != 'category'; });
+                var filters = _.pick(results.filters.match, function(v, k){ return k != 'category'; });
                 var aggregate = [
                     { $match: filters },
                     { $group : { _id : "$category", total : { $sum : 1 } } },
@@ -892,7 +893,7 @@ ProductSchema.statics = {
                 self.aggregate(aggregate, callback);
             }],
             brands: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return k != 'brand'; });
+                var filters = _.pick(results.filters.match, function(v, k){ return k != 'brand'; });
                 var aggregate = [
                     { $match: filters },
                     {
@@ -924,7 +925,7 @@ ProductSchema.statics = {
                 });
             }],
             price: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return k != 'price'; });
+                var filters = _.pick(results.filters.match, function(v, k){ return k != 'price'; });
                 var match = _.assign({ $and : [{price: {$exists:true} }, {price: {$ne:0}}] }, filters);
                 var aggregate = [
                     { $match: match },
@@ -944,7 +945,7 @@ ProductSchema.statics = {
                 });
             }],
             os: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/os/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/os/.test(k); });
                 var match = _.assign({ "meta.android.os": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -955,7 +956,7 @@ ProductSchema.statics = {
                 self.aggregate(aggregate, callback);
             }],
             /*os: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/os/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/os/.test(k); });
 
                 var defaultFilter = { 
                     $or: [
@@ -1018,7 +1019,7 @@ ProductSchema.statics = {
                 });
             }],*/
             camera: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/camera/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/camera/.test(k); });
                 var match = _.assign({ "meta.camera.primary": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -1033,7 +1034,7 @@ ProductSchema.statics = {
                 });
             }],
             display: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/display/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/display/.test(k); });
                 var match = _.assign({ "meta.display.screenSize": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -1048,7 +1049,7 @@ ProductSchema.statics = {
                 });
             }],
             flash: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/flash/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/flash/.test(k); });
                 var match = _.assign({ "meta.storage.flash": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },
@@ -1063,7 +1064,7 @@ ProductSchema.statics = {
                 });
             }],
             ram: ['filters', function(callback, results) {
-                var filters = _.pick(results.match, function(v, k){ return !/ram/.test(k); });
+                var filters = _.pick(results.filters.match, function(v, k){ return !/ram/.test(k); });
                 var match = _.assign({ "meta.storage.ram": { $exists:true } }, filters);
                 var aggregate = [
                     { $match: match },

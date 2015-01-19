@@ -40,6 +40,9 @@ describe('Controller: ProductsDetailCtrl', function () {
       return { $promise: deferred.promise }; 
     });
 
+    $scope.breadcrumb = { load: angular.noop };
+    spyOn($scope.breadcrumb, 'load').andCallThrough();
+
     var ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
       $scope: $scope,
       $log: $log,
@@ -51,6 +54,7 @@ describe('Controller: ProductsDetailCtrl', function () {
     expect($scope.product).toBeUndefined();
     $scope.$digest();
     expect(productService.get).toHaveBeenCalledWith(1);
+    expect($scope.breadcrumb.load).toHaveBeenCalled();
     expect($scope.product).toEqual(product);
   });
 

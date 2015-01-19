@@ -5,6 +5,8 @@ angular.module('exampleAppApp')
         function($scope, $rootScope, $location, filterFilter, productService, socket) {
             var params = $location.search();
 
+            $scope.breadcrumb.set();
+
             $scope.loading = true;
 
             /* get all products */

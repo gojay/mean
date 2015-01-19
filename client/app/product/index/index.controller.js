@@ -12,11 +12,28 @@ angular.module('exampleAppApp')
         /* breadcrumb */
 
         $scope.breadcrumb = {
-            set: function(params) {
+            load: function(product){
+                var self = this;
+                if(_.isEmpty(product)) return;
+                    console.log(product)
+                
+                var breadcrumbs = this.data;
+                breadcrumbs.splice(1, breadcrumbs.length);
+
+                var breadcrumbs = [];
+                var query = { category: product.category };
+                breadcrumbs.push({ title: product.category, href: $state.href('products.query', query) });
+                breadcrumbs.push({ title: product.brand, href: $state.href('products.query', _.assign(query, { brand: product.brand})) });
+                breadcrumbs.push({ title: product.title, href: null });
+                this.add(breadcrumbs);
+            },
+            set: function(params) { 
                 if(_.isEmpty($scope.search.category.data)) return;
                 
                 var breadcrumbs = this.data;
                 breadcrumbs.splice(1, breadcrumbs.length);
+
+                if(_.isEmpty(params)) return;
 
                 var breadcrumbs = [];
                 if (params.category != 'all') {
@@ -309,7 +326,7 @@ angular.module('exampleAppApp')
                 return parseInt(val);
             });
             $scope.search.price.options = price;
-            $scope.search.price.selected.min = 0;
+            $scope.search.price.selected.min = price.min;
             $scope.search.price.selected.max = price.max;
         }, true);
 

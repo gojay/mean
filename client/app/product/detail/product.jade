@@ -31,7 +31,7 @@ div(ng-hide="error")
 				.col-md-12
 					p {{product.body}}
 					.btn-group
-						button.btn.btn-default(ng-repeat="img in product.meta.images.files", ng-click="setThumb($index)", ng-class="{'btn-primary active': activeThumb == $index}")
+						button.btn.btn-default(ng-repeat="img in product.meta.images.files", ng-click="setThumb($index)", ng-class="{'btn-primary active': activeThumb == $index}", style="padding:0")
 							img(ng-src="{{getImage(img, 'preview')}}", width="100px")
 	.col-md-12.margin-top-bottom
 		.row

@@ -90,8 +90,6 @@ angular.module('exampleAppApp')
         /* products on loaded */
 
         function onLoaded(evt, data) {
-            // console.log('products:loaded', data);
-
             $scope.search.loading = true;
 
             /* set categories */

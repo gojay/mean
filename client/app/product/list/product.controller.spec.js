@@ -57,6 +57,12 @@ describe('Controller: ProductsList', function () {
       });
       $scope = $rootScope.$new();
 
+      // spy scope breadcrumb
+      $scope.breadcrumb = {
+        set: angular.noop
+      };
+      spyOn($scope.breadcrumb, 'set').andCallThrough();
+
       $location = _$location_;
       // spy $location.search
       spyOn($location, 'search').andReturn({});
@@ -136,6 +142,11 @@ describe('Controller: ProductsList', function () {
         expect(data.filters).toBeDefined();
       });
       $scope = $rootScope.$new();
+      // spy scope breadcrumb
+      $scope.breadcrumb = {
+        set: angular.noop
+      };
+      spyOn($scope.breadcrumb, 'set').andCallThrough();
 
       $location = _$location_;
       // spy $location.search

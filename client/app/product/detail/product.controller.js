@@ -1,14 +1,16 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsDetailCtrl', function($scope, /*$state, */ $stateParams, $log, /*product, */productService, Auth, Modal) {
+    .controller('ProductsDetailCtrl', function($scope, $state, $stateParams, $log, /*product, */productService, Auth, Modal) {
         $scope.isLoggedIn = Auth.isLoggedIn;
         $scope.loading = true;
 
         /* get product */
+        
         productService.get($stateParams.productId).$promise.then(function(product){
             $scope.product = product;
             $scope.loading = false;
+            $scope.breadcrumb.load(product);
         }).catch(function(error) {
             $scope.error = error;
         });

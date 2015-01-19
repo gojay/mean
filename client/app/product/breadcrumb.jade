@@ -2,5 +2,5 @@
 	.btn-group.btn-breadcrumb
 		a.btn.btn-default(ui-sref="main")
 			i.fa.fa-home
-		a.btn.btn-default(ng-repeat="breadcrumb in breadcrumb.data", ng-href="{{breadcrumb.href}}") 
+		a.btn.btn-default(ng-repeat="breadcrumb in breadcrumb.data", ng-href="{{breadcrumb.href}}", ng-disabled="!breadcrumb.href") 
 			div {{breadcrumb.title}}
