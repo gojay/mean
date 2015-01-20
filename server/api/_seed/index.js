@@ -19,7 +19,7 @@ _.mixin(_.str.exports());
 var config = require('../../config/environment');
 var fs = require('fs');
 
-var PHONES_UPLOAD = true;
+var PHONES_UPLOAD = false;
 var PHONES_DIRECTORY = 'assets/data';
 // var PHONES_DIRECTORY = 'assets/data/phones';
 
@@ -120,7 +120,7 @@ function populateCategory(q, callback) {
             });
         },*/
         product: function(done) {
-            console.info('seed category product...');
+            // console.info('seed category product...');
             
             async.waterfall([
                 function(callback) {
@@ -142,7 +142,7 @@ function populateCategory(q, callback) {
 
                     // assign a callback
                     q.drain = function() {
-                        console.log('all parent items have been processed');
+                        // console.log('all parent items have been processed');
                         callback(null, childs);
                     };
 
@@ -164,7 +164,7 @@ function populateCategory(q, callback) {
 
                     // assign a callback
                     q.drain = function() {
-                        console.log('all child items have been processed');
+                        // console.log('all child items have been processed');
                         callback(null, categories);
                     };
 
@@ -175,11 +175,11 @@ function populateCategory(q, callback) {
             ], done);
         },
         android: function(done) {
-            console.info('seed category android...');
+            // console.info('seed category android...');
 
             async.waterfall([
                 function(callback) {
-                    console.info('getting android from json...');
+                    // console.info('getting android from json...');
                     var phones = [];
 
                     fs.readFile(config.root + '/'+ PHONES_DIRECTORY + '/phones.json', 'utf8', function (err, data) {
@@ -204,7 +204,7 @@ function populateCategory(q, callback) {
                     });
                 },
                 function(categories, phones, callback){
-                    console.info('saving android categories...');
+                    // console.info('saving android categories...');
 
                     var android = new Category({ _id: 'android', name: 'Android'});
                     Category.findOne({ _id: /mobile/i }, function(err, mobile) {
@@ -266,7 +266,7 @@ function populateUser(maximum, done) {
         if (count < maximum) {
             // create user
             var until = maximum - count;
-            console.info('populate:user:create:%d...', until);
+            // console.info('populate:user:create:%d...', until);
 
             var createUser = function(id, callback) {
                 callback(null, {
@@ -294,7 +294,7 @@ function populateUser(maximum, done) {
                 });
             });
         } else {
-            console.info('populate:user:get...');
+            // console.info('populate:user:get...');
             User.find({ role:{ $nin:['admin'] }}, /*'_id', */function(err, users) {
                 // var results = _.map(users, function(user) {
                 //     return user._id;
@@ -661,9 +661,11 @@ router.post('/android', function(req, res) {
     var minimum = 1,
         maximum = 20;
 
-    if(!_.isEmpty(req.body.upload)) {
+    if(req.body.upload) {
         PHONES_UPLOAD = req.body.upload;
     }
+
+    console.log('PHONES_UPLOAD', PHONES_UPLOAD);
 
     async.series({
         // create users
@@ -708,6 +710,10 @@ router.post('/products', function(req, res) {
 
 router.post('/all', function(req, res) {
     var maximum = 20;
+    
+    if(req.body.upload) {
+        PHONES_UPLOAD = req.body.upload;
+    }
     
     Product.remove(function() {
         async.auto({

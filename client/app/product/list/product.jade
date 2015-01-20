@@ -11,11 +11,26 @@
 		.alert.alert-warning(ng-switch-when="0")
 			p Products Not Found!
 			p 
-				button.btn.btn-success.btn-primary(ng-click="$parent.populate.do('android')", ng-disabled="$parent.populate.loading") 
-					span(ng-show="$parent.populate.loading")
-						i.fa.fa-spinner.fa-spin
-						= ' '
-					| {{ $parent.populate.loading ? 'Populating..' : $parent.populate.response.message || 'Create dummy products ?' }}
+				div.btn-group.dropdown
+					button.btn.btn-success.btn-primary(ng-click="$parent.populate.do('all', false)", ng-disabled="$parent.populate.loading") 
+						span(ng-show="$parent.populate.loading")
+							i.fa.fa-spinner.fa-spin
+							= ' '
+						| {{ $parent.populate.loading ? 'Populating ' + $parent.populate.selected + ' ...' : $parent.populate.response.message || 'Create sample '+ $parent.populate.selected +' products ?' }}
+					button.btn.btn-success.dropdown-toggle(type="button")
+						span.caret
+					ul.dropdown-menu(role="menu")
+						li
+							a(ng-click="$parent.populate.do('android', true)") Android (with images)
+						li
+							a(ng-click="$parent.populate.do('android', false)") Android
+						li
+							a(ng-click="$parent.populate.do('product', false)") Semantics
+						li.divider
+						li
+							a(ng-click="$parent.populate.do('all', true)") All (with images)
+						li
+							a(ng-click="$parent.populate.do('all', false)") All
 		// product lists
 		.panel.panel-default(ng-switch-default, ng-switch="filters.view.selected")
 			.panel-heading

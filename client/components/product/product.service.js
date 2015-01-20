@@ -135,7 +135,7 @@ angular.module('exampleAppApp')
             populate: function(param) {
                 param = param || 'all';
                 var deferred = $q.defer();
-                $http.post('/api/seeds/'+param)
+                $http.post('/api/seeds/'+param.type, { upload: param.upload })
                     .success(deferred.resolve)
                     .error(deferred.reject);
                 return deferred.promise;

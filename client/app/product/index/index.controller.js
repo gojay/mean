@@ -7,7 +7,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsCtrl', function($scope, $state, productService) {
+    .controller('ProductsCtrl', function($scope, $state, $timeout, productService) {
 
         /* breadcrumb */
 
@@ -335,9 +335,13 @@ angular.module('exampleAppApp')
         $scope.populate = {
             response: null,
             loading: false,
-            do: function(param) {
+            selected: '',
+            do: function(type, upload) {
                 var self = this;
                 self.loading = true;
+                self.selected = type == 'product' ? 'semantics' : type ;
+
+                var param = { type: type, upload: upload };
                 productService.populate(param)
                     .then(function(data) {
                         self.response = data;

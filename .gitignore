@@ -4,6 +4,6 @@ public
 .idea
 client/bower_components
 client/images/*
-assets
+assets/phones/*
 dist
 /server/config/local.env.js

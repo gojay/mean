@@ -7,6 +7,8 @@
 
 var Thing = require('../api/thing/thing.model');
 var User = require('../api/user/user.model');
+var Category = require('../api/category/category.model');
+var Product = require('../api/product/product.model');
 
 Thing.find({}).remove(function() {
   Thing.create({
@@ -46,4 +48,8 @@ User.find({}).remove(function() {
       console.log('finished populating users');
     }
   );
+});
+
+Category.remove(function() {
+  Product.remove();
 });

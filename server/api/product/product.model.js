@@ -868,7 +868,6 @@ ProductSchema.statics = {
         };
 
         var queries = self.buildFilters(query);
-        console.log('queries', queries);
         var match = queries.match;
         async.auto({
             filters: function(callback) {
