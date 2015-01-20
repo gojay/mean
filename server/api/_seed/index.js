@@ -25,7 +25,7 @@ var PHONES_DIRECTORY = 'assets/data';
 
 var api_key = 'SEM3CD98EEC1BC2D8AC45C093BD923966239';
 var api_secret = 'NzQwZGQ5NzBlOTAyNGI5MWEzMGI2MGVjZDBmZDUwMjA';
-var sem3 = require('semantics3-node')(api_key,api_secret);
+var sem3 = require('semantics3-node/lib/main')(api_key,api_secret);
 var semantics = [
    {
         name: 'Mobile phones',
