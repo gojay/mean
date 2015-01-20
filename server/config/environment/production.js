@@ -18,7 +18,7 @@ module.exports = {
     uri:    process.env.MONGOLAB_URI ||
             process.env.MONGOHQ_URL ||
             process.env.OPENSHIFT_MONGODB_DB_URL+process.env.OPENSHIFT_APP_NAME ||
-            // 'mongodb://localhost/exampleapp'
-            'mongodb://gojay:gojay86meanapp@ds031711.mongolab.com:31711/meanapp'
+            'mongodb://localhost/exampleapp'
+            // 'mongodb://gojay:gojay86meanapp@ds031711.mongolab.com:31711/meanapp'
   }
 };
