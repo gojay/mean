@@ -9,7 +9,7 @@ var User = require('../user/user.model'),
 	Product = require('../product/product.model');
 
 // modules
-var faker = require('Faker'),
+var faker = require('faker'),
     async = require('async'),
     _ = require('lodash');
 
@@ -714,7 +714,7 @@ router.post('/all', function(req, res) {
     if(req.body.upload) {
         PHONES_UPLOAD = req.body.upload;
     }
-    
+
     Product.remove(function() {
         async.auto({
             users: function(callback) {
