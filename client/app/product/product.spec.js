@@ -42,24 +42,18 @@ describe('route: Products', function() {
 	}));
 
 	it('should state products.query match params', inject(function($injector) {
-		expect($state.href('products.query', {category:'android'})).toEqual('/products/category/android/');
-		expect($state.href('products.query', {category:'android', brand:'htc'})).toEqual('/products/category/android/htc');
+		expect($state.href('products.query', {category:'android', page:1})).toEqual('/products/category/android/?page=1');
+		expect($state.href('products.query', {category:'android', brand:'htc', page:1})).toEqual('/products/category/android/htc?page=1');
 
 		$state.go('products.query', { brand: 'htc' });
 		$rootScope.$digest();
 
 		expect($state.current.name).toEqual('products.query');
-		expect($state.params).toEqual({ 
+		expect($state.params).toEqual(jasmine.objectContaining({ 
 			category:'all', 
 			brand: 'htc',
-			price: undefined,
-			os: undefined,
-			display: undefined,
-			flash: undefined,
-			ram: undefined,
-			camera: undefined,
 			page: 1 
-      	});
+      	}));
 	}));
 
 	it('should location /products/:productId resolve product', inject(function($injector) {
