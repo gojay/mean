@@ -350,8 +350,8 @@ describe('Model : Product :', function() {
     });
 
     after(function(done) {
-    	// Category.remove(function() {
+    	Category.remove(function() {
         	Product.remove(done);
-    	// });
+    	});
     });
 });
