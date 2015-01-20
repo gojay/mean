@@ -40,6 +40,7 @@
   "devDependencies": {
     "browserify": "^4.2.3",
     "connect-livereload": "~0.4.0",
+    "faker": "^2.1.2",
     "fs": "0.0.2",
     "glob": "^4.2.1",
     "grunt": "~0.4.4",

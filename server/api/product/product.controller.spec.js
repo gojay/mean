@@ -9,7 +9,7 @@ var Product = require('./product.model');
 
 var config = require('../../config/environment');
 
-describe('API : products : ', function() {
+describe.skip('API : products : ', function() {
   this.timeout(180000);
 
   before(function(done) {
@@ -187,5 +187,4 @@ describe('API : products : ', function() {
       Product.remove(done);
     });
   });
-
 });

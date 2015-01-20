@@ -46,7 +46,7 @@ describe('Model : Product :', function() {
     	});
     });
 
-    it('should product saved and images uploaded and the count of the relevant category has increased', function(done) {
+    it.skip('should product saved and images uploaded and the count of the relevant category has increased', function(done) {
         var category = 'netbooks';
         var path = config.root + '/assets/phones/';
         var images = [
@@ -96,7 +96,7 @@ describe('Model : Product :', function() {
         });
     });
 
-    it('should product edited and the count of the relevant category has increased', function(done) {
+    it.skip('should product edited and the count of the relevant category has increased', function(done) {
         var category = 'laptops';
         Product.findById(productId, function(err, product) {
             product.category = category;
@@ -130,7 +130,7 @@ describe('Model : Product :', function() {
         })
     });
 
-    it('should product removed and images is empty', function(done) {
+    it.skip('should product removed and images is empty', function(done) {
         var category = 'laptops';
         Product.findById(productId, function(err, product) {
             product.remove(function(err) {
