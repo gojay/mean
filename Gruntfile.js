@@ -576,11 +576,8 @@ module.exports = function (grunt) {
     grunt.task.run(['serve']);
   });
 
-  grunt.registerTask('test', function(target, specific) {
+  grunt.registerTask('test', function(target) {
     if (target === 'server') {
-      if(specific) {
-        grunt.config('mochaTest.src', ['server/api/'+ specific +'/*.spec.js']);
-      }
       return grunt.task.run([
         'env:all',
         'env:test',
