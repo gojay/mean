@@ -17,7 +17,8 @@ module.exports = function (grunt) {
     cdnify: 'grunt-google-cdn',
     protractor: 'grunt-protractor-runner',
     injector: 'grunt-asset-injector',
-    buildcontrol: 'grunt-build-control'
+    buildcontrol: 'grunt-build-control',
+    removelogging: 'grunt-remove-logging'
   });
 
   // Time how long tasks take. Can help when optimizing build times
@@ -163,6 +164,13 @@ module.exports = function (grunt) {
         }]
       },
       server: '.tmp'
+    },
+
+    // Remove Logging
+    removelogging: {
+    	dist: {
+    		src: '<%= yeoman.dist %>/public/app/*.js'
+    	}
     },
 
     // Add vendor prefixed styles
@@ -364,6 +372,12 @@ module.exports = function (grunt) {
           src: [
             'package.json',
             'server/**/*'
+          ]
+        }, {
+          expand: true,
+          dest: '<%= yeoman.dist %>',
+          src: [
+            'assets/**/*'
           ]
         }]
       },
@@ -631,7 +645,8 @@ module.exports = function (grunt) {
     'cssmin',
     'uglify',
     'rev',
-    'usemin'
+    'usemin',
+    'removelogging'
   ]);
 
   grunt.registerTask('default', [

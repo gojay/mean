@@ -13,7 +13,7 @@ describe('route: Products', function() {
 		$provide.value('productService', productServiceMock);
   	}));
 
-	beforeEach(inject(function(_$location_, _$state_, _$rootScope_, $templateCache ) {
+	beforeEach(inject(function(_$location_, _$state_, _$rootScope_, $templateCache) {
 		$location = _$location_;
 		$state = _$state_;
 		$rootScope = _$rootScope_;

@@ -9,6 +9,7 @@ var errors = require('./components/errors');
 module.exports = function(app) {
 
   // Insert routes below  
+  app.use('/api/cloudinary', require('./api/cloudinary'));
   app.use('/api/products', require('./api/product'));
   app.use('/api/seeds', require('./api/_seed'));
 
@@ -18,7 +19,6 @@ module.exports = function(app) {
   app.use('/api/things', require('./api/thing'));
   app.use('/api/users', require('./api/user'));
   app.use('/api/creators', require('./api/creator'));
-  // app.use('/api/examples', require('./api/example'));
 
   app.use('/auth', require('./auth'));
   

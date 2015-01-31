@@ -18,6 +18,7 @@ function onConnect(socket) {
   });
 
   // Insert sockets below
+  require('../api/cloudinary/cloudinary.socket').register(socket);
   require('../api/product/product.socket').register(socket);
   require('../api/category/category.socket').register(socket);
   require('../api/blog/blog.socket').register(socket);

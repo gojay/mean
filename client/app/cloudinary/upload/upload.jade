@@ -1,0 +1,8 @@
+.tab-media-content(style="padding:15px")
+	.drop-upload(ng-model="files.images", ng-file-drop, multiple="true", drag-over-class="{accept:'dragover', reject:'dragerror', delay:100}", accept="image/*", ng-rejected-file-model="files.rejected")
+		.col-md-4.col-md-push-4.drop-info.text-center
+			h4.text-muted Drag files here
+			h4.text-primary Drop files here
+			.col-md-12.or-box
+				.absolute-center.or OR
+			button.btn.btn-lg.btn-default(title="Select images", ng-file-select, ng-multiple="true", accept="image/*", ng-model="files.images", ng-rejected-file-model="files.rejected") Select Images

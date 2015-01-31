@@ -9,6 +9,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var express = require('express');
 var mongoose = require('mongoose');
+var cloudinary = require('cloudinary');
 var config = require('./config/environment');
 
 // Connect to database
@@ -16,6 +17,13 @@ mongoose.connect(config.mongo.uri, config.mongo.options);
 
 // Populate DB with sample data
 if(config.seedDB) { require('./config/seed'); }
+
+// cloudinary config
+cloudinary.config({
+	cloud_name: config.cloudinary.cloudName,
+	api_key: config.cloudinary.apiKey,
+	api_secret: config.cloudinary.apiSecret,
+});
 
 // Setup server
 var app = express();

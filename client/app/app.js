@@ -4,14 +4,22 @@ angular.module('exampleAppApp', [
   'ngCookies',
   'ngResource',
   'ngSanitize',
+  'ngAnimate',
   'btford.socket-io',
   'ui.router',
   'ui.bootstrap',
   'angular-data.DSCacheFactory',
   'angular-spinkit',
   'angular-jwt',
+  'angularFileUpload',
+  'cloudinary',
   'uiSlider'
 ])
+  .constant('CLOUDINARY_CONFIG', {
+    cloud_name: 'doztst1iv',
+    upload_preset: 'q4atozxl',
+    api_key: '714114529258881'
+  })
   .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, jwtInterceptorProvider) {
 
     $urlRouterProvider
@@ -44,6 +52,8 @@ angular.module('exampleAppApp', [
     });
     $http.defaults.cache = DSCacheFactory.get('appHTTPCache');  */
 
+    window.$rootScope = $rootScope;
+
     // Redirect to login if route requires auth and you're not logged in
     var t1;
     $rootScope.$on('$stateChangeStart', function (event, next) {
@@ -68,12 +78,12 @@ angular.module('exampleAppApp', [
           var t2 = $window.performace ? $window.performance.now() : Date.now();
           var userAgent = $window.navigator.userAgent;
           var response = (t2 - t1).toFixed(2);
-          console.info('\n-----------------------\n');
-          console.group('$viewContentLoaded:%s', url);
-          console.info('userAgent', userAgent);
-          console.info('response', response);
-          console.info('userip', userip);
-          console.groupEnd();
+          // console.info('\n-----------------------\n');
+          // console.group('$viewContentLoaded:%s', url);
+          // console.info('userAgent', userAgent);
+          // console.info('response', response);
+          // console.info('userip', userip);
+          // console.groupEnd();
           oldUrl = url;
       });
     });

@@ -1,0 +1,21 @@
+.container.margin-top-bottom
+	.row
+		#media.col-md-12
+			tabset
+				// tab upload
+				tab(active="tabs[0].active", select="setActiveTab(0)")
+					tab-heading Upload
+				// tab resources
+				tab(active="tabs[1].active", select="setActiveTab(1)")
+					tab-heading Resources
+				// tab insert from url
+				tab(active="tabs[2].active", select="setActiveTab(2)")
+					tab-heading URL
+			.content
+				loading-spinkit(wrapper-class="primary", style="height:135px")
+				//- .spinner-inline.spinner-wrapper-primary(ng-show="$root.$loading.active", style="height:135px")
+				//- 	cube-grid-spinner
+				//- 	p.text-primary.text-center.padding-top {{$root.$loading.message}}
+				div(ui-view="tab1", ng-class="{'loading':$root.$loading.active}")
+				div(ui-view="tab2", ng-class="{'loading':$root.$loading.active}")
+				div(ui-view="tab3", ng-class="{'loading':$root.$loading.active}")

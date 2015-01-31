@@ -1,0 +1,71 @@
+.row
+	.col-md-12.media-header
+		form.form-inline(ng-show="resources.data.length")
+			.col-md-8.prefix
+				//- .form-group
+				//- 	select.input-sm.form-control
+				//- 		option 1
+				//- 		option 2
+				//- 		option 3
+				//- 		option 4
+				//- 		option 5
+				//- .form-group
+				//- 	select.input-sm.form-control
+				//- 		option 1
+				//- 		option 2
+				//- 		option 3
+				//- 		option 4
+				//- 		option 5
+			.pull-right.col-md-4
+				.input-group(ng-init="filters = { selected: '$', model: { $: '', public_id: '', tag: '' }, title: 'All', placeholder: 'Filter all' }")
+					.input-group-btn.search-panel
+						div.btn-group.dropdown
+							button.btn.btn-sm.btn-default.dropdown-toggle(type="button")
+								| {{ filters.title }}
+								= ' '
+								span.caret
+							ul.dropdown-menu
+								li
+									a(ng-click="filters = {selected:'name', title: 'Name', placeholder: 'Filter by name'}") Name
+								li
+									a(ng-click="filters = {selected:'tag', title: 'Tag', placeholder: 'Filter by tag'}") Tag
+								li
+									a(ng-click="filters = {selected:'$', title: 'All', placeholder: 'Filter all'}") All
+					input.input-sm.input-filter.form-control(type="text", placeholder="{{ filters.placeholder }}", ng-model="filters.model[filters.selected]")
+	.col-md-12.media-list
+		.row
+			.col-md-3.media-item.bouncy-scale-in(ng-repeat="i in resources.data | filter:filters.model[filters.selected]", ng-class="resources.getClassName(i)")
+				i.fa.fa-2x(ng-class="resources.getIconClass(i)", ng-mouseover="i.hover = true", ng-mouseleave="i.hover = false", ng-click="select($event, $index, i)")
+				.has-status.col-md-12
+					.backdrop
+					.absolute-center.status-info(ng-show="i.name")
+						p.text-center {{i.name}}
+					.absolute-center.progress
+						.spinner-wrapper-primary
+						.progress-bar.progress-bar-striped.active(style="width:{{i.progress}}%") {{i.progress}}%
+					.spinner-inline.spinner-wrapper-primary
+						wandering-cubes-spinner
+					.status-message.absolute-center
+						p.text-center {{i.status.message}}
+						.alert(ng-class="{'-1':'alert-danger', '0':'alert-warning'}[i.status.code]", ng-show="i.status.code < 1")
+							strong
+								i.fa.fa-exclamation
+								= ' ' 
+								| Warning
+							= ' '
+							| {{i.status.message}}
+				img.img-thumbnail(width="250", height="200", ng-class="{'-1':'bg-danger', '0':'bg-warning'}[i.status.code]" ng-src="{{i.url}}", spinkit-image-preloader="wandering-cubes-spinner", spinkit-image-preloader-class="spinner-wrapper-primary", ng-click="select($event, $index, i)")
+	.col-md-12.media-footer
+		.row
+			.col-md-3.afix
+				h5
+					| {{resources.selected.data.length}} selected
+				button.btn.btn-danger.btn-sm(ng-click="delete('selected images', resources.selected.data)") 
+					i.fa.fa-trash
+					= ' '
+					| Delete
+				button.btn.btn-link.btn-sm(ng-click="resources.clear()") clear
+			.col-md-9.padding-top-sm.prefix(style="white-space:nowrap")
+				ul.list-inline
+					li(ng-repeat="selected in resources.selected.data")
+						img.img-thumbnail(ng-src="{{selected.url}}", width="60")

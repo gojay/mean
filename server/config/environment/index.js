@@ -63,6 +63,13 @@ var all = {
     clientID:     process.env.GITHUB_ID || 'ad694f58a414f2be67c7',
     clientSecret: process.env.GITHUB_SECRET || '49fc15aa4a889bf62642c98cea3d06add9507b32',
     callbackURL:  (process.env.DOMAIN || '') + '/auth/github/callback'
+  },
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'doztst1iv',
+    apiKey: process.env.CLOUDINARY_API_KEY || '714114529258881',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || 'nAv_fy8Pejf8FAeCZb_ZQwT4SSw',
+    url: process.env.CLOUDINARY_URL || 'cloudinary://714114529258881:nAv_fy8Pejf8FAeCZb_ZQwT4SSw@doztst1iv'
   }
 };
 

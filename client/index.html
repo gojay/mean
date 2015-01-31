@@ -17,6 +17,10 @@
       <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" />
       <link rel="stylesheet" href="bower_components/angular-spinkit/build/angular-spinkit.min.css" />
       <link rel="stylesheet" href="bower_components/angular-slider/angular-slider.min.css" />
+      <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload.css" />
+      <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-ui.css" />
+      <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-noscript.css" />
+      <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-ui-noscript.css" />
       <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css({.tmp,client}) app/app.css -->
@@ -25,6 +29,7 @@
       <link rel="stylesheet" href="app/account/login/login.css">
       <link rel="stylesheet" href="app/admin/admin.css">
       <link rel="stylesheet" href="app/app.css">
+      <link rel="stylesheet" href="app/cloudinary/cloudinary.css">
       <link rel="stylesheet" href="app/main/main.css">
       <link rel="stylesheet" href="app/ng-animation.css">
       <link rel="stylesheet" href="app/product/product.css">
@@ -75,6 +80,30 @@
       <script src="bower_components/angular-slider/angular-slider.js"></script>
       <script src="bower_components/moment/moment.js"></script>
       <script src="bower_components/angular-jwt/dist/angular-jwt.js"></script>
+      <script src="bower_components/blueimp-tmpl/js/tmpl.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image-ios.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image-orientation.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image-meta.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image-exif.js"></script>
+      <script src="bower_components/blueimp-load-image/js/load-image-exif-map.js"></script>
+      <script src="bower_components/blueimp-canvas-to-blob/js/canvas-to-blob.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/cors/jquery.postmessage-transport.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/cors/jquery.xdr-transport.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-process.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-validate.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-image.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-audio.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-video.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-ui.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-jquery-ui.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.fileupload-angular.js"></script>
+      <script src="bower_components/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+      <script src="bower_components/cloudinary_js/js/jquery.cloudinary.js"></script>
+      <script src="bower_components/cloudinary_ng/js/angular.cloudinary.js"></script>
+      <script src="bower_components/ng-file-upload/angular-file-upload.js"></script>
       <!-- endbower -->
       <script src="socket.io-client/socket.io.js"></script>
     <!-- endbuild -->
@@ -88,6 +117,13 @@
           <script src="app/account/signup/signup.controller.js"></script>
           <script src="app/admin/admin.controller.js"></script>
           <script src="app/admin/admin.js"></script>
+          <script src="app/cloudinary/cloudinary.js"></script>
+          <script src="app/cloudinary/index/cloudinary.controller.js"></script>
+          <script src="app/cloudinary/resources/custom/custom.controller.js"></script>
+          <script src="app/cloudinary/resources/detail/detail.controller.js"></script>
+          <script src="app/cloudinary/resources/list/list.controller.js"></script>
+          <script src="app/cloudinary/upload/upload.controller.js"></script>
+          <script src="app/cloudinary/url/url.controller.js"></script>
           <script src="app/main/main.controller.js"></script>
           <script src="app/main/main.js"></script>
           <script src="app/product/detail/product.controller.js"></script>
@@ -95,10 +131,14 @@
           <script src="app/product/list/product.controller.js"></script>
           <script src="app/product/product.js"></script>
           <script src="app/product/side/side.controller.js"></script>
+          <script src="app/product/slide/slide.controller.js"></script>
           <script src="components/auth/auth.service.js"></script>
           <script src="components/auth/user.service.js"></script>
+          <script src="components/cloudinary/cloudinary.service.js"></script>
           <script src="components/filters/checkmark/checkmark.filter.js"></script>
           <script src="components/imgLazyLoad/imgLazyLoad.directive.js"></script>
+          <script src="components/loading/loading.directive.js"></script>
+          <script src="components/loading/loading.service.js"></script>
           <script src="components/loginForm/loginForm.directive.js"></script>
           <script src="components/modal/modal.service.js"></script>
           <script src="components/mongoose-error/mongoose-error.directive.js"></script>
@@ -111,6 +151,6 @@
         <script type="text/javascript">
           var userip;
         </script>
-        <script type="text/javascript" src="http://l2.io/ip.js?var=userip"></script>
+        <!--<script type="text/javascript" src="http://l2.io/ip.js?var=userip"></script>-->
 </body>
 </html>

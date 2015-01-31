@@ -1,0 +1,7 @@
+.tab-media-content
+	.resources-list.slide-left(ng-class="{'col-md-8': $parent.resources.selected.detail, 'col-md-12': !$parent.resources.selected.detail, 'has-selected':$parent.resources.selected.data.length}", ng-hide="$parent.resources.edit")
+		div(ui-view="list")
+	.resources-detail.slide-top(ng-class="{'col-md-4': $parent.resources.selected.detail}", ng-hide="$parent.resources.edit || !$parent.resources.selected.detail")
+		div(ui-view="detail")
+	.resources-custom.col-md-12.slide-left(ng-show="$parent.resources.edit")
+		div(ui-view="custom")

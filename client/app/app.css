@@ -40,6 +40,11 @@
 
 /* helpers */
 
+.loading {
+  opacity: .3;
+  pointer-events: none;
+}
+
 .prefix {
     padding-left: 0;
 }
@@ -62,6 +67,20 @@
 }
 .border-bottom-right-radius-none {
     border-top-right-radius: 0;
+}
+
+.padding-top-sm {
+  padding-top: 10px;
+}
+.padding-bottom-sm {
+  padding-bottom: 10px;
+}
+
+.padding-top {
+  padding-top: 15px;
+}
+.padding-bottom {
+  padding-bottom: 15px;
 }
 
 .margin-top {
@@ -180,13 +199,20 @@
 div[class^="spinner-wrapper"] {
     width: auto !important;
 }
-.spinner-inline {
+.spinner-inline,
+.absolute-center {
+    width: 50%;
+    height: 50%;
+    overflow: hidden;
+    margin: auto;
     position: absolute;
-    top: 35%;
-    left: 85%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 .spinner-inline [class$="spinner"] {
-    margin: 0 auto;
+    margin: auto;
 }
 .spinner-sm [class$="spinner"] {
     width: 16px;

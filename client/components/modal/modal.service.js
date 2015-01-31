@@ -71,7 +71,7 @@ angular.module('exampleAppApp')
 
             deleteModal.result.then(function(event) {
               del.apply(event, args);
-            });
+            }, angular.noop);
 
             return deleteModal;
           };
@@ -122,7 +122,7 @@ angular.module('exampleAppApp')
 
           authModal.result.then(function(event) {
             cbClose.apply(event, args);
-          }, function cancel() {
+          }, function(event) {
             cbCancel.apply(event, args);
           });
 

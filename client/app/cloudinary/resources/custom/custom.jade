@@ -1,0 +1,6 @@
+.row.margin-top-bottom
+	.col-md-12.media-header.padding-bottom 
+		.pull-right
+			button.btn.btn-default.btn-sm(ng-click="resources.edit = false") Back
+	.col-md-12.media-content(ng-show="resources.selected.detail.resource")
+		pre {{resources.selected.detail.resource | json}}

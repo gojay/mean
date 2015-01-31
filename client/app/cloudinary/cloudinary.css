@@ -1,0 +1,215 @@
+/* #media globals */
+
+#media .tab-content {
+  padding: 0;
+}
+
+#media .content {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-bottom-left-radius: 5px;
+}
+
+/* tab media content globals */
+
+#media .tab-media-content {
+  height: 600px;
+}
+  
+  #media .tab-media-content .spinner-inline {
+    z-index: 99;
+  }
+  #media .tab-media-content .form-inline .form-group:not(:first-child) {
+    margin-left: 15px;
+  }
+  #media .tab-media-content label {
+    font-weight: normal;
+    font-size: 12px;
+  }
+  
+  /* upload: drop-upload */
+
+  #media .drop-upload { 
+    height: 100%; 
+    border: 4px dashed #ccc; 
+    }
+    #media .drop-upload.dragover { 
+      border-color: #449d44; 
+    }
+    #media .drop-upload.dragerror { 
+      border-color: #d9534f; 
+    }
+
+    #media .drop-upload.dragover > .drop-info > h4.text-primary,
+    #media .drop-upload.dragerror > .drop-info > h4.text-primary,
+    #media .drop-upload > .drop-info > h4.text-muted {
+      display: block;
+    }
+    #media .drop-upload > .drop-info > h4.text-primary,
+    #media .drop-upload.dragover > .drop-info > h4.text-muted,
+    #media .drop-upload.dragerror > .drop-info > h4.text-muted {
+      display: none;
+    }
+
+      #media .drop-upload > .drop-info {
+        margin-top: 185px;
+      }
+      #media .drop-upload > .drop-info  > .or-box {
+        border-top: 1px solid #ddd;
+        position: relative;
+      }
+      #media .drop-upload > .drop-info > .or-box > .or {
+        color: #ddd;
+      }  
+  
+  /* resources list */
+
+  #media .tab-media-content .resources-list {
+
+    }
+    /* resources list media header */
+
+    .resources-list .media-header { 
+      padding: 10px 0;
+    }
+
+    /* resources list media list */
+
+    .resources-list .media-list {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      height: 555px;
+      padding: 0 15px;
+      }
+      .resources-list .media-list .media-item {
+        height: 270px;
+      }
+        .resources-list .media-list .media-item > img {
+          margin: auto;
+        }
+      .resources-list.has-selected .media-list {
+        height: 475px;
+      }
+        .resources-list.has-selected .media-list .media-item {
+          height: 180px;
+        }
+      .resources-list .media-list > .row > div {
+        padding-top: 15px;
+      }
+
+      .resources-list .media-list i {
+        background-color: white;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        height: 21px;
+      }
+      .resources-list .media-list .has-status {
+        height:100%; 
+        position:absolute; 
+        left:0
+        }
+        .resources-list .media-list .has-status .backdrop {
+          height:100%; 
+          background:rgba(0,0,0,0.5)
+        }
+        .resources-list .media-list .has-status .status-info {
+          top: 0;
+          color: #f5f5f5;
+        }
+        .resources-list .media-list .has-status .progress {
+          width: 80%;
+          height: 20px;
+          margin: auto;
+        }
+        .resources-list .media-list .has-status .spinner-inline {
+          height: 32px;
+          margin: auto;
+        }
+        .resources-list .media-list .has-status .status-message {
+          margin:auto; 
+          top: 70%;
+          color: #f5f5f5;
+        }
+        .resources-list .media-list .status-error .has-status .status-message,
+        .resources-list .media-list .status-warning .has-status .status-message {
+          height: 30%;
+          width: 80%;
+          top: 0;
+        }
+
+      .resources-list .media-list i,
+      .resources-list .media-list .has-status,
+      .resources-list .media-list .has-status .status-info,
+      .resources-list .media-list .status-warning .backdrop,
+      .resources-list .media-list .status-warning .spinner-inline,
+      .resources-list .media-list .status-warning .progress,
+      .resources-list .media-list .status-error .backdrop,
+      .resources-list .media-list .status-error .spinner-inline,
+      .resources-list .media-list .status-error .progress,
+      .resources-list .media-list .status-warning .status-message p,
+      .resources-list .media-list .status-error .status-message p,
+      .resources-list .media-list .status-waiting .progress,
+      .resources-list .media-list .status-waiting .progress,
+      .resources-list .media-list .status-uploading .spinner-inline,
+      .resources-list .media-list .status-message {
+        display: none;
+      }
+      .resources-list .media-list .status-waiting > .has-status,
+      .resources-list .media-list .status-uploading > .has-status,
+      .resources-list .media-list .status-warning > .has-status,
+      .resources-list .media-list .status-warning > .has-status > .status-message,
+      .resources-list .media-list .status-error > .has-status,
+      .resources-list .media-list .status-error > .has-status > .status-message,
+      .resources-list .media-list .status-selected > i,
+      .resources-list .media-list .status-focus > i,
+      .resources-list .media-list .status-selected > i,
+      .resources-list .media-list .status-waiting .spinner-inline,
+      .resources-list .media-list .status-waiting .status-message,
+      .resources-list .media-list .status-waiting .status-info,
+      .resources-list .media-list .status-uploading .status-info,
+      .resources-list .media-list .status-uploading .progress,
+      .resources-list .media-list .status-uploading .status-message {
+        display: block;
+      }
+
+      .resources-list .media-list .status-selected > i {
+      }
+      .resources-list .media-list .status-focus > i {
+        color: #3071a9;
+      }
+      .resources-list .media-list .status-selected > .img-thumbnail {
+        background-color: #fff;
+      }
+      .resources-list .media-list .status-focus > .img-thumbnail {
+        background-color: #3071a9;
+      }
+
+    /* resources list media footer */
+
+    .resources-list .media-footer {
+      display: none;
+      }
+      .resources-list.has-selected .media-footer {
+        display: block;
+      }
+
+  /* resources detail */
+
+  #media .tab-media-content .resources-detail {
+    background-color:#f5f5f5; 
+    border-left: 1px solid #e3e3e3; 
+    height:100%
+  }
+    #media .tab-media-content .resources-detail h6 {
+      font-weight: bold;
+      color: #666;
+    }
+
+  /* resources custom */
+
+  #media .tab-media-content .resources-custom {
+    height:100%
+  }
+
