@@ -43,10 +43,20 @@ module.exports = function(config) {
       'client/components/**/*.html'
     ],
 
+    // coverage
+    reporters: ['progress', 'coverage'],
+
     preprocessors: {
       '**/*.jade': 'ng-jade2js',
       '**/*.html': 'html2js',
       '**/*.coffee': 'coffee',
+      'client/!(assets|bower_components)/**/!(*spec|*mock).js': ['coverage'] // coverage js
+    },
+
+    // coverage html reporter
+    coverageReporter: {  
+      type: 'html',
+      dir: 'coverage'
     },
 
     ngHtml2JsPreprocessor: {

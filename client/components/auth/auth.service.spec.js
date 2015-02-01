@@ -10,16 +10,16 @@ describe('Service: Auth', function() {
     	$templateCache.put('app/main/main.html', '');
 
     	Auth = _Auth_;
-    	spyOn(Auth, 'logout').andCallThrough();
+    	spyOn(Auth, 'logout').and.callThrough();
 
 		User = _User_;
-		spyOn(User, 'get').andCallThrough();
+		spyOn(User, 'get').and.callThrough();
 
     	$httpBackend = _$httpBackend_;
 
     	$cookieStore = _$cookieStore_;
 
-    	spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
+    	spyOn(jwtHelper, 'isTokenExpired').and.returnValue(false);
 	}));
 
 	describe('scenario: login - changePassword - logout', function() {
@@ -198,7 +198,7 @@ describe('Service: Oauth', function() {
     		$templateCache.put('app/main/main.html', '');
   			$q = _$q_;
   			$window = _$window_;
-  			spyOn($window, 'open').andCallThrough();
+  			spyOn($window, 'open').and.callThrough();
 
   			$interval = _$interval_;
   			popup = _popup_;

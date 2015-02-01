@@ -1,91 +1,26 @@
 0 info it worked if it ends with ok
-1 verbose cli [ 'C:\\Program Files\\nodejs\\\\node.exe',
-1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
-1 verbose cli   'install',
-1 verbose cli   'underscore.strig',
-1 verbose cli   '--save' ]
+1 verbose cli [ 'c:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'c:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'uninstall',
+1 verbose cli   'karma-jasmine',
+1 verbose cli   '--save-dev' ]
 2 info using npm@1.4.28
 3 info using node@v0.10.33
-4 verbose node symlink C:\Program Files\nodejs\\node.exe
-5 warn package.json karma-coffee-preprocessor@0.2.1 No README data
-6 warn package.json passport-local@0.1.6 No README data
-7 verbose readDependencies using package.json deps
-8 verbose cache add [ 'underscore.strig', null ]
-9 verbose cache add name=undefined spec="underscore.strig" args=["underscore.strig",null]
-10 verbose parsed url { protocol: null,
-10 verbose parsed url   slashes: null,
-10 verbose parsed url   auth: null,
-10 verbose parsed url   host: null,
-10 verbose parsed url   port: null,
-10 verbose parsed url   hostname: null,
-10 verbose parsed url   hash: null,
-10 verbose parsed url   search: null,
-10 verbose parsed url   query: null,
-10 verbose parsed url   pathname: 'underscore.strig',
-10 verbose parsed url   path: 'underscore.strig',
-10 verbose parsed url   href: 'underscore.strig' }
-11 silly lockFile c435a2b1-underscore-strig underscore.strig
-12 verbose lock underscore.strig C:\Users\Asus\AppData\Roaming\npm-cache\c435a2b1-underscore-strig.lock
-13 silly lockFile c435a2b1-underscore-strig underscore.strig
-14 silly lockFile c435a2b1-underscore-strig underscore.strig
-15 verbose addNamed [ 'underscore.strig', '' ]
-16 verbose addNamed [ null, '*' ]
-17 silly lockFile 6dde88bd-underscore-strig underscore.strig@
-18 verbose lock underscore.strig@ C:\Users\Asus\AppData\Roaming\npm-cache\6dde88bd-underscore-strig.lock
-19 silly addNameRange { name: 'underscore.strig', range: '*', hasData: false }
-20 verbose request where is /underscore.strig
-21 verbose request registry https://registry.npmjs.org/
-22 verbose request id 7bb336fa38560330
-23 verbose url raw /underscore.strig
-24 verbose url resolving [ 'https://registry.npmjs.org/', './underscore.strig' ]
-25 verbose url resolved https://registry.npmjs.org/underscore.strig
-26 verbose request where is https://registry.npmjs.org/underscore.strig
-27 info trying registry request attempt 1 at 17:37:38
-28 http GET https://registry.npmjs.org/underscore.strig
-29 http 404 https://registry.npmjs.org/underscore.strig
-30 verbose headers { date: 'Sun, 02 Nov 2014 10:37:40 GMT',
-30 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
-30 verbose headers   'content-type': 'application/json',
-30 verbose headers   'cache-control': 'max-age=0',
-30 verbose headers   'content-length': '52',
-30 verbose headers   'accept-ranges': 'bytes',
-30 verbose headers   via: '1.1 varnish',
-30 verbose headers   age: '0',
-30 verbose headers   'x-served-by': 'cache-lax1424-LAX',
-30 verbose headers   'x-cache': 'MISS',
-30 verbose headers   'x-cache-hits': '0',
-30 verbose headers   'x-timer': 'S1414924659.897359,VS0,VE314',
-30 verbose headers   'keep-alive': 'timeout=10, max=50',
-30 verbose headers   connection: 'Keep-Alive' }
-31 silly registry.get cb [ 404,
-31 silly registry.get   { date: 'Sun, 02 Nov 2014 10:37:40 GMT',
-31 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
-31 silly registry.get     'content-type': 'application/json',
-31 silly registry.get     'cache-control': 'max-age=0',
-31 silly registry.get     'content-length': '52',
-31 silly registry.get     'accept-ranges': 'bytes',
-31 silly registry.get     via: '1.1 varnish',
-31 silly registry.get     age: '0',
-31 silly registry.get     'x-served-by': 'cache-lax1424-LAX',
-31 silly registry.get     'x-cache': 'MISS',
-31 silly registry.get     'x-cache-hits': '0',
-31 silly registry.get     'x-timer': 'S1414924659.897359,VS0,VE314',
-31 silly registry.get     'keep-alive': 'timeout=10, max=50',
-31 silly registry.get     connection: 'Keep-Alive' } ]
-32 silly lockFile 6dde88bd-underscore-strig underscore.strig@
-33 silly lockFile 6dde88bd-underscore-strig underscore.strig@
-34 error 404 404 Not Found: underscore.strig
-34 error 404
-34 error 404 'underscore.strig' is not in the npm registry.
-34 error 404 You should bug the author to publish it
-34 error 404 It was specified as a dependency of 'example-app'
-34 error 404
-34 error 404 Note that you can also install from a
-34 error 404 tarball, folder, or http url, or git url.
-35 error System Windows_NT 6.1.7601
-36 error command "C:\\Program Files\\nodejs\\\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install" "underscore.strig" "--save"
-37 error cwd D:\Coding\APPS\[code]\angular-fullstack
-38 error node -v v0.10.33
-39 error npm -v 1.4.28
-40 error code E404
-41 verbose exit [ 1, true ]
+4 verbose node_modules\karma-jasmine unbuild
+5 info preuninstall karma-jasmine@0.3.5
+6 info uninstall karma-jasmine@0.3.5
+7 verbose true,D:\Coding\APPS\code\angular-fullstack\node_modules,D:\Coding\APPS\code\angular-fullstack\node_modules unbuild karma-jasmine@0.3.5
+8 info postuninstall karma-jasmine@0.3.5
+9 error Error: EBUSY, unlink 'D:\Coding\APPS\code\angular-fullstack\node_modules\karma-jasmine'
+10 error If you need help, you may report this *entire* log,
+10 error including the npm and node versions, at:
+10 error     <http://github.com/npm/npm/issues>
+11 error System Windows_NT 6.1.7601
+12 error command "c:\\Program Files\\nodejs\\node.exe" "c:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "uninstall" "karma-jasmine" "--save-dev"
+13 error cwd D:\Coding\APPS\code\angular-fullstack
+14 error node -v v0.10.33
+15 error npm -v 1.4.28
+16 error path D:\Coding\APPS\code\angular-fullstack\node_modules\karma-jasmine
+17 error code EBUSY
+18 error errno 10
+19 verbose exit [ 10, true ]

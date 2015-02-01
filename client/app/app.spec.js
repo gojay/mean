@@ -37,15 +37,15 @@ describe('Main Routes test', function() {
 	});
 
 	xit('should redirect to /login if unauthenticated', function() {
-		spyOn(Auth, 'logout').andCallThrough();
+		spyOn(Auth, 'logout').and.callThrough();
 		$rootScope.$broadcast('unauthenticated', { message: 'You\'re not authenticated' });
 		expect(Auth.logout).toHaveBeenCalled();
 		expect($location.path()).toBe('/login');
 	});
 
 	it('should show modal auth if unauthenticated', inject(function(Modal) {
-		spyOn(Auth, 'logout').andCallThrough();
-		spyOn(Modal, 'auth').andCallThrough();
+		spyOn(Auth, 'logout').and.callThrough();
+		spyOn(Modal, 'auth').and.callThrough();
 
 		$rootScope.$broadcast('unauthenticated', { message: 'You\'re not authenticated' });
 		
@@ -55,8 +55,8 @@ describe('Main Routes test', function() {
 
 	describe('jwtInterceptor', function() {
 		beforeEach(inject(function($q, $cookieStore, jwtHelper) {
-			spyOn(Auth, 'getToken').andReturn('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI1NGFiNzBiNDliOTQ3NTYwMDYyZmE5Y2YiLCJpYXQiOjE0MjExNzEyNTQ2NzYsImV4cCI6MTQyMTE3NDg1NDY3Niwic3ViIjoiZ2l0aHVifDE2MTg2MzcifQ.FN_5pRmc9YyHsxhrvW6hNDP9wO-yjND1cleUrNt-RSc');
-			spyOn(Auth, 'refreshToken').andCallFake(function() {
+			spyOn(Auth, 'getToken').and.returnValue('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI1NGFiNzBiNDliOTQ3NTYwMDYyZmE5Y2YiLCJpYXQiOjE0MjExNzEyNTQ2NzYsImV4cCI6MTQyMTE3NDg1NDY3Niwic3ViIjoiZ2l0aHVifDE2MTg2MzcifQ.FN_5pRmc9YyHsxhrvW6hNDP9wO-yjND1cleUrNt-RSc');
+			spyOn(Auth, 'refreshToken').and.callFake(function() {
 				var deferred = $q.defer();
 				var token = 'newToken';
 				$cookieStore.put('token', token)
@@ -68,7 +68,7 @@ describe('Main Routes test', function() {
 		}));
 
 		it('should refresh token when token expired', function() {
-			spyOn(this.jwtHelper, 'isTokenExpired').andReturn(true);
+			spyOn(this.jwtHelper, 'isTokenExpired').and.returnValue(true);
 			$rootScope.$digest();
 
 			expect(this.jwtHelper.isTokenExpired).toHaveBeenCalled();

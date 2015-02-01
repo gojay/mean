@@ -58,14 +58,14 @@ describe('Directive: signupForm', function () {
 
     Auth = _Auth_;
 
-    spyOn(Auth, 'createUser').andCallThrough();
+    spyOn(Auth, 'createUser').and.callThrough();
     
     $httpBackend = _$httpBackend_;
 
     $location = _$location_;
-    spyOn($location, 'path').andCallThrough();
+    spyOn($location, 'path').and.callThrough();
 
-    spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
+    spyOn(jwtHelper, 'isTokenExpired').and.returnValue(false);
   }));
 
   describe('default', function() {
@@ -239,7 +239,7 @@ describe('Directive: signupForm', function () {
   describe('with callback signupSuccess', function() {
     beforeEach(inject(function($compile) {
       scope.signupSuccess = angular.noop;
-      spyOn(scope, 'signupSuccess').andCallThrough();
+      spyOn(scope, 'signupSuccess').and.callThrough();
 
       element = angular.element('<signup-form signup-success="signupSuccess()"></signup-form>');
       element = $compile(element)(scope);

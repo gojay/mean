@@ -7,7 +7,7 @@
 'use strict';
 
 angular.module('exampleAppApp')
-    .controller('ProductsCtrl', function($scope, $state, $timeout, productService) {
+    .controller('ProductsCtrl', function($scope, $state, productService) {
 
         /* breadcrumb */
 

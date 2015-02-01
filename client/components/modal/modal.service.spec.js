@@ -23,7 +23,7 @@ describe('Service: Modal', function() {
     	this.$modal = $modal;
     	this.Modal = Modal;
 
-    	spyOn(this.$modal, 'open').andReturn(fakeModal);
+    	spyOn(this.$modal, 'open').and.returnValue(fakeModal);
     }));
 
     it('open confirm delete', function() {
@@ -38,13 +38,13 @@ describe('Service: Modal', function() {
     });
 
     it('open auth', inject(function(Auth) {
-    	spyOn(Auth, 'isLoggedIn').andReturn(false);
+    	spyOn(Auth, 'isLoggedIn').and.returnValue(false);
 
     	var cb = {
     		close: angular.noop,
     		cancel: angular.noop
     	};
-    	spyOn(cb, 'close').andCallThrough();
+    	spyOn(cb, 'close').and.callThrough();
 
     	var openAuth = this.Modal.auth(cb.close);
     	var instance = openAuth();

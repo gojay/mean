@@ -13,9 +13,6 @@
 					tab-heading URL
 			.content
 				loading-spinkit(wrapper-class="primary", style="height:135px")
-				//- .spinner-inline.spinner-wrapper-primary(ng-show="$root.$loading.active", style="height:135px")
-				//- 	cube-grid-spinner
-				//- 	p.text-primary.text-center.padding-top {{$root.$loading.message}}
 				div(ui-view="tab1", ng-class="{'loading':$root.$loading.active}")
 				div(ui-view="tab2", ng-class="{'loading':$root.$loading.active}")
 				div(ui-view="tab3", ng-class="{'loading':$root.$loading.active}")

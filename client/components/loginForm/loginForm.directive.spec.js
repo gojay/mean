@@ -26,14 +26,14 @@ describe('Directive: loginForm', function () {
 
     Auth = _Auth_;
 
-    spyOn(Auth, 'login').andCallThrough();
+    spyOn(Auth, 'login').and.callThrough();
     
     $httpBackend = _$httpBackend_;
 
     $location = _$location_;
-    spyOn($location, 'path').andCallThrough();
+    spyOn($location, 'path').and.callThrough();
 
-    spyOn(jwtHelper, 'isTokenExpired').andReturn(false);
+    spyOn(jwtHelper, 'isTokenExpired').and.returnValue(false);
 
   }));
 
@@ -253,7 +253,7 @@ describe('Directive: loginForm', function () {
   describe('with callback loginSuccess', function() {
     beforeEach(inject(function($compile) {
       scope.loginSuccess = angular.noop;
-      spyOn(scope, 'loginSuccess').andCallThrough();
+      spyOn(scope, 'loginSuccess').and.callThrough();
 
       element = angular.element('<login-form login-success="loginSuccess()"></login-form>');
       element = $compile(element)(scope);
@@ -289,21 +289,21 @@ describe('Directive: loginForm', function () {
 
         // mock oauth.popup sevice
         popup = _popup_;
-        spyOn(popup, 'open').andCallFake(function(){
+        spyOn(popup, 'open').and.callFake(function(){
           deferredPopup = $q.defer();
           return deferredPopup.promise;
         });
 
         // mock Auth sevice
         Auth = _Auth_;
-        spyOn(Auth, 'getUserInAsync').andCallFake(function(){
+        spyOn(Auth, 'getUserInAsync').and.callFake(function(){
           var deferred = $q.defer();
           deferred.resolve();
           return deferred.promise;
         });
 
         scope.loginSuccess = angular.noop;
-        spyOn(scope, 'loginSuccess').andCallThrough();
+        spyOn(scope, 'loginSuccess').and.callThrough();
 
         element = angular.element('<login-form login-success="loginSuccess()" login-dialog="true"></login-form>');
         element = $compile(element)(scope);

@@ -11,9 +11,11 @@ angular.module('exampleAppApp')
     	};
 
         $scope.callbackReadFiles = function(files) {
+            // set active tab resources, not request resources
+            $parent.setActiveTab(1, false);
+
             var deferred = $q.defer();
-            $parent.setActiveTab(1);
-            $parent.promiseResources = $parent.getResources().then(function(data) {
+            CloudinaryService.resources.populate().then(function(data) {
                 var newFiles = _.map(files, function(file){
                     file['public_id'] = file.name;
                     file.selected = false;
@@ -46,14 +48,11 @@ angular.module('exampleAppApp')
                     _.remove(CloudinaryService.resources.data, function(item) {
                         return ~_.indexOf(rejectedFiles, item['public_id']);
                     });
-                    return;
                 }, function reject(error) {
                     $log.error('upload:error', error);
-                    return;
                 }, function notify(result) {
                     $log.info('upload:notify', result);
                     rejectedFiles.push(result.file['public_id']);
-                    return;
                 }).finally($loading.stop);
         });
     });

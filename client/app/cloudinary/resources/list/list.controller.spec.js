@@ -48,9 +48,8 @@ describe('Controller: CloudinaryResourcesListCtrl', function() {
     // Initialize the controller and a mock scope
     beforeEach(inject(function($controller, _$rootScope_, _$loading_, _CloudinaryService_) {
         CloudinaryService = _CloudinaryService_;
-        CloudinaryService.resources.setDummy(10);
 
-        data = CloudinaryService.resources.data;
+        data = CloudinaryService.resources.data = CloudinaryService.dummy(10);
 
         $rootScope = _$rootScope_;
         // mock $parent.loading
@@ -198,13 +197,13 @@ describe('Controller: CloudinaryResourcesListCtrl', function() {
 
       beforeEach(inject(function($q, $templateCache, _$modal_) {
         // mock cloudinary service api remove
-        CloudinaryService.api.remove = jasmine.createSpy().andCallFake(function() {
+        CloudinaryService.api.remove = jasmine.createSpy().and.callFake(function() {
           deferred = $q.defer();
           return { $promise: deferred.promise };
         });
         // mock $modal
         $modal = _$modal_;
-        spyOn($modal, 'open').andReturn(fakeModal);
+        spyOn($modal, 'open').and.returnValue(fakeModal);
 
         $templateCache.put('app/main/main.html', '');
       }));

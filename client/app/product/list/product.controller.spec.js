@@ -50,7 +50,7 @@ describe('Controller: ProductsList', function () {
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
-      spyOn($rootScope, '$broadcast').andCallThrough();
+      spyOn($rootScope, '$broadcast').and.callThrough();
       // expected $rootScope.$on
       $rootScope.$on('products:loaded', function(event, data) {
         expect(data.filters).toBeDefined();
@@ -61,11 +61,11 @@ describe('Controller: ProductsList', function () {
       $scope.breadcrumb = {
         set: angular.noop
       };
-      spyOn($scope.breadcrumb, 'set').andCallThrough();
+      spyOn($scope.breadcrumb, 'set').and.callThrough();
 
       $location = _$location_;
       // spy $location.search
-      spyOn($location, 'search').andReturn({});
+      spyOn($location, 'search').and.returnValue({});
 
       socket = _socket_;
 
@@ -136,7 +136,7 @@ describe('Controller: ProductsList', function () {
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
-      spyOn($rootScope, '$broadcast').andCallThrough();
+      spyOn($rootScope, '$broadcast').and.callThrough();
       // expected $rootScope.$on
       $rootScope.$on('products:loaded', function(event, data) {
         expect(data.filters).toBeDefined();
@@ -146,11 +146,11 @@ describe('Controller: ProductsList', function () {
       $scope.breadcrumb = {
         set: angular.noop
       };
-      spyOn($scope.breadcrumb, 'set').andCallThrough();
+      spyOn($scope.breadcrumb, 'set').and.callThrough();
 
       $location = _$location_;
       // spy $location.search
-      spyOn($location, 'search').andReturn({});
+      spyOn($location, 'search').and.returnValue({});
 
       // mock productService
       productServiceMock = {
@@ -178,8 +178,8 @@ describe('Controller: ProductsList', function () {
         }
       };
       // call productService
-      spyOn(productServiceMock, 'all').andCallThrough();
-      spyOn(productServiceMock, 'query').andCallThrough();
+      spyOn(productServiceMock, 'all').and.callThrough();
+      spyOn(productServiceMock, 'query').and.callThrough();
 
       $controller('ProductsContentCtrl', {
         $scope: $scope,
@@ -252,7 +252,7 @@ describe('Controller: ProductsList', function () {
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
-      spyOn($rootScope, '$broadcast').andCallThrough();
+      spyOn($rootScope, '$broadcast').and.callThrough();
       // expected $rootScope.$on
       $rootScope.$on('products:loaded', function(event, data) {
         expect(data.params).toBeDefined();
@@ -267,8 +267,8 @@ describe('Controller: ProductsList', function () {
           return 'Product Title';
         }
       }
-      spyOn($scope.breadcrumb, 'set').andCallThrough();
-      spyOn($scope.breadcrumb, 'getTitle').andCallThrough();
+      spyOn($scope.breadcrumb, 'set').and.callThrough();
+      spyOn($scope.breadcrumb, 'getTitle').and.callThrough();
 
       $state = _$state_;
 
@@ -323,7 +323,7 @@ describe('Controller: ProductsList', function () {
 
       $rootScope = _$rootScope_;
       // $rootScope.$broadcast & call
-      spyOn($rootScope, '$broadcast').andCallThrough();
+      spyOn($rootScope, '$broadcast').and.callThrough();
       // expected $rootScope.$on
       $rootScope.$on('products:loaded', function(event, data) {
         expect(data.params).toBeDefined();
@@ -338,8 +338,8 @@ describe('Controller: ProductsList', function () {
           return 'Product Title';
         }
       }
-      spyOn($scope.breadcrumb, 'set').andCallThrough();
-      spyOn($scope.breadcrumb, 'getTitle').andCallThrough();
+      spyOn($scope.breadcrumb, 'set').and.callThrough();
+      spyOn($scope.breadcrumb, 'getTitle').and.callThrough();
 
       // spy $state
       $state = _$state_;
@@ -359,8 +359,8 @@ describe('Controller: ProductsList', function () {
           return productServiceMock;
         }
       }
-      spyOn(productServiceMock, 'all').andCallThrough();
-      spyOn(productServiceMock, 'setParam').andCallThrough();
+      spyOn(productServiceMock, 'all').and.callThrough();
+      spyOn(productServiceMock, 'setParam').and.callThrough();
 
       $controller('ProductsQueryContentCtrl', {
         $scope: $scope,

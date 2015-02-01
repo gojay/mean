@@ -18,7 +18,7 @@ describe('Controller: ProductsSideCtrl ->', function () {
 		$scope.search = productDummy.search;
 
 		$state = _$state_;
-		spyOn($state, 'go').andCallFake(function(state, params){
+		spyOn($state, 'go').and.callFake(function(state, params){
 			// dump('callFake', state, params);
 		});
 
@@ -91,7 +91,7 @@ describe('Controller: ProductsSideCtrl ->', function () {
 		$scope.searchByFilter('camera', { query: '4-5' });
 		expect($state.go).toHaveBeenCalledWith('products.query', { category: 'all', os: 'android 1.5', ram: '512-1024', flash: '1024', display: '3-4', camera: '4-5' });
 
-		spyOn($scope.search.display, 'clear').andCallThrough();
+		spyOn($scope.search.display, 'clear').and.callThrough();
 
 		$scope.clearFilter('display');
 		expect($scope.search.display.clear).toHaveBeenCalled();

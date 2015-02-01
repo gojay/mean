@@ -26,7 +26,7 @@ describe('Controller: ProductsDetailCtrl', function () {
     $scope = $rootScope.$new();
 
     $log = { info: angular.noop };
-    spyOn($log, 'info').andCallThrough();
+    spyOn($log, 'info').and.callThrough();
 
     $httpBackend = _$httpBackend_;
     $q = _$q_;
@@ -34,14 +34,14 @@ describe('Controller: ProductsDetailCtrl', function () {
     productService = _productService_;
     Auth = _Auth_;
 
-    spyOn(productService, 'get').andCallFake(function(id) {
+    spyOn(productService, 'get').and.callFake(function(id) {
       var deferred = $q.defer();
       deferred.resolve(product);
       return { $promise: deferred.promise }; 
     });
 
     $scope.breadcrumb = { load: angular.noop };
-    spyOn($scope.breadcrumb, 'load').andCallThrough();
+    spyOn($scope.breadcrumb, 'load').and.callThrough();
 
     var ProductsDetailCtrl = $controller('ProductsDetailCtrl', {
       $scope: $scope,
@@ -64,7 +64,7 @@ describe('Controller: ProductsDetailCtrl', function () {
   });
 
   it('should modal opened', inject(function(Modal) {
-      spyOn(Modal, 'auth').andCallThrough();
+      spyOn(Modal, 'auth').and.callThrough();
       $scope.showLoginDialog();
       expect(Modal.auth).not.toHaveBeenCalled();
   }));
@@ -83,7 +83,7 @@ describe('Controller: ProductsDetailCtrl', function () {
         data: [{ rate:1, body:'good', createdAt: new Date().toISOString() }] 
       });
 
-      spyOn(Auth, 'isLoggedIn').andCallFake(function() {
+      spyOn(Auth, 'isLoggedIn').and.callFake(function() {
         return true;
       });
 

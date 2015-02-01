@@ -28,8 +28,8 @@ describe('route: Products', function() {
 		$templateCache.put('app/product/list/product.html', '');
 		$templateCache.put('app/product/detail/product.html', '');
 
-		spyOn(productServiceMock, 'all').andReturn('all');
-		spyOn(productServiceMock, 'get').andReturn({ $promise:'ProductDetail' });
+		spyOn(productServiceMock, 'all').and.returnValue('all');
+		spyOn(productServiceMock, 'get').and.returnValue({ $promise:'ProductDetail' });
 	}));
 
 	xit('should location /products resolve productData', inject(function($injector) {

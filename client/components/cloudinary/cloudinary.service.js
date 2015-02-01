@@ -6,21 +6,21 @@ angular.module('exampleAppApp')
 	'cloudinary.upload', 
     'cloudinary.dummy',
     'cloudinary.resources',
-	function(cloudinaryAPI, cloudinaryUpload, cloudinaryDummy, cloudinaryData) {
+	function(cloudinaryAPI, cloudinaryUpload, cloudinaryDummy, cloudinaryResources) {
         this.api = cloudinaryAPI;
         this.upload = cloudinaryUpload;
         this.dummy = cloudinaryDummy;
-		this.resources = cloudinaryData;
+		this.resources = cloudinaryResources;
 	}
 ])
 .service('cloudinary.api', function($resource) {
-    /* set cloudinary config */
     return $resource('/api/cloudinary/:id', {}, {
         query : { method: 'GET', isArray: false, cache: true },
         remove: { method: 'DELETE' }
     });
 })
 .factory('cloudinary.upload', function($q, $log, $upload, $window, $timeout, CLOUDINARY_CONFIG) {
+    /* set cloudinary config */
     $.cloudinary.config({ cloud_name: CLOUDINARY_CONFIG.cloud_name, api_key: CLOUDINARY_CONFIG.api_key});
     return {
         /**
@@ -31,7 +31,7 @@ angular.module('exampleAppApp')
         resources: function(files, options, callbackReadFiles) {
             var self = this;
 
-            // self.notification_url = $window.location.origin + '/api/cloudinary/hooks';
+            self.notification_url = $window.location.origin + '/api/cloudinary/hooks';
             self.url = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CONFIG.cloud_name + '/upload';
             self.options = options || {};
             self.until = files.length - 1;
@@ -175,6 +175,12 @@ angular.module('exampleAppApp')
             }).error(deferred.reject);
             return deferred.promise;
         },
+        /**
+         * upload dummy files
+         * @param  {File} file  The image files
+         * @param  {Int} index  The index files
+         * @return {Promise}       
+         */
         uploadDummy: function(file, index) {
         	var self = this;
             file.status = self.setStatus(2);
@@ -223,13 +229,36 @@ angular.module('exampleAppApp')
     };
 })
 .factory('cloudinary.resources', [
+    '$q',
+    '$timeout',
+    '$loading',
+    'cloudinary.api', 
     'cloudinary.dummy', 
-    function(cloudinaryDummy) {
+    function($q, $timeout, $loading, cloudinaryAPI, cloudinaryDummy) {
         return {
             edit: false,
             data: [],
-            setDummy: function(length) {
-                this.data = cloudinaryDummy(length);
+            populate: function() {
+                $loading.start('Getting resources..');
+
+                var deferred = $q.defer();
+
+                if( this.data.length ) {
+                    $loading.stop();
+                    deferred.resolve($scope.resources.data);
+                }
+
+                cloudinaryAPI.query({ tags: true, /*searchByTag: $scope.tag*/ }).$promise.then(function(data) {
+                    var resources = _.map(data.resources, function(item) {
+                        item.tags = item.tags.join(', ');
+                        item.size = Math.round(item.bytes/1024);
+                        return item;
+                    });
+                    $loading.stop();
+                    deferred.resolve(resources);
+                });
+
+                return deferred.promise;
             },
             clear: function() {
                 this.data = _.map(this.data, function(item) {
@@ -255,8 +284,9 @@ angular.module('exampleAppApp')
                 item.focus = true;
 
                 this.selected.detail = item;
-                if(moment(item.created_at).isValid()) {
-                    this.selected.detail.created_at = moment(Date.parse(item.created_at)).format("MMMM Do, YYYY");
+                var _moment = moment(new Date(item.created_at));
+                if(_moment.isValid()) {
+                    this.selected.detail.created_at = _moment.format("MMMM Do, YYYY");
                 }   
             },
             getClassName: function(item) {
