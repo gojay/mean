@@ -37,39 +37,87 @@ describe('Service: CloudinaryService', function () {
   });
 
   // CloudinaryService.upload
-  describe('upload', function() {
+  describe('.upload', function() {
     var files = [{name:'file1'}, {name:'file2'}];
-    var deferredPrepare, callbackReadFiles;
-    beforeEach(inject(function($q) {
+    var deferredPrepare, callbackReadFiles, $httpBackend, $upload;
+
+    beforeEach(inject(function($q, _$httpBackend_, _$upload_) {
+
       callbackReadFiles = jasmine.createSpy().and.callFake(function(params) {
         var deferred = $q.defer();
         deferred.resolve(params);
         return deferred.promise;
       });
 
-      deferredPrepare = $q.defer();
-      spyOn(CloudinaryService.upload, 'prepare').and.returnValue(deferredPrepare.promise);
-      spyOn(CloudinaryService.upload, 'uploadCloudinary').and.callFake(function(file) {
-        var deferred = $q.defer();
-        deferred.resolve({ public_id: '1234' });
-        return deferred.promise;
+      // mock FileReader
+      window.FileReader = jasmine.createSpy().and.returnValue({
+        addEventListener: function(event, cb) {
+          var e = { target: { result: 'data:image/jpeg' }};
+          cb(e);
+        },
+        readAsDataURL: angular.noop
       });
+
+      $httpBackend = _$httpBackend_;
+      $httpBackend.when('POST', CloudinaryService.upload.getURL()).respond({ public_id: '1234' });
+
+      $upload = _$upload_;
+      spyOn($upload, 'upload').and.callThrough();
+      
+      spyOn(CloudinaryService.upload, 'readFile').and.callThrough();
+      spyOn(CloudinaryService.upload, 'setStatus').and.callThrough();
+      spyOn(CloudinaryService.upload, 'chainUpload').and.callThrough();
+      spyOn(CloudinaryService.upload, 'uploadCloudinary').and.callThrough();
     }));
 
-    it('should files uploaded', function () {
-      CloudinaryService.upload.resources(files, {}, callbackReadFiles)
-        .then(function(){ 
-          expect(files.length).toEqual(2);
-          expect(files[0]['public_id']).toEqual('1234');
-          expect(files[0].status.code).toBe(3);
-          expect(files[0].status.message).toBe('Uploaded');
-          expect(files[1]['public_id']).toEqual('1234');
-          expect(files[1].status.code).toBe(3);
-          expect(files[1].status.message).toBe('Uploaded');
+    describe('.resources', function () {
+      beforeEach(function() {
+        CloudinaryService.upload.resources(files, {}, callbackReadFiles).then(function(results){ 
+          expect(results.files.length).toEqual(2);
+          expect(_.every(results.files, 'public_id')).toBeTruthy();
+          expect(_.every(results.files, { status: { code: 3 } })).toBeTruthy();
+          expect(_.every(results.files, { status: { message: 'Uploaded' } })).toBeTruthy();
         });
-      // resolve prepare promise
-      deferredPrepare.resolve(files);
-      $rootScope.$apply();
+        $httpBackend.flush();
+        $rootScope.$apply();
+      });
+
+      it('should callbackReadFiles to have been called', function() {
+        expect(callbackReadFiles).toHaveBeenCalled();
+      });
+
+      it('should .readFile and FileReader to have been called 2 times', function() {
+        expect(CloudinaryService.upload.readFile.calls.count()).toEqual(2);
+        expect(window.FileReader.calls.count()).toEqual(2);
+      });
+
+        // set status 1 (waiting); 2 (uploading); 3 (uploaded) * files.length
+      it('should setStatus to have been called 6 times', function() {
+        expect(CloudinaryService.upload.setStatus.calls.count()).toEqual(6);
+      });
+
+      it('should chainUpload to have been called', function() {
+        expect(CloudinaryService.upload.chainUpload).toHaveBeenCalled();
+      });
+
+      it('should uploadCloudinary and $upload.upload to have been called 2 times', function() {
+        expect(CloudinaryService.upload.chainUpload).toHaveBeenCalled();
+        expect($upload.upload).toHaveBeenCalled();
+      });
+    });
+
+    describe('.resources without callbackReadFiles', function() {
+      beforeEach(function() {
+        CloudinaryService.upload.resources(files).then(function(result){ 
+          expect(result.message).toEqual('completed');
+        });
+        $httpBackend.flush();
+        $rootScope.$apply();
+      });
+
+      it('should callbackReadFiles not to have been called', function() {
+        expect(callbackReadFiles).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -124,7 +172,7 @@ describe('Service: CloudinaryService', function () {
           expect(this.resources.selected.detail).toBe(item);
         });
 
-        it('should get classname', function() {
+        it('should get classname on item selected', function() {
           var className = this.resources.getClassName(item);
           expect(className).toEqual('status-selected status-focus');
         });

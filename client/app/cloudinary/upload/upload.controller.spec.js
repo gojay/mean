@@ -77,7 +77,7 @@ describe('Controller: CloudinaryUploadCtrl', function () {
       expect(CloudinaryService.resources.data.length).toBe(4);
     });
 
-    it('should will be removed resources data by deferred.notify, after upload resolved', function() {
+    it('should resources data will be removed by rejected files on deferred.notify, after upload resolved', function() {
       deferredPopulate.resolve([{ 'public_id': 'file3' }, { 'public_id': 'file4' }]);
       $rootScope.$apply();
 

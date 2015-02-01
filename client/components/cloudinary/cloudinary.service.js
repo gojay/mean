@@ -46,8 +46,11 @@ angular.module('exampleAppApp')
                 	return callbackReadFiles(files);
                 })
                 .then(function(files) {
-                	return self.chainUpload.apply(self, arguments);
+                	return self.chainUpload(files);
                 });
+        },
+        getURL: function() {
+            return self.url;
         },
         /**
          * prepare image files (dataURI) before uploading
@@ -55,6 +58,7 @@ angular.module('exampleAppApp')
          * @return {Promise}
          */
         prepare: function(files) {
+            var deferred = $q.defer();
             var self = this;
             var promises = files.map(function(file) {
                 file.progress = 0;
@@ -131,8 +135,13 @@ angular.module('exampleAppApp')
                             file = _.assign(file, response);
                             file.status = self.setStatus(3);
                         })
-                        .finally(function() {
-                            if(index == files.length - 1) return 'completed';
+                        .then(function() {
+                            if(index == files.length - 1) {
+                                return {
+                                    message:'completed',
+                                    files: files
+                                };
+                            }
                         });
                 });
             }, deferred.promise);

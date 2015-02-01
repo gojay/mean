@@ -44,7 +44,9 @@ module.exports = function(config) {
     ],
 
     // coverage
-    reporters: ['progress', 'coverage'],
+    reporters: ['spec', 'progress', 'coverage'],
+    
+    // reporters: ['spec'],
 
     preprocessors: {
       '**/*.jade': 'ng-jade2js',
@@ -81,6 +83,7 @@ module.exports = function(config) {
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
 
+    colors : true,
 
     // Start these browsers, currently available:
     // - Chrome
