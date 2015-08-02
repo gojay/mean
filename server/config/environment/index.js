@@ -66,10 +66,14 @@ var all = {
   },
 
   cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'doztst1iv',
-    apiKey: process.env.CLOUDINARY_API_KEY || '714114529258881',
-    apiSecret: process.env.CLOUDINARY_API_SECRET || 'nAv_fy8Pejf8FAeCZb_ZQwT4SSw',
-    url: process.env.CLOUDINARY_URL || 'cloudinary://714114529258881:nAv_fy8Pejf8FAeCZb_ZQwT4SSw@doztst1iv'
+    // cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'doztst1iv',
+    // apiKey: process.env.CLOUDINARY_API_KEY || '714114529258881',
+    // apiSecret: process.env.CLOUDINARY_API_SECRET || 'nAv_fy8Pejf8FAeCZb_ZQwT4SSw',
+    // url: process.env.CLOUDINARY_URL || 'cloudinary://714114529258881:nAv_fy8Pejf8FAeCZb_ZQwT4SSw@doztst1iv'
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'digi-co-id',
+    apiKey: process.env.CLOUDINARY_API_KEY || '665793913584278',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || 'OsrenCGWGK-vPnUjzHgxOvrdUdQ',
+    url: process.env.CLOUDINARY_URL || 'cloudinary://665793913584278:OsrenCGWGK-vPnUjzHgxOvrdUdQ@digi-co-id'
   }
 };
 

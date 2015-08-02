@@ -1,6 +1,86 @@
 .row.margin-top-bottom
 	.col-md-12.media-header.padding-bottom 
 		.pull-right
-			button.btn.btn-default.btn-sm(ng-click="resources.edit = false") Back
-	.col-md-12.media-content(ng-show="resources.selected.detail.resource")
-		pre {{resources.selected.detail.resource | json}}
+			button.btn.btn-default.btn-sm(ng-click="resources.edit = false") 
+				i.fa.fa-long-arrow-left
+				= ' '
+				| Back
+	.col-md-12.media-content(ng-show="resources.getDetail().derived")
+		.row
+			//- .col-md-12
+			//- 	.row
+			//- 		.col-md-4
+			//- 			img.col-md-12(ng-src="{{resources.getDetail().derived.data[0].url}}")
+			//- 		.col-md-8
+			//- 			h4 {{resources.getDetail().public_id}}
+			//- 	hr
+			.col-md-8
+				.row
+					.col-md-12
+						.list-group
+							.list-group-item(ng-repeat="derived in resources.getDetail().derived.data")
+								h4.list-group-item-heading(ng-class="{'text-muted': editing.active && editing.index != $index}") {{derived.transformation}}
+								.list-group-item-text(ng-hide="editing.active", ng-class="{'slide-left':isEditing($index)}")
+									ul.list-unstyled
+										li(ng-repeat="li in ['crop','width','height']") 
+											small {{li}}
+								.list-group-item-text.slide-right(ng-show="isEditing($index)")
+									hr
+									.row.margin-bottom
+										.col-md-12.padding-bottom
+											h5 Resize & Crop
+											.row.padding-top
+												.col-md-6
+													label.col-md-12 Width
+													.col-md-8
+														input(type="range", min="0", max="{{resources.getDetail().width}}")
+													.col-md-4
+														input.input-sm.form-control(type="number")
+												.col-md-6
+													label.col-md-12 Height
+													.col-md-8
+														input(type="range", min="0", max="{{resources.getDetail().height}}")
+													.col-md-4
+														input.input-sm.form-control(type="number")
+												.col-md-6
+													label.col-md-12 Mode
+													.col-md-12
+														select.form-control(ng-options="mode.name for mode in modes", ng-model="mode")
+												.col-md-6
+													label.col-md-12 Gravity
+													.col-md-12
+														select.form-control(ng-options="mode.name for mode in modes", ng-model="mode")
+										.col-md-12
+											h5 Shape & Feel
+											.row.padding-top
+												.col-md-4
+													label.col-md-12 Corner Radius
+													.col-md-7
+														input(type="range", min="0", max="30")
+													.col-md-5
+														input.input-sm.form-control(type="number")
+												.col-md-4
+													label.col-md-12 Rotation Angle
+													.col-md-7
+														input(type="range", min="0", max="360")
+													.col-md-5
+														input.input-sm.form-control(type="number")
+												.col-md-4
+													label.col-md-12 Effect
+													.col-md-12
+														select.form-control(ng-options="mode.name for mode in modes", ng-model="mode")
+								.list-group-item-text(ng-hide="editing.active && editing.index != $index")
+									ul.list-inline.text-right
+										li(ng-hide="isEditing($index)")
+											a(ng-click="deleteDerived(derived.id)") 
+												small Delete
+										li
+											a(ng-click="toggleEdit($index)") 
+												small {{ isEditing($index) ? 'Close' : 'Edit'}}
+			.col-md-4
+				img.col-md-12(ng-src="{{resources.getDetail().url}}")
+				.absolute-center.text-center(style="height:30px")
+					button.btn.btn-sm.btn-primary
+						i.fa.fa-refresh
+						= ' '
+						| Refresh

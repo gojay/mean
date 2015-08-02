@@ -466,3 +466,8 @@ aside .panel-group .panel-body .list-group-item:first-child {
 aside .panel .list-group.loading {
   opacity: .3;
 }
+
+.xxl .modal-dialog {
+    width :90%;
+    min-width: 800px;
+}

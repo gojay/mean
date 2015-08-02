@@ -4,6 +4,11 @@
   padding: 0;
 }
 
+.modal-content #media .content {
+  border: none;
+  border-radius: none;
+}
+
 #media .content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
@@ -14,7 +19,7 @@
 /* tab media content globals */
 
 #media .tab-media-content {
-  height: 600px;
+  height: 500px;
 }
   
   #media .tab-media-content .spinner-inline {
@@ -53,7 +58,9 @@
     }
 
       #media .drop-upload > .drop-info {
-        margin-top: 185px;
+        width: 300px; 
+        height: 200px; 
+        /*margin-top: 185px;*/
       }
       #media .drop-upload > .drop-info  > .or-box {
         border-top: 1px solid #ddd;
@@ -79,20 +86,23 @@
     .resources-list .media-list {
       overflow-y: scroll;
       overflow-x: hidden;
-      height: 555px;
-      padding: 0 15px;
+      height: 450px;
+      padding: 0 15px 15px;
       }
       .resources-list .media-list .media-item {
-        height: 270px;
+        max-height: 270px;
       }
         .resources-list .media-list .media-item > img {
           margin: auto;
         }
+        .resources-list .media-list .media-item > img.img-thumbnail {
+          height: 150px;
+        }
       .resources-list.has-selected .media-list {
-        height: 475px;
+        height: 375px;
       }
         .resources-list.has-selected .media-list .media-item {
-          height: 180px;
+          max-height: 180px;
         }
       .resources-list .media-list > .row > div {
         padding-top: 15px;
@@ -132,7 +142,7 @@
           top: 70%;
           color: #f5f5f5;
         }
-        .resources-list .media-list .status-error .has-status .status-message,
+        .resources-list .media-list .status-upload-error .has-status .status-message,
         .resources-list .media-list .status-warning .has-status .status-message {
           height: 30%;
           width: 80%;
@@ -145,32 +155,32 @@
       .resources-list .media-list .status-warning .backdrop,
       .resources-list .media-list .status-warning .spinner-inline,
       .resources-list .media-list .status-warning .progress,
-      .resources-list .media-list .status-error .backdrop,
-      .resources-list .media-list .status-error .spinner-inline,
-      .resources-list .media-list .status-error .progress,
+      .resources-list .media-list .status-upload-error .backdrop,
+      .resources-list .media-list .status-upload-error .spinner-inline,
+      .resources-list .media-list .status-upload-error .progress,
       .resources-list .media-list .status-warning .status-message p,
-      .resources-list .media-list .status-error .status-message p,
-      .resources-list .media-list .status-waiting .progress,
-      .resources-list .media-list .status-waiting .progress,
-      .resources-list .media-list .status-uploading .spinner-inline,
+      .resources-list .media-list .status-upload-error .status-message p,
+      .resources-list .media-list .status-upload-waiting .progress,
+      .resources-list .media-list .status-upload-waiting .progress,
+      .resources-list .media-list .status-upload-uploading .spinner-inline,
       .resources-list .media-list .status-message {
         display: none;
       }
-      .resources-list .media-list .status-waiting > .has-status,
-      .resources-list .media-list .status-uploading > .has-status,
+      .resources-list .media-list .status-upload-waiting > .has-status,
+      .resources-list .media-list .status-upload-uploading > .has-status,
       .resources-list .media-list .status-warning > .has-status,
       .resources-list .media-list .status-warning > .has-status > .status-message,
-      .resources-list .media-list .status-error > .has-status,
-      .resources-list .media-list .status-error > .has-status > .status-message,
+      .resources-list .media-list .status-upload-error > .has-status,
+      .resources-list .media-list .status-upload-error > .has-status > .status-message,
       .resources-list .media-list .status-selected > i,
       .resources-list .media-list .status-focus > i,
       .resources-list .media-list .status-selected > i,
-      .resources-list .media-list .status-waiting .spinner-inline,
-      .resources-list .media-list .status-waiting .status-message,
-      .resources-list .media-list .status-waiting .status-info,
-      .resources-list .media-list .status-uploading .status-info,
-      .resources-list .media-list .status-uploading .progress,
-      .resources-list .media-list .status-uploading .status-message {
+      .resources-list .media-list .status-upload-waiting .spinner-inline,
+      .resources-list .media-list .status-upload-waiting .status-message,
+      .resources-list .media-list .status-upload-waiting .status-info,
+      .resources-list .media-list .status-upload-uploading .status-info,
+      .resources-list .media-list .status-upload-uploading .progress,
+      .resources-list .media-list .status-upload-uploading .status-message {
         display: block;
       }
 
@@ -200,7 +210,8 @@
   #media .tab-media-content .resources-detail {
     background-color:#f5f5f5; 
     border-left: 1px solid #e3e3e3; 
-    height:100%
+    height:100%;
+    overflow-y: scroll; 
   }
     #media .tab-media-content .resources-detail h6 {
       font-weight: bold;
@@ -211,5 +222,11 @@
 
   #media .tab-media-content .resources-custom {
     height:100%
+  }
+
+  .resources-custom .media-content {
+    height: 440px;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 

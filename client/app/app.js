@@ -8,17 +8,22 @@ angular.module('exampleAppApp', [
   'btford.socket-io',
   'ui.router',
   'ui.bootstrap',
+  'ui.tinymce',
   'angular-data.DSCacheFactory',
   'angular-spinkit',
   'angular-jwt',
   'angularFileUpload',
   'cloudinary',
-  'uiSlider'
+  'uiSlider',
+  'ngToast',
+  'angular-scroll-complete'
 ])
   .constant('CLOUDINARY_CONFIG', {
-    cloud_name: 'doztst1iv',
-    upload_preset: 'q4atozxl',
-    api_key: '714114529258881'
+    // cloud_name: 'doztst1iv',
+    // upload_preset: 'q4atozxl',
+    // api_key: '714114529258881'
+    cloud_name: 'digi-co-id',
+    api_key: '665793913584278',
   })
   .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, jwtInterceptorProvider) {
 
@@ -62,8 +67,13 @@ angular.module('exampleAppApp', [
       $rootScope.$state = $state;
       Auth.isLoggedInAsync(function(loggedIn) {
         if (next.authenticate && !loggedIn) {
+          console.log('$stateChangeStart', next, loggedIn, Modal);
           // $location.path('/login');
-          Modal.auth();
+          Modal.auth(function close() {
+              /* on close */
+          }, function cancel() {
+              /* on cancel */
+          })();
         }
       });
     });
@@ -93,6 +103,10 @@ angular.module('exampleAppApp', [
       Auth.logout();
       // redirect to login page / show modal login
       // $location.path('/login');
-      Modal.auth();
+      Modal.auth(function close() {
+          /* on close */
+      }, function cancel() {
+          /* on cancel */
+      })();
     });
   });

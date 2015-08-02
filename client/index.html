@@ -21,6 +21,7 @@
       <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-ui.css" />
       <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-noscript.css" />
       <link rel="stylesheet" href="bower_components/blueimp-file-upload/css/jquery.fileupload-ui-noscript.css" />
+      <link rel="stylesheet" href="bower_components/ngtoast/dist/ngToast.css" />
       <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css({.tmp,client}) app/app.css -->
@@ -43,6 +44,8 @@
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
+    
+    <toast></toast>
     <div ng-include='"components/navbar/navbar.html"' ng-if="$state.current.name != 'oauth'"></div>
 
     <!-- Add your site or application content here -->
@@ -63,6 +66,7 @@
     <script src="bower_components/es5-shim/es5-shim.js"></script>
     <script src="bower_components/json3/lib/json3.min.js"></script>
     <![endif]-->
+
     <!-- build:js({client,node_modules}) app/vendor.js -->
       <!-- bower:js -->
       <script src="bower_components/jquery/dist/jquery.js"></script>
@@ -104,6 +108,10 @@
       <script src="bower_components/cloudinary_js/js/jquery.cloudinary.js"></script>
       <script src="bower_components/cloudinary_ng/js/angular.cloudinary.js"></script>
       <script src="bower_components/ng-file-upload/angular-file-upload.js"></script>
+      <script src="bower_components/ngtoast/dist/ngToast.js"></script>
+      <script src="bower_components/tinymce-dist/tinymce.min.js"></script>
+      <script src="bower_components/angular-ui-tinymce/src/tinymce.js"></script>
+      <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js"></script>
       <!-- endbower -->
       <script src="socket.io-client/socket.io.js"></script>
     <!-- endbuild -->
@@ -148,9 +156,9 @@
           <script src="components/socket/socket.service.js"></script>
           <!-- endinjector -->
         <!-- endbuild -->
-        <script type="text/javascript">
+        <!--<script type="text/javascript">
           var userip;
         </script>
-        <!--<script type="text/javascript" src="http://l2.io/ip.js?var=userip"></script>-->
+        <script type="text/javascript" src="http://l2.io/ip.js?var=userip"></script>-->
 </body>
 </html>

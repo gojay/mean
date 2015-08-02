@@ -4,7 +4,7 @@ var should = require('should');
 var app = require('../../app');
 var request = require('supertest');
 
-describe('GET /api/cloudinary', function() {
+describe.skip('GET /api/cloudinary', function() {
 
   it('should respond with JSON array', function(done) {
     request(app)

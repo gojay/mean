@@ -84,6 +84,7 @@ angular.module('exampleAppApp')
         cbCancel = cbCancel || angular.noop;
 
         return function() {
+          console.log('open:modal:auth')
           if(Auth.isLoggedIn()) return;
 
           var args = Array.prototype.slice.call(arguments);

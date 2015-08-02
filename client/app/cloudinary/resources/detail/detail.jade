@@ -1,24 +1,24 @@
 h6 ATTACHMENT DETAILS
 .row
 	.col-md-6.text-center.afix
-		img(ng-src="{{resources.selected.detail.url}}", width="150", height="150")
+		img.img-thumbnail(ng-src="{{resources.getDetail().url}}", width="150", height="150")
 	.col-md-6.prefix
 		ul.list-unstyled
 			li 
-				label {{resources.selected.detail.public_id + '.' + resources.selected.detail.format}}
+				label {{resources.getDetail().public_id + '.' + resources.getDetail().format}}
 			li 
-				label {{resources.selected.detail.created_at}}
+				label {{resources.getDetail().created_at}}
 			li 
-				label {{resources.selected.detail.size}} KB
+				label {{resources.getDetail().size}} KB
 			li 
-				label {{resources.selected.detail.width}} x {{resources.selected.detail.height}}
+				label {{resources.getDetail().width}} x {{resources.getDetail().height}}
 			li
 				.btn-group
 					button.btn.btn-primary.btn-sm(ng-click="getResource()") 
 						i.fa.fa-gear
 						= ' '
 						| Customize
-					button.btn.btn-danger.btn-sm(ng-click="delete('image '+ resources.selected.detail.public_id, resources.selected.detail)") 
+					button.btn.btn-danger.btn-sm(ng-click="delete()") 
 						i.fa.fa-trash
 						= ' '
 						| Delete
@@ -28,22 +28,26 @@ h6 ATTACHMENT DETAILS
 			.form-group
 				label.control-label.col-md-4 URL
 				.col-md-8
-					input.input-sm.form-control(type="text", ng-disabled="true", ng-model="resources.selected.detail.url")
+					input.input-sm.form-control(type="text", ng-disabled="true", ng-model="resources.getDetail().url")
 			.form-group
 				label.control-label.col-md-4 Title
 				.col-md-8
-					input.input-sm.form-control(type="text")
+					input.input-sm.form-control(type="text", ng-model="resources.getDetail().context.title")
 			.form-group
 				label.control-label.col-md-4 Alt Text
 				.col-md-8
-					input.input-sm.form-control(type="text")
+					input.input-sm.form-control(type="text", ng-model="resources.getDetail().context.alt")
+			.form-group
+				label.control-label.col-md-4 Caption
+				.col-md-8
+					input.input-sm.form-control(type="text", ng-model="resources.getDetail().context.caption")
 			.form-group
 				label.control-label.col-md-4 Description
 				.col-md-8
-					textarea.input-sm.form-control
+					textarea.input-sm.form-control(type="text", ng-model="resources.getDetail().context.description")
 h6 ATTACHMENT DISPLAY SETTINGS
 .row
-	.col-md-12(ng-init="sizes = [{name:'Thumbnail', value:'thumbnail'}, {name:'Medim', value:'medium'}, {name:'Original', value:'original'}, {name:'Custom', value:'custom'}]")
+	.col-md-12
 		form.form-horizontal
 			.form-group
 				label.control-label.col-md-4 Alignment
@@ -53,17 +57,21 @@ h6 ATTACHMENT DISPLAY SETTINGS
 						option Left
 						option Center
 						option Right
+			.form-group(ng-show="resources.getDetail().derived")
+				label.control-label.col-md-4 Transformations
+				.col-md-8
+					select.input-sm.form-control(ng-model="resources.getDetail().derived.selected", ng-options="derived.transformation for derived in resources.getDetail().derived.data")
 			.form-group
 				label.control-label.col-md-4 Size
 				.col-md-8
-					select.input-sm.form-control(ng-model="size", ng-options="size.name for size in sizes")
-			.form-group(ng-show="size.value == 'custom'")
+					select.input-sm.form-control(ng-model="sizes.selected", ng-options="size.name for size in sizes.options")
+			.form-group(ng-show="sizes.isCustom()")
 				label.control-label.col-md-4 
 				.col-md-8
 					.row
 						.col-md-6
 							label Width
-							input.input-sm.form-control(type="number")
+							input.input-sm.form-control(type="number", max="{{sizes.width}}", ng-model="sizes.custom.width", ng-model-options="{ debounce: 1000 }", ng-change="sizes.calc()")
 						.col-md-6
 							label Height
-							input.input-sm.form-control(type="number")
+							input.input-sm.form-control(type="number", max="{{sizes.height}}", ng-model="sizes.custom.height", ng-model-options="{ debounce: 1000 }", ng-change="sizes.calc('width')")

@@ -32,9 +32,9 @@
 								li
 									a(ng-click="filters = {selected:'$', title: 'All', placeholder: 'Filter all'}") All
 					input.input-sm.input-filter.form-control(type="text", placeholder="{{ filters.placeholder }}", ng-model="filters.model[filters.selected]")
-	.col-md-12.media-list
+	.col-md-12.media-list(when-scrolled="next()" percent="90")
 		.row
-			.col-md-3.media-item.bouncy-scale-in(ng-repeat="i in resources.data | filter:filters.model[filters.selected]", ng-class="resources.getClassName(i)")
+			.col-sm-3.col-md-3.media-item.bouncy-scale-in(ng-repeat="i in resources.data | filter:filters.model[filters.selected]", ng-class="resources.getClassName(i)")
 				i.fa.fa-2x(ng-class="resources.getIconClass(i)", ng-mouseover="i.hover = true", ng-mouseleave="i.hover = false", ng-click="select($event, $index, i)")
 				.has-status.col-md-12
 					.backdrop
@@ -54,18 +54,21 @@
 								| Warning
 							= ' '
 							| {{i.status.message}}
-				img.img-thumbnail(width="250", height="200", ng-class="{'-1':'bg-danger', '0':'bg-warning'}[i.status.code]" ng-src="{{i.url}}", spinkit-image-preloader="wandering-cubes-spinner", spinkit-image-preloader-class="spinner-wrapper-primary", ng-click="select($event, $index, i)")
+				img(width="250", height="200", ng-class="resources.getImgClass(i)", ng-src="{{i._url}}", spinkit-image-preloader="wandering-cubes-spinner", spinkit-image-preloader-class="spinner-wrapper-primary", ng-click="select($event, $index, i)")
+		.row(ng-if="busy")
+			.col-lg-12
+				p.text-center Loading..
 	.col-md-12.media-footer
 		.row
 			.col-md-3.afix
 				h5
-					| {{resources.selected.data.length}} selected
-				button.btn.btn-danger.btn-sm(ng-click="delete('selected images', resources.selected.data)") 
+					| {{resources.getSelected().length}} selected
+				button.btn.btn-danger.btn-sm(ng-click="delete()") 
 					i.fa.fa-trash
 					= ' '
 					| Delete
 				button.btn.btn-link.btn-sm(ng-click="resources.clear()") clear
 			.col-md-9.padding-top-sm.prefix(style="white-space:nowrap")
 				ul.list-inline
-					li(ng-repeat="selected in resources.selected.data")
+					li(ng-repeat="selected in resources.getSelected()")
 						img.img-thumbnail(ng-src="{{selected.url}}", width="60")

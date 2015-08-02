@@ -16,6 +16,9 @@ router.post('/:id/tags', controller.addTag);
 router.put('/:id/tags', controller.updateTag);
 router.delete('/:id/tags/:tag', controller.removeTag);
 
+router.post('/:id/derived', controller.addDerived);
+router.delete('/:id/derived', controller.deleteDerived);
+
 router.post('/hooks', controller.hooks);
 
 module.exports = router;

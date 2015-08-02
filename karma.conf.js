@@ -31,6 +31,7 @@ module.exports = function(config) {
       'client/bower_components/cloudinary_js/js/jquery.cloudinary.js',
       'client/bower_components/cloudinary_ng/js/angular.cloudinary.js',
       'client/bower_components/moment/moment.js',
+      'client/bower_components/ngtoast/dist/ngToast.min.js',
       'client/app/app.js',
       'client/app/app.coffee',
       'client/app/**/*.js',
@@ -44,9 +45,9 @@ module.exports = function(config) {
     ],
 
     // coverage
-    reporters: ['spec', 'progress', 'coverage'],
+    // reporters: ['spec', 'progress', 'coverage'],
     
-    // reporters: ['spec'],
+    reporters: ['spec'],
 
     preprocessors: {
       '**/*.jade': 'ng-jade2js',

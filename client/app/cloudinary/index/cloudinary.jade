@@ -1,16 +1,11 @@
 .container.margin-top-bottom
 	.row
+		h3
+			| selected {{selected}}
 		#media.col-md-12
 			tabset
-				// tab upload
-				tab(active="tabs[0].active", select="setActiveTab(0)")
-					tab-heading Upload
-				// tab resources
-				tab(active="tabs[1].active", select="setActiveTab(1)")
-					tab-heading Resources
-				// tab insert from url
-				tab(active="tabs[2].active", select="setActiveTab(2)")
-					tab-heading URL
+				tab(ng-repeat="tab in tabs", active="tab.active", select="setActiveTab($index)")
+					tab-heading {{tab.title}}
 			.content
 				loading-spinkit(wrapper-class="primary", style="height:135px")
 				div(ui-view="tab1", ng-class="{'loading':$root.$loading.active}")

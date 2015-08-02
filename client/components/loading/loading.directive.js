@@ -21,35 +21,35 @@
  * fading-circle-spinner
  */
 angular.module('exampleAppApp')
-    .directive('loadingSpinkit', function($injector, $compile, $rootScope) {
-        return {
-        	scope: {
-        		spinkit: '@',
-        		wrapperClass: '@'
-        	},
-        	replace: true,
-            template: '<div class="spinner-inline" ng-show="$root.$loading.active"></div>',
-            restrict: 'EA',
-            link: function(scope, element, attrs) {
-            	var className = scope.wrapperClass || 'primary';
+  .directive('loadingSpinkit', function($injector, $compile, $rootScope) {
+      return {
+      	scope: {
+      		spinkit: '@',
+      		wrapperClass: '@'
+      	},
+      	replace: true,
+          template: '<div class="spinner-inline" ng-show="$root.$loading.active"></div>',
+          restrict: 'EA',
+          link: function(scope, element, attrs) {
+          	var className = scope.wrapperClass || 'primary';
 
-            	var wrapperClass = 'spinner-wrapper-' + className;
-			    element.addClass(wrapperClass);
+          	var wrapperClass = 'spinner-wrapper-' + className;
+		    element.addClass(wrapperClass);
 
-                // Check for the existence of the spinkit-directive
-			    if(!scope.spinkit || !$injector.has(attrs.$normalize(scope.spinkit) + 'Directive'))
-			        scope.spinkit = 'cube-grid-spinner';
+              // Check for the existence of the spinkit-directive
+		    if(!scope.spinkit || !$injector.has(attrs.$normalize(scope.spinkit) + 'Directive'))
+		        scope.spinkit = 'cube-grid-spinner';
 
-			    var spinner = $compile('<' + scope.spinkit + '/>')(scope);
-			    element.append(spinner);
+		    var spinner = $compile('<' + scope.spinkit + '/>')(scope);
+		    element.append(spinner);
 
-			    var textEl = $compile('<p>{{$root.$loading.message}}</p>')(scope);
-            	var textClass = 'text-primary text-center text-' + className;
-			    textEl.addClass(textClass).css('padding-top', '10px');
-			    element.append(textEl);
-            }
-        };
-    })
+		    var textEl = $compile('<p>{{$root.$loading.message}}</p>')(scope);
+          	var textClass = 'text-primary text-center text-' + className;
+		    textEl.addClass(textClass).css('padding-top', '10px');
+		    element.append(textEl);
+          }
+      };
+  })
 	.directive('loadingSpinkitClass', function ($compile) {
 	    return {
 	        restrict: 'A',        
@@ -66,4 +66,3 @@ angular.module('exampleAppApp')
 	        }
 	    }
 	});
-

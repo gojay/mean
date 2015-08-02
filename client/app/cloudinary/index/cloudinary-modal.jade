@@ -1,0 +1,13 @@
+#media
+	tabset
+		tab(ng-repeat="tab in tabs", active="tab.active", select="setActiveTab($index)")
+			tab-heading {{tab.title}}
+	.content
+		loading-spinkit(wrapper-class="primary", style="height:135px")
+		div(ui-view="tab1", ng-class="{'loading':$root.$loading.active}")
+		div(ui-view="tab2", ng-class="{'loading':$root.$loading.active}")
+		div(ui-view="tab3", ng-class="{'loading':$root.$loading.active}")
+.modal-footer(style="margin-top:0")
+	button.btn.btn-default(ng-click="next()") Next
+	button.btn.btn-primary(ng-click="close()") Select
+	button.btn.btn-warning(ng-click="$dismiss()") Cancel
